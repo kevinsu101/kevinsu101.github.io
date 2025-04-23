@@ -52,7 +52,13 @@
           .then(res => res.json())
           .then(json => {
             if (json.status === 'ok') {
-              alert(`上傳成功！列數：${json.rows}，欄數：${json.cols}\n使用者 ID：${json.userId}\n名稱：${json.username}`);
+              alert(`上傳成功！使用者 ID：${json.userId}\n名稱：${json.username}`);
+              // 主動送訊息給 LINE
+              liff.sendMessages([
+                { type: 'text', text: `CGM CSV 檔上傳完成，${finalName}！` }
+              ])
+              .then(() => console.log('訊息已發送'))
+              .catch(err => console.error(err));
             } else {
               alert('上傳失敗：' + json.msg);
             }
