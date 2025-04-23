@@ -3,77 +3,66 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSV 上傳（LIFF）</title>
+  <title>CSV 上傳至 Flask</title>
+  <script defer src="https://static.line-scdn.net/liff/edge/3/sdk.js"></script>
 </head>
 <body>
-  <h2>上傳你的 CSV</h2>
-  <!-- 手動輸入使用者 ID -->
+  <h2>上傳 CSV 至 Flask</h2>
   <label>使用者 ID：<input type="text" id="userIdInput" placeholder="若無則留空" /></label><br/><br/>
-  <!-- 手動輸入使用者名稱 -->
   <label>使用者名稱：<input type="text" id="username" placeholder="若無則留空" /></label><br/><br/>
-  <!-- CSV 檔案選擇 -->
   <input type="file" id="fileInput" accept=".csv" /><br/><br/>
-  <button id="uploadBtn">開始上傳</button>
+  <button id="uploadBtn">送出至 /uploadcsv</button>
 
-  <!-- LIFF SDK -->
-  <script src="https://static.line-scdn.net/liff/edge/3/sdk.js"></script>
-  <script>
-    // 1. 初始化 LIFF
-    liff.init({ liffId: "2007301708-7r2WyMpB" }).then(() => {
-      document.getElementById("uploadBtn").addEventListener('click', async () => {
-        const fileEl = document.getElementById("fileInput");
-        if (!fileEl.files.length) return alert("請先選擇 CSV 檔");
-        const file = fileEl.files[0];
+  <script defer>
+    document.addEventListener('DOMContentLoaded', () => {
+      // LIFF 初始化
+      if (typeof liff === 'undefined') {
+        window.liff = {
+          init: () => Promise.resolve(),
+          getProfile: () => Promise.resolve({ userId: 'LOCAL_ID', displayName: 'LOCAL_NAME' })
+        };
+      }
+      liff.init({ liffId: '2007301708-7r2WyMpB' }).then(() => {
+        document.getElementById('uploadBtn').addEventListener('click', async () => {
+          const manualUserId = document.getElementById('userIdInput').value.trim();
+          const customName   = document.getElementById('username').value.trim();
+          const fileEl       = document.getElementById('fileInput');
+          if (!fileEl.files.length) return alert('請先選擇 CSV 檔');
+          const file = fileEl.files[0];
 
-        // 取得手動輸入的 ID 和名稱
-        const manualUserId = document.getElementById("userIdInput").value.trim();
-        const customName = document.getElementById("username").value.trim();
+          // 取得 LINE profile
+          let profile = {};
+          try { profile = await liff.getProfile(); }
+          catch { return alert('無法取得 LINE 資訊'); }
 
-        // 3. 取得 LINE profile
-        let profile = {};
-        try {
-          profile = await liff.getProfile();
-        } catch (e) {
-          return alert("無法取得使用者資訊，請確認已登入 LIFF");
-        }
+          const finalUserId = manualUserId || profile.userId;
+          const finalName   = customName   || profile.displayName;
 
-        // 決定最終 userId: 以手動輸入為優先，否則使用 LINE profile.userId
-        const finalUserId = manualUserId || profile.userId;
-        const finalName   = customName   || profile.displayName;
+          // 準備表單
+          const form = new FormData();
+          form.append('userId', finalUserId);
+          form.append('username', finalName);
+          form.append('file', file);
 
-        // 組成 FormData
-        const form = new FormData();
-        form.append("file", file);
-        form.append("userId", finalUserId);
-        form.append("displayName", profile.displayName);
-        form.append("username", finalName);
-
-        // 發送到後端
-        fetch("https://62ca-2001-288-7001-10d7-5cb8-8e59-9a6-5c30.ngrok-free.app/upload", {
-          method: "POST",
-          headers: {"Authorization": "Bearer " + liff.getAccessToken()},
-          body: form
-        })
-        .then(r => r.json())
-        .then(j => {
-          if (j.status === "ok") {
-            alert(
-              `上傳成功！共 ${j.rows} 列、${j.cols} 欄` +
-              `\n使用者 ID：${j.userId}` +
-              `\n顯示名稱：${j.name}`
-            );
-          } else {
-            alert(`上傳失敗：${j.msg}`);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert('網路錯誤，請稍後再試');
+          // 發送到 Flask /uploadcsv
+          fetch('https://62ca-2001-288-7001-10d7-5cb8-8e59-9a6-5c30.ngrok-free.app/uploadcsv', {
+            method: 'POST',
+            body: form
+          })
+          .then(res => res.json())
+          .then(json => {
+            if (json.status === 'ok') {
+              alert(`上傳成功！列數：${json.rows}，欄數：${json.cols}\n使用者 ID：${json.userId}\n名稱：${json.username}`);
+            } else {
+              alert('上傳失敗：' + json.msg);
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            alert('網路或伺服器錯誤');
+          });
         });
       });
-    }).catch(err => {
-      console.error('LIFF 初始化錯誤', err);
-      alert('LIFF 無法初始化');
     });
   </script>
 </body>
