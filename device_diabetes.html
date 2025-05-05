@@ -8,8 +8,8 @@
 </head>
 <body>
   <h2>上傳 CSV 至 Flask</h2>
-  <label>使用者 ID：<input type="text" id="userIdInput" placeholder="若無則留空" /></label><br/><br/>
   <label>使用者名稱：<input type="text" id="username" placeholder="若無則留空" /></label><br/><br/>
+  <label>使用者 ID：<input type="text" id="userIdInput" placeholder="若無則留空" /></label><br/><br/>
   <input type="file" id="fileInput" accept=".csv" /><br/><br/>
   <button id="uploadBtn">送出至 /uploadcsv</button>
 
@@ -45,7 +45,7 @@
           form.append('file', file);
 
           // 發送到 Flask /uploadcsv
-          fetch('https://62ca-2001-288-7001-10d7-5cb8-8e59-9a6-5c30.ngrok-free.app/uploadcsv', {
+          fetch('https://e397-2001-288-7001-10d7-3d04-b4c7-bd49-3645.ngrok-free.app/uploadcsv', {
             method: 'POST',
             body: form
           })
@@ -53,12 +53,6 @@
           .then(json => {
             if (json.status === 'ok') {
               alert(`上傳成功！使用者 ID：${json.userId}\n名稱：${json.username}`);
-              // 主動送訊息給 LINE
-              liff.sendMessages([
-                { type: 'text', text: `CGM CSV 檔上傳完成，${finalName}！` }
-              ])
-              .then(() => console.log('訊息已發送'))
-              .catch(err => console.error(err));
             } else {
               alert('上傳失敗：' + json.msg);
             }
