@@ -113,8 +113,8 @@
         input[type="text"],
         select {
             width: 100%;
-            padding: 15px;
-            font-size: 1.2em;
+            padding: 18px;
+            font-size: 1.3em;
             border: 1px solid var(--input-border);
             border-radius: 8px;
             background-color: var(--input-bg);
@@ -125,7 +125,7 @@
 
         input[type="file"] {
             width: 100%;
-            padding: 10px;
+            padding: 12px;
             font-size: 1.1em;
             color: var(--label-color);
             background-color: var(--input-bg);
@@ -251,110 +251,112 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     liff.init({ liffId: '2007301708-7r2WyMpB' })
-        .then(() => console.log('LIFF initialization succeeded.'))
+        .then(() => {
+            console.log('LIFF initialization succeeded.');
+
+            // --- Tab Navigation Logic ---
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetSectionId = button.id.replace('btn-', 'section-');
+                    contentSections.forEach(section => {
+                        section.style.display = section.id === targetSectionId ? 'block' : 'none';
+                    });
+                });
+            });
+
+            // --- LIFF Test Logic ---
+            const liffTestBtn = document.getElementById('liffTestBtn');
+            const liffDataOutput = document.getElementById('liff-data-output');
+
+            liffTestBtn.addEventListener('click', async () => {
+                liffDataOutput.textContent = '正在獲取資料...';
+                try {
+                    // 確認使用者已登入
+                    if (!liff.isLoggedIn()) {
+                        liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
+                        liff.login(); // 導向登入頁面
+                        return;
+                    }
+
+                    const profile = await liff.getProfile();
+                    const decodedIDToken = liff.getDecodedIDToken();
+
+                    const outputData = {
+                        'liff.getProfile()': profile,
+                        'liff.getDecodedIDToken()': decodedIDToken,
+                        'liff.getOS()': liff.getOS(),
+                        'liff.getLanguage()': liff.getLanguage(),
+                        'liff.getVersion()': liff.getVersion(),
+                        'liff.getContext()': liff.getContext(),
+                        'liff.isInClient()': liff.isInClient(),
+                    };
+
+                    // 將物件轉換為格式化的 JSON 字串並顯示
+                    liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
+
+                } catch (err) {
+                    console.error('LIFF test error:', err);
+                    liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
+                }
+            });
+
+            // --- CGM 檔案上傳表單處理 ---
+            const cgmUploadForm = document.getElementById('cgm-upload-form');
+            cgmUploadForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const name = document.getElementById('cgmPatientName').value.trim();
+                const customId = document.getElementById('cgmPatientId').value.trim();
+                const fileEl = document.getElementById('fileInput');
+
+                if (!name || !customId) return alert('請輸入姓名與身分證字號！');
+                if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
+                
+                const file = fileEl.files[0];
+
+                let lineProfile;
+                try {
+                    lineProfile = await liff.getProfile();
+                } catch (error) {
+                    console.error('Failed to get LINE profile', error);
+                    return alert('無法獲取 LINE 使用者資訊，請確認授權。');
+                }
+
+                const formData = new FormData();
+                formData.append('userId', lineProfile.userId);
+                formData.append('username', name);
+                formData.append('customId', customId);
+                formData.append('file', file);
+
+                const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.status === 'ok') {
+                        alert(`CGM 檔案上傳成功！`);
+                    } else {
+                        throw new Error(result.msg || '發生未知錯誤');
+                    }
+                } catch (error) {
+                    console.error('Error uploading CGM file:', error);
+                    alert(`CGM 檔案上傳失敗：${error.message}`);
+                }
+            });
+        })
         .catch(err => {
             console.error('LIFF initialization failed', err);
             alert('LIFF 初始化失敗，請確認您在 LINE 環境中開啟此頁面。');
         });
-
-    // --- Tab Navigation Logic ---
-    const navButtons = document.querySelectorAll('.nav-btn');
-    const contentSections = document.querySelectorAll('.content-section');
-
-    navButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            navButtons.forEach(btn => btn.classList.remove('active'));
-            button.classList.add('active');
-
-            const targetSectionId = button.id.replace('btn-', 'section-');
-            contentSections.forEach(section => {
-                section.style.display = section.id === targetSectionId ? 'block' : 'none';
-            });
-        });
-    });
-
-    // --- LIFF Test Logic ---
-    const liffTestBtn = document.getElementById('liffTestBtn');
-    const liffDataOutput = document.getElementById('liff-data-output');
-
-    liffTestBtn.addEventListener('click', async () => {
-        liffDataOutput.textContent = '正在獲取資料...';
-        try {
-            // 確認使用者已登入
-            if (!liff.isLoggedIn()) {
-                liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
-                liff.login(); // 導向登入頁面
-                return;
-            }
-
-            const profile = await liff.getProfile();
-            const decodedIDToken = liff.getDecodedIDToken();
-
-            const outputData = {
-                'liff.getProfile()': profile,
-                'liff.getDecodedIDToken()': decodedIDToken,
-                'liff.getOS()': liff.getOS(),
-                'liff.getLanguage()': liff.getLanguage(),
-                'liff.getVersion()': liff.getVersion(),
-                'liff.getContext()': liff.getContext(),
-                'liff.isInClient()': liff.isInClient(),
-            };
-
-            // 將物件轉換為格式化的 JSON 字串並顯示
-            liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
-
-        } catch (err) {
-            console.error('LIFF test error:', err);
-            liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
-        }
-    });
-
-    // --- CGM 檔案上傳表單處理 ---
-    const cgmUploadForm = document.getElementById('cgm-upload-form');
-    cgmUploadForm.addEventListener('submit', async (event) => {
-        event.preventDefault();
-
-        const name = document.getElementById('cgmPatientName').value.trim();
-        const customId = document.getElementById('cgmPatientId').value.trim();
-        const fileEl = document.getElementById('fileInput');
-
-        if (!name || !customId) return alert('請輸入姓名與身分證字號！');
-        if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
-        
-        const file = fileEl.files[0];
-
-        let lineProfile;
-        try {
-            lineProfile = await liff.getProfile();
-        } catch (error) {
-            console.error('Failed to get LINE profile', error);
-            return alert('無法獲取 LINE 使用者資訊，請確認授權。');
-        }
-
-        const formData = new FormData();
-        formData.append('userId', lineProfile.userId);
-        formData.append('username', name);
-        formData.append('customId', customId);
-        formData.append('file', file);
-
-        const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
-
-        try {
-            const response = await fetch(endpoint, {
-                method: 'POST',
-                body: formData,
-            });
-            const result = await response.json();
-            if (response.ok && result.status === 'ok') {
-                alert(`CGM 檔案上傳成功！`);
-            } else {
-                throw new Error(result.msg || '發生未知錯誤');
-            }
-        } catch (error) {
-            console.error('Error uploading CGM file:', error);
-            alert(`CGM 檔案上傳失敗：${error.message}`);
-        }
-    });
 });
 </script>
 
