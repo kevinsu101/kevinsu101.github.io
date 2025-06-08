@@ -263,24 +263,43 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    // LIFF 初始化狀態
+    let liffInitialized = false;
+
     // 基本的 LIFF 初始化測試
     function initLiff() {
-        console.log('=== 開始 LIFF 初始化 ===');
-        
-        liff.init({
-            liffId: '2007301708-7r2WyMpB'
-        }).then(() => {
-            // start to use LIFF's api
-            console.log('初始化成功');
+        return new Promise((resolve, reject) => {
+            console.log('=== 開始 LIFF 初始化 ===');
             
-            var os = liff.getOS();
-            console.log('OS:', os);
-            console.log('isInClient:', liff.isInClient());
-            console.log('Language:', liff.getLanguage());
-            console.log('Version:', liff.getVersion());
+            if (typeof liff === 'undefined') {
+                reject(new Error('LIFF SDK 未載入，請確認在 LINE 中開啟此頁面'));
+                return;
+            }
             
-        }).catch((err) => {
-            console.log('初始化失敗:', err);
+            if (liffInitialized) {
+                console.log('LIFF 已經初始化過了');
+                resolve();
+                return;
+            }
+            
+            liff.init({
+                liffId: '2007301708-7r2WyMpB'
+            }).then(() => {
+                console.log('初始化成功');
+                liffInitialized = true;
+                
+                var os = liff.getOS();
+                console.log('OS:', os);
+                console.log('isInClient:', liff.isInClient());
+                console.log('Language:', liff.getLanguage());
+                console.log('Version:', liff.getVersion());
+                
+                resolve();
+                
+            }).catch((err) => {
+                console.log('初始化失敗:', err);
+                reject(err);
+            });
         });
     }
 
@@ -291,13 +310,13 @@ document.addEventListener('DOMContentLoaded', () => {
     if (liffTestBtn) {
         liffTestBtn.addEventListener('click', async () => {
             console.log('=== LIFF 測試按鈕被點擊 ===');
-            liffDataOutput.textContent = '正在測試 LIFF...';
+            liffDataOutput.textContent = '正在初始化 LIFF...';
             
             try {
-                // 檢查 LIFF 是否已初始化
-                if (typeof liff === 'undefined') {
-                    throw new Error('LIFF SDK 未載入');
-                }
+                // 先初始化 LIFF
+                await initLiff();
+                
+                liffDataOutput.textContent = '正在獲取 LIFF 資訊...';
                 
                 console.log('LIFF 基本資訊:');
                 console.log('- OS:', liff.getOS());
@@ -332,9 +351,14 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendUserInfoBtn) {
         sendUserInfoBtn.addEventListener('click', async () => {
             console.log('=== 發送按鈕被點擊 ===');
-            sendResultOutput.textContent = '正在獲取用戶資料...';
+            sendResultOutput.textContent = '正在初始化 LIFF...';
             
             try {
+                // 先初始化 LIFF
+                await initLiff();
+                
+                sendResultOutput.textContent = '正在獲取用戶資料...';
+                
                 if (!liff.isLoggedIn()) {
                     sendResultOutput.textContent = '請先登入 LINE';
                     return;
@@ -349,6 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 };
 
                 // 發送到後端
+                sendResultOutput.textContent = '正在發送到後端...';
                 const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/liff';
                 const response = await fetch(endpoint, {
                     method: 'POST',
@@ -392,11 +417,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
             let lineProfile;
             try {
-                if (typeof liff !== 'undefined' && liff.isLoggedIn()) {
-                    lineProfile = await liff.getProfile();
-                } else {
-                    return alert('請先完成 LIFF 登入');
+                // 先初始化 LIFF
+                await initLiff();
+                
+                if (!liff.isLoggedIn()) {
+                    return alert('請先登入 LINE');
                 }
+                
+                lineProfile = await liff.getProfile();
             } catch (error) {
                 console.error('Failed to get LINE profile', error);
                 return alert('無法獲取 LINE 使用者資訊，請確認授權。');
@@ -428,11 +456,12 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 自動初始化 LIFF（如果 SDK 已載入）
+    // 檢查 LIFF SDK 是否載入
+    console.log('LIFF SDK 檢查:', typeof liff);
     if (typeof liff !== 'undefined') {
-        initLiff();
+        console.log('LIFF SDK 已載入，可以使用');
     } else {
-        console.log('LIFF SDK 未載入，請在 LINE 環境中開啟');
+        console.log('LIFF SDK 未載入，將在按鈕點擊時重新檢查');
     }
 });
 </script>
