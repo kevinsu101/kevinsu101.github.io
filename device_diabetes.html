@@ -277,13 +277,7 @@ document.addEventListener('DOMContentLoaded', () => {
             liffTestBtn.addEventListener('click', async () => {
                 liffDataOutput.textContent = '正在獲取資料...';
                 try {
-                    // 確認使用者已登入
-                    if (!liff.isLoggedIn()) {
-                        liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
-                        liff.login(); // 導向登入頁面
-                        return;
-                    }
-
+                    // 直接嘗試獲取用戶資料
                     const profile = await liff.getProfile();
                     const decodedIDToken = liff.getDecodedIDToken();
 
@@ -302,7 +296,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 } catch (err) {
                     console.error('LIFF test error:', err);
-                    liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
+                    // 如果是因為未登入而失敗，嘗試引導用戶登入
+                    if (err.message && err.message.includes('unauthorized')) {
+                        liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
+                        try {
+                            liff.login();
+                        } catch (loginErr) {
+                            liffDataOutput.textContent = `登入失敗：${loginErr.toString()}`;
+                        }
+                    } else {
+                        liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
+                    }
                 }
             });
 
