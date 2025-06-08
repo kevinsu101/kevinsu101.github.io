@@ -189,13 +189,13 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台1</h1>
+    <h1>CGM飯後血糖管理平台</h1>
 
     <div class="navigation-tabs">
         <button id="btn-cgm-upload" class="nav-btn active">CGM資料上傳</button>
-        <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
-        <button id="btn-food-data" class="nav-btn">食物資料</button>
-        <button id="btn-liff-test" class="nav-btn">LIFF測試</button>
+        <!-- <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
+        <button id="btn-food-query" class="nav-btn">食物資料查詢</button>
+        <button id="btn-liff-test" class="nav-btn">LIFF測試</button> -->
     </div>
 
     <div id="section-cgm-upload" class="content-section">
@@ -222,9 +222,35 @@
         <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
     </div>
 
-    <div id="section-food-data" class="content-section" style="display: none;">
-        <h2>食物資料</h2>
-        <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
+    <div id="section-food-query" class="content-section" style="display: none;">
+        <h2>食物資料查詢</h2>
+        <div class="form-group">
+            <label for="searchUserId">請輸入要查詢的使用者 ID：</label>
+            <input type="text" id="searchUserId" placeholder="例如：U7886240be235a1e557cf7f75f89fddbc 或 custom ID">
+        </div>
+        <div class="form-group">
+            <label for="searchType">查詢類型：</label>
+            <select id="searchType">
+                <option value="line_user_id">LINE 使用者 ID</option>
+                <option value="custom_id">自訂 ID（身分證字號）</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="startDate">開始日期（可選）：</label>
+            <input type="date" id="startDate">
+        </div>
+        <div class="form-group">
+            <label for="endDate">結束日期（可選）：</label>
+            <input type="date" id="endDate">
+        </div>
+        <button id="searchFoodBtn" class="submit-btn">查詢食物資料</button>
+        
+        <div id="food-result-container" style="margin-top: 30px;">
+            <h3 style="text-align: center; color: var(--label-color);">查詢結果：</h3>
+            <div id="food-result-output" style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6; min-height: 200px;">
+                <p style="text-align: center; color: #6c757d;">尚未執行查詢...</p>
+            </div>
+        </div>
     </div>
 
     <div id="section-liff-test" class="content-section" style="display: none;">
@@ -247,29 +273,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('=== 頁面載入完成 ===');
     
-    // 等待 LIFF SDK 載入
-    function waitForLiff(maxAttempts = 50, interval = 100) {
-        return new Promise((resolve, reject) => {
-            let attempts = 0;
-            
-            const checkLiff = () => {
-                attempts++;
-                console.log(`檢查 LIFF SDK (第 ${attempts} 次):`, typeof liff);
-                
-                if (typeof liff !== 'undefined' && liff.init) {
-                    console.log('✅ LIFF SDK 載入成功！');
-                    resolve();
-                } else if (attempts >= maxAttempts) {
-                    reject(new Error('LIFF SDK 載入超時，請確認在 LINE 中開啟此頁面'));
-                } else {
-                    setTimeout(checkLiff, interval);
-                }
-            };
-            
-            checkLiff();
-        });
-    }
-    
     // --- Tab Navigation Logic ---
     const navButtons = document.querySelectorAll('.nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
@@ -289,43 +292,37 @@ document.addEventListener('DOMContentLoaded', () => {
     // LIFF 初始化狀態
     let liffInitialized = false;
 
-    // 基本的 LIFF 初始化測試
+    // 檢查是否為真實 LIFF 環境
+    function isLiffAvailable() {
+        return typeof liff !== 'undefined' && liff.init;
+    }
+
+    // LIFF 初始化函數
     function initLiff() {
-        return new Promise(async (resolve, reject) => {
-            try {
-                console.log('=== 開始 LIFF 初始化 ===');
-                
-                // 等待 LIFF SDK 載入
-                await waitForLiff();
-                
-                if (liffInitialized) {
-                    console.log('LIFF 已經初始化過了');
-                    resolve();
-                    return;
-                }
-                
-                liff.init({
-                    liffId: '2007301708-7r2WyMpB'
-                }).then(() => {
-                    console.log('✅ 初始化成功');
-                    liffInitialized = true;
-                    
-                    var os = liff.getOS();
-                    console.log('OS:', os);
-                    console.log('isInClient:', liff.isInClient());
-                    console.log('Language:', liff.getLanguage());
-                    console.log('Version:', liff.getVersion());
-                    
-                    resolve();
-                    
-                }).catch((err) => {
-                    console.log('❌ 初始化失敗:', err);
-                    reject(err);
-                });
-                
-            } catch (err) {
-                reject(err);
+        return new Promise((resolve, reject) => {
+            console.log('=== 開始 LIFF 初始化 ===');
+            
+            if (!isLiffAvailable()) {
+                reject(new Error('非 LINE 環境或 LIFF SDK 未載入'));
+                return;
             }
+            
+            if (liffInitialized) {
+                console.log('LIFF 已經初始化過了');
+                resolve();
+                return;
+            }
+            
+            liff.init({
+                liffId: '2007301708-7r2WyMpB'
+            }).then(() => {
+                console.log('✅ LIFF 初始化成功');
+                liffInitialized = true;
+                resolve();
+            }).catch((err) => {
+                console.log('❌ LIFF 初始化失敗:', err);
+                reject(err);
+            });
         });
     }
 
@@ -336,22 +333,25 @@ document.addEventListener('DOMContentLoaded', () => {
     if (liffTestBtn) {
         liffTestBtn.addEventListener('click', async () => {
             console.log('=== LIFF 測試按鈕被點擊 ===');
-            liffDataOutput.textContent = '正在等待 LIFF SDK 載入...';
+            liffDataOutput.textContent = '正在檢查 LIFF 環境...';
             
             try {
-                // 先初始化 LIFF
+                if (!isLiffAvailable()) {
+                    // Fallback 模式
+                    const fallbackData = {
+                        'Environment': 'Fallback Mode (非 LINE 環境)',
+                        'LIFF Available': false,
+                        'Note': '請在 LINE 中開啟此頁面以獲取真實用戶資料'
+                    };
+                    liffDataOutput.textContent = JSON.stringify(fallbackData, null, 2);
+                    return;
+                }
+
+                // 真實 LIFF 環境
                 await initLiff();
                 
-                liffDataOutput.textContent = '正在獲取 LIFF 資訊...';
-                
-                console.log('LIFF 基本資訊:');
-                console.log('- OS:', liff.getOS());
-                console.log('- Language:', liff.getLanguage());
-                console.log('- Version:', liff.getVersion());
-                console.log('- isInClient:', liff.isInClient());
-                console.log('- isLoggedIn:', liff.isLoggedIn());
-                
                 const basicInfo = {
+                    'Environment': 'Real LIFF',
                     'OS': liff.getOS(),
                     'Language': liff.getLanguage(),
                     'Version': liff.getVersion(),
@@ -366,8 +366,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 liffDataOutput.textContent = `錯誤: ${err.message}`;
             }
         });
-    } else {
-        console.error('找不到 liffTestBtn 元素');
     }
 
     // --- Send User Info to Backend Logic ---
@@ -377,30 +375,39 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sendUserInfoBtn) {
         sendUserInfoBtn.addEventListener('click', async () => {
             console.log('=== 發送按鈕被點擊 ===');
-            sendResultOutput.textContent = '正在等待 LIFF SDK 載入...';
+            sendResultOutput.textContent = '正在檢查環境...';
             
             try {
-                // 先初始化 LIFF
-                await initLiff();
-                
-                sendResultOutput.textContent = '正在獲取用戶資料...';
-                
-                if (!liff.isLoggedIn()) {
-                    sendResultOutput.textContent = '請先登入 LINE';
-                    return;
+                let userData;
+
+                if (!isLiffAvailable()) {
+                    // Fallback 模式
+                    userData = {
+                        userId: 'FALLBACK_USER_ID',
+                        displayName: 'Fallback User (非 LINE 環境)'
+                    };
+                    console.log('使用 Fallback 用戶資料:', userData);
+                } else {
+                    // 真實 LIFF 環境
+                    await initLiff();
+                    
+                    if (!liff.isLoggedIn()) {
+                        sendResultOutput.textContent = '請先登入 LINE';
+                        return;
+                    }
+                    
+                    const profile = await liff.getProfile();
+                    userData = {
+                        userId: profile.userId,
+                        displayName: profile.displayName || 'Unknown User'
+                    };
+                    console.log('使用真實 LIFF 用戶資料:', userData);
                 }
-                
-                const profile = await liff.getProfile();
-                console.log('獲取到的 Profile:', profile);
-                
-                const userData = {
-                    userId: profile.userId,
-                    displayName: profile.displayName || 'Unknown User'
-                };
 
                 // 發送到後端
                 sendResultOutput.textContent = '正在發送到後端...';
                 const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/liff';
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
@@ -422,8 +429,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 sendResultOutput.textContent = `錯誤: ${err.message}`;
             }
         });
-    } else {
-        console.error('找不到 sendUserInfoBtn 元素');
     }
 
     // --- CGM 檔案上傳表單處理 ---
@@ -440,24 +445,32 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
             
             const file = fileEl.files[0];
+            let userId;
 
-            let lineProfile;
             try {
-                // 先初始化 LIFF
-                await initLiff();
-                
-                if (!liff.isLoggedIn()) {
-                    return alert('請先登入 LINE');
+                if (isLiffAvailable()) {
+                    // 真實 LIFF 環境
+                    await initLiff();
+                    
+                    if (!liff.isLoggedIn()) {
+                        return alert('請先登入 LINE');
+                    }
+                    
+                    const lineProfile = await liff.getProfile();
+                    userId = lineProfile.userId;
+                } else {
+                    // Fallback 模式
+                    userId = 'FALLBACK_USER_ID';
+                    console.log('使用 Fallback 用戶 ID');
                 }
-                
-                lineProfile = await liff.getProfile();
             } catch (error) {
-                console.error('Failed to get LINE profile', error);
-                return alert('無法獲取 LINE 使用者資訊，請確認授權。');
+                console.error('獲取用戶資料失敗', error);
+                // 即使失敗也允許上傳，使用 fallback ID
+                userId = 'FALLBACK_USER_ID';
             }
 
             const formData = new FormData();
-            formData.append('userId', lineProfile.userId);
+            formData.append('userId', userId);
             formData.append('username', name);
             formData.append('customId', customId);
             formData.append('file', file);
@@ -482,8 +495,121 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    // --- Food Query Logic ---
+    const searchFoodBtn = document.getElementById('searchFoodBtn');
+    const foodResultOutput = document.getElementById('food-result-output');
+
+    if (searchFoodBtn) {
+        searchFoodBtn.addEventListener('click', async () => {
+            console.log('=== 食物資料查詢按鈕被點擊 ===');
+            
+            const userId = document.getElementById('searchUserId').value.trim();
+            const searchType = document.getElementById('searchType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            
+            if (!userId) {
+                foodResultOutput.innerHTML = '<p style="color: red; text-align: center;">請輸入要查詢的使用者 ID</p>';
+                return;
+            }
+
+            foodResultOutput.innerHTML = '<p style="text-align: center;">正在查詢食物資料...</p>';
+            
+            try {
+                const queryParams = new URLSearchParams({
+                    userId: userId,
+                    searchType: searchType
+                });
+                
+                if (startDate) queryParams.append('startDate', startDate);
+                if (endDate) queryParams.append('endDate', endDate);
+                
+                const endpoint = `https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/query-food?${queryParams}`;
+                
+                const response = await fetch(endpoint, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayFoodResults(result);
+                } else {
+                    throw new Error(result.message || '查詢失敗');
+                }
+
+            } catch (err) {
+                console.error('查詢食物資料錯誤:', err);
+                foodResultOutput.innerHTML = `<p style="color: red; text-align: center;">錯誤: ${err.message}</p>`;
+            }
+        });
+    }
+
+    // 顯示食物查詢結果
+    function displayFoodResults(result) {
+        if (!result.success) {
+            foodResultOutput.innerHTML = `<p style="color: red; text-align: center;">${result.message}</p>`;
+            return;
+        }
+
+        const data = result.data;
+        
+        if (!data || data.length === 0) {
+            foodResultOutput.innerHTML = '<p style="text-align: center; color: #6c757d;">查無資料</p>';
+            return;
+        }
+
+        let tableHtml = `
+            <div style="margin-bottom: 15px;">
+                <strong>查詢結果：</strong>共找到 ${data.length} 筆食物記錄
+            </div>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+                    <thead>
+                        <tr style="background-color: #e9ecef;">
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">時間</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">食物名稱</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">份量</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">熱量(kcal)</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">碳水(g)</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">蛋白質(g)</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">脂肪(g)</th>
+                            <th style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">碳水份數</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        data.forEach(item => {
+            const recordTime = new Date(item.record_timestamp).toLocaleString('zh-TW');
+            tableHtml += `
+                <tr>
+                    <td style="border: 1px solid #dee2e6; padding: 8px;">${recordTime}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px;">${item.food_name || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px;">${item.food_portion || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${item.calories || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${item.carbohydrate || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${item.protein || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${item.fat || '-'}</td>
+                    <td style="border: 1px solid #dee2e6; padding: 8px; text-align: center;">${item.carb_portions || '-'}</td>
+                </tr>
+            `;
+        });
+
+        tableHtml += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+
+        foodResultOutput.innerHTML = tableHtml;
+    }
+
     // 初始檢查
-    console.log('初始 LIFF SDK 檢查:', typeof liff);
+    console.log('LIFF SDK 狀態:', isLiffAvailable() ? '已載入' : '未載入');
 });
 </script>
 
