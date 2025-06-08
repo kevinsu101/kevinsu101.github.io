@@ -245,223 +245,201 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
-    // 等待 LIFF SDK 完全載入
-    let isRealLiff = true;
-    let liffInitialized = false;
+    // 強制等待 LIFF SDK 載入，不使用 fallback
+    console.log('=== LIFF 除錯開始 ===');
+    console.log('1. LIFF SDK 檢查:', typeof liff);
+    console.log('2. LIFF init 方法:', typeof liff?.init);
     
-    // 檢查 LIFF SDK 是否存在並且是真實的 SDK
-    if (typeof liff === 'undefined' || !liff.init) {
-        console.warn('LIFF SDK not found. Running in local fallback mode.');
-        isRealLiff = false;
-        window.liff = {
-            init: () => Promise.resolve(),
-            isInClient: () => false,
-            getProfile: () => Promise.resolve({ 
-                userId: 'U_LOCAL_TEST_ID_12345',
-                displayName: 'Test User',
-                pictureUrl: 'https://via.placeholder.com/100'
-            }),
-            getDecodedIDToken: () => ({
-                sub: 'U_LOCAL_TEST_ID_12345',
-                name: 'Test User',
-                picture: 'https://via.placeholder.com/100'
-            }),
-            getOS: () => 'web',
-            getLanguage: () => 'zh-Hant',
-            getVersion: () => '2.0.0',
-            getContext: () => ({
-                type: 'external',
-                viewType: 'full',
-                userId: 'U_LOCAL_TEST_ID_12345'
-            }),
-            login: () => {
-                console.log('Login called in fallback mode');
-                alert('這是本地測試模式，無法真正登入 LINE');
-            }
-        };
+    // 移除 fallback 邏輯，強制使用真實 LIFF
+    if (typeof liff === 'undefined') {
+        console.error('LIFF SDK 完全沒有載入！');
+        alert('LIFF SDK 沒有載入，請確認在 LINE 中開啟');
+        return;
     }
 
-    // 等待一點時間讓 LIFF SDK 完全載入
-    setTimeout(() => {
-        liff.init({ liffId: '2007301708-7r2WyMpB' })
-            .then(() => {
-                console.log('LIFF initialization succeeded.');
-                liffInitialized = true;
-                
-                // 重新檢查是否為真實的 LIFF 環境
-                if (typeof window.liff !== 'undefined' && window.liff.isInClient) {
-                    const inClient = window.liff.isInClient();
-                    console.log('Final LIFF check:');
-                    console.log('- Is in LINE client:', inClient);
-                    console.log('- LIFF object exists:', !!window.liff);
-                    
-                    if (inClient) {
-                        isRealLiff = true;
-                        console.log('Confirmed: Running in real LIFF environment');
-                    }
-                }
+    // 直接初始化 LIFF
+    console.log('3. 開始初始化 LIFF...');
+    liff.init({ liffId: '2007301708-7r2WyMpB' })
+        .then(() => {
+            console.log('4. LIFF 初始化成功');
+            console.log('5. 環境檢測:');
+            console.log('   - isInClient():', liff.isInClient());
+            console.log('   - getOS():', typeof liff.getOS === 'function' ? liff.getOS() : 'N/A');
+            console.log('   - getVersion():', typeof liff.getVersion === 'function' ? liff.getVersion() : 'N/A');
+            console.log('   - getLanguage():', typeof liff.getLanguage === 'function' ? liff.getLanguage() : 'N/A');
 
-                // --- Tab Navigation Logic ---
-                const navButtons = document.querySelectorAll('.nav-btn');
-                const contentSections = document.querySelectorAll('.content-section');
+            // 嘗試獲取 context
+            try {
+                const context = liff.getContext();
+                console.log('6. LIFF Context:', context);
+            } catch (e) {
+                console.log('6. 無法獲取 Context:', e.message);
+            }
 
-                navButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        navButtons.forEach(btn => btn.classList.remove('active'));
-                        button.classList.add('active');
+            // --- Tab Navigation Logic ---
+            const navButtons = document.querySelectorAll('.nav-btn');
+            const contentSections = document.querySelectorAll('.content-section');
 
-                        const targetSectionId = button.id.replace('btn-', 'section-');
-                        contentSections.forEach(section => {
-                            section.style.display = section.id === targetSectionId ? 'block' : 'none';
-                        });
+            navButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    navButtons.forEach(btn => btn.classList.remove('active'));
+                    button.classList.add('active');
+
+                    const targetSectionId = button.id.replace('btn-', 'section-');
+                    contentSections.forEach(section => {
+                        section.style.display = section.id === targetSectionId ? 'block' : 'none';
                     });
                 });
-
-                // --- LIFF Test Logic ---
-                const liffTestBtn = document.getElementById('liffTestBtn');
-                const liffDataOutput = document.getElementById('liff-data-output');
-
-                liffTestBtn.addEventListener('click', async () => {
-                    liffDataOutput.textContent = '正在獲取資料...';
-                    try {
-                        console.log('Getting profile...');
-                        console.log('Environment check:');
-                        console.log('- LIFF initialized:', liffInitialized);
-                        console.log('- Is in LINE client:', liff.isInClient());
-                        
-                        // 直接嘗試獲取用戶資料
-                        const profile = await liff.getProfile();
-                        console.log('Profile obtained:', profile);
-                        
-                        // 簡化輸出，只顯示用戶ID和姓名
-                        const outputData = {
-                            'Environment': liff.isInClient() ? 'Real LIFF (LINE客戶端)' : 'Real LIFF (外部瀏覽器)',
-                            'User ID': profile.userId,
-                            'Display Name': profile.displayName || 'Unknown User'
-                        };
-
-                        // 將物件轉換為格式化的 JSON 字串並顯示
-                        liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
-
-                    } catch (err) {
-                        console.error('LIFF test error:', err);
-                        // 如果是因為未登入而失敗，嘗試引導用戶登入
-                        if (err.message && err.message.includes('unauthorized')) {
-                            liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
-                            try {
-                                if (typeof liff.login === 'function') {
-                                    liff.login();
-                                } else {
-                                    liffDataOutput.textContent = '登入功能不可用（本地測試模式）';
-                                }
-                            } catch (loginErr) {
-                                liffDataOutput.textContent = `登入失敗：${loginErr.toString()}`;
-                            }
-                        } else {
-                            liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
-                        }
-                    }
-                });
-
-                // --- Send User Info to Backend Logic ---
-                const sendUserInfoBtn = document.getElementById('sendUserInfoBtn');
-                const sendResultOutput = document.getElementById('send-result-output');
-
-                sendUserInfoBtn.addEventListener('click', async () => {
-                    sendResultOutput.textContent = '正在發送用戶資料到後端...';
-                    try {
-                        console.log('Sending user info to backend...');
-                        
-                        // 獲取用戶資料
-                        const profile = await liff.getProfile();
-                        console.log('Profile for sending:', profile);
-                        
-                        // 準備要發送的資料 - 只發送用戶ID和姓名
-                        const userData = {
-                            userId: profile.userId,
-                            displayName: profile.displayName || 'Unknown User'
-                        };
-
-                        console.log('Sending data:', userData);
-
-                        // 發送 POST 請求到後端
-                        const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/liff';
-                        const response = await fetch(endpoint, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify(userData)
-                        });
-
-                        const result = await response.json();
-                        
-                        if (response.ok) {
-                            sendResultOutput.textContent = `發送成功！\n後端回應：\n${JSON.stringify(result, null, 2)}`;
-                            console.log('Backend response:', result);
-                        } else {
-                            throw new Error(result.message || '發送失敗');
-                        }
-
-                    } catch (err) {
-                        console.error('Send user info error:', err);
-                        sendResultOutput.textContent = `發送用戶資料時發生錯誤：\n${err.toString()}`;
-                    }
-                });
-
-                // --- CGM 檔案上傳表單處理 ---
-                const cgmUploadForm = document.getElementById('cgm-upload-form');
-                cgmUploadForm.addEventListener('submit', async (event) => {
-                    event.preventDefault();
-
-                    const name = document.getElementById('cgmPatientName').value.trim();
-                    const customId = document.getElementById('cgmPatientId').value.trim();
-                    const fileEl = document.getElementById('fileInput');
-
-                    if (!name || !customId) return alert('請輸入姓名與身分證字號！');
-                    if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
-                    
-                    const file = fileEl.files[0];
-
-                    let lineProfile;
-                    try {
-                        lineProfile = await liff.getProfile();
-                        console.log('Profile for CGM upload:', lineProfile);
-                    } catch (error) {
-                        console.error('Failed to get LINE profile', error);
-                        return alert('無法獲取 LINE 使用者資訊，請確認授權。');
-                    }
-
-                    const formData = new FormData();
-                    formData.append('userId', lineProfile.userId);
-                    formData.append('username', name);
-                    formData.append('customId', customId);
-                    formData.append('file', file);
-
-                    const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
-
-                    try {
-                        const response = await fetch(endpoint, {
-                            method: 'POST',
-                            body: formData,
-                        });
-                        const result = await response.json();
-                        if (response.ok && result.status === 'ok') {
-                            alert(`CGM 檔案上傳成功！`);
-                        } else {
-                            throw new Error(result.msg || '發生未知錯誤');
-                        }
-                    } catch (error) {
-                        console.error('Error uploading CGM file:', error);
-                        alert(`CGM 檔案上傳失敗：${error.message}`);
-                    }
-                });
-            })
-            .catch(err => {
-                console.error('LIFF initialization failed', err);
-                alert('LIFF 初始化失敗，請確認您在 LINE 環境中開啟此頁面。');
             });
-    }, 500); // 等待 500ms 讓 LIFF SDK 完全載入
+
+            // --- LIFF Test Logic ---
+            const liffTestBtn = document.getElementById('liffTestBtn');
+            const liffDataOutput = document.getElementById('liff-data-output');
+
+            liffTestBtn.addEventListener('click', async () => {
+                liffDataOutput.textContent = '正在獲取資料...';
+                console.log('=== 開始獲取用戶資料 ===');
+                
+                try {
+                    console.log('7. 檢查登入狀態...');
+                    
+                    // 檢查是否需要登入
+                    if (!liff.isLoggedIn()) {
+                        console.log('8. 用戶未登入，嘗試登入...');
+                        liffDataOutput.textContent = '檢測到未登入，正在導向登入頁面...';
+                        liff.login();
+                        return;
+                    }
+                    
+                    console.log('8. 用戶已登入，獲取 Profile...');
+                    const profile = await liff.getProfile();
+                    console.log('9. Profile 獲取成功:', profile);
+                    
+                    // 檢查是否為真實資料
+                    if (profile.userId === 'U_LOCAL_TEST_ID_12345') {
+                        console.error('⚠️ 警告：還是獲取到測試資料！');
+                    }
+                    
+                    const outputData = {
+                        'Environment': liff.isInClient() ? 'Real LIFF (LINE客戶端)' : 'Real LIFF (外部瀏覽器)',
+                        'isLoggedIn': liff.isLoggedIn(),
+                        'User ID': profile.userId,
+                        'Display Name': profile.displayName || 'Unknown User'
+                    };
+
+                    liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
+
+                } catch (err) {
+                    console.error('獲取用戶資料失敗:', err);
+                    liffDataOutput.textContent = `錯誤：${err.message}`;
+                }
+            });
+
+            // --- Send User Info to Backend Logic ---
+            const sendUserInfoBtn = document.getElementById('sendUserInfoBtn');
+            const sendResultOutput = document.getElementById('send-result-output');
+
+            sendUserInfoBtn.addEventListener('click', async () => {
+                sendResultOutput.textContent = '正在發送用戶資料到後端...';
+                
+                try {
+                    // 檢查登入狀態
+                    if (!liff.isLoggedIn()) {
+                        sendResultOutput.textContent = '用戶未登入，無法發送資料';
+                        return;
+                    }
+                    
+                    const profile = await liff.getProfile();
+                    console.log('準備發送的用戶資料:', profile);
+                    
+                    const userData = {
+                        userId: profile.userId,
+                        displayName: profile.displayName || 'Unknown User'
+                    };
+
+                    const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/liff';
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(userData)
+                    });
+
+                    const result = await response.json();
+                    
+                    if (response.ok) {
+                        sendResultOutput.textContent = `發送成功！\n後端回應：\n${JSON.stringify(result, null, 2)}`;
+                    } else {
+                        throw new Error(result.message || '發送失敗');
+                    }
+
+                } catch (err) {
+                    console.error('發送用戶資料錯誤:', err);
+                    sendResultOutput.textContent = `發送失敗：${err.message}`;
+                }
+            });
+
+            // --- CGM 檔案上傳表單處理 ---
+            const cgmUploadForm = document.getElementById('cgm-upload-form');
+            cgmUploadForm.addEventListener('submit', async (event) => {
+                event.preventDefault();
+
+                const name = document.getElementById('cgmPatientName').value.trim();
+                const customId = document.getElementById('cgmPatientId').value.trim();
+                const fileEl = document.getElementById('fileInput');
+
+                if (!name || !customId) return alert('請輸入姓名與身分證字號！');
+                if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
+                
+                const file = fileEl.files[0];
+
+                let lineProfile;
+                try {
+                    if (!liff.isLoggedIn()) {
+                        alert('請先登入 LINE');
+                        return;
+                    }
+                    
+                    lineProfile = await liff.getProfile();
+                } catch (error) {
+                    console.error('Failed to get LINE profile', error);
+                    return alert('無法獲取 LINE 使用者資訊，請確認授權。');
+                }
+
+                const formData = new FormData();
+                formData.append('userId', lineProfile.userId);
+                formData.append('username', name);
+                formData.append('customId', customId);
+                formData.append('file', file);
+
+                const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
+
+                try {
+                    const response = await fetch(endpoint, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    const result = await response.json();
+                    if (response.ok && result.status === 'ok') {
+                        alert(`CGM 檔案上傳成功！`);
+                    } else {
+                        throw new Error(result.msg || '發生未知錯誤');
+                    }
+                } catch (error) {
+                    console.error('Error uploading CGM file:', error);
+                    alert(`CGM 檔案上傳失敗：${error.message}`);
+                }
+            });
+        })
+        .catch(err => {
+            console.error('LIFF 初始化失敗:', err);
+            console.log('可能的原因：');
+            console.log('1. LIFF ID 不正確');
+            console.log('2. LIFF 應用程式設定問題');
+            console.log('3. 不在 LINE 環境中開啟');
+            alert(`LIFF 初始化失敗：${err.message}`);
+        });
 });
 </script>
 
