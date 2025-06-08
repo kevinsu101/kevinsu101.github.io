@@ -1,69 +1,362 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSV 上傳至 Flask</title>
-  <script defer src="https://static.line-scdn.net/liff/edge/3/sdk.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGM飯後血糖管理平台</title>
+    <script defer src="https://static.line-scdn.net/liff/edge/3/sdk.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-start: #74d2ff;
+            --bg-color-end: #87CEEB;
+            --container-bg: #ffffff;
+            --text-color: #3d3d3d;
+            --label-color: #5a5a5a;
+            --input-bg: #f8f9fa;
+            --input-border: #ced4da;
+            --input-focus-border: #ffc107;
+            --button-bg: #ff9900;
+            --button-hover-bg: #ffaf33;
+            --button-text: #ffffff;
+            --title-color: #2c5282;
+            --border-gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 30px 40px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 600px;
+            border: 3px solid var(--border-gold);
+        }
+
+        h1, h2 {
+            text-align: center;
+            font-weight: 700;
+        }
+
+        h1 {
+            font-size: 2em;
+            margin-bottom: 20px;
+            color: var(--title-color);
+        }
+
+        h2 {
+            font-size: 1.5em;
+            margin-top: 20px;
+            margin-bottom: 30px;
+            color: var(--label-color);
+        }
+        
+        .navigation-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--border-gold);
+            padding-bottom: 15px;
+        }
+
+        .nav-btn {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: 500;
+            color: var(--label-color);
+            background-color: transparent;
+            border: none;
+            border-bottom: 4px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-color);
+            background-color: #fff9e6;
+        }
+
+        .nav-btn.active {
+            color: var(--button-bg);
+            border-bottom-color: var(--button-bg);
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--label-color);
+            font-size: 1.1em;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.2em;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1.1em;
+            color: var(--label-color);
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+        }
+        
+        input[type="file"]::file-selector-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 15px;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--button-text);
+            background: linear-gradient(180deg, var(--button-hover-bg), var(--button-bg));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        #liff-data-output {
+            background-color: #e9ecef;
+            color: #333;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+    </style>
 </head>
 <body>
-  <h2>上傳 CSV 至 Flask</h2>
-  <label>使用者名稱：<input type="text" id="username" placeholder="若無則留空" /></label><br/><br/>
-  <label>使用者 ID：<input type="text" id="userIdInput" placeholder="若無則留空" /></label><br/><br/>
-  <input type="file" id="fileInput" accept=".csv" /><br/><br/>
-  <button id="uploadBtn">送出至 /uploadcsv</button>
 
-  <script defer>
-    document.addEventListener('DOMContentLoaded', () => {
-      // LIFF 初始化
-      if (typeof liff === 'undefined') {
+<div class="container">
+    <h1>CGM飯後血糖管理平台</h1>
+
+    <div class="navigation-tabs">
+        <button id="btn-cgm-upload" class="nav-btn active">CGM資料上傳</button>
+        <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
+        <button id="btn-food-data" class="nav-btn">食物資料</button>
+        <button id="btn-liff-test" class="nav-btn">LIFF測試</button>
+    </div>
+
+    <div id="section-cgm-upload" class="content-section">
+        <form id="cgm-upload-form">
+            <h2>上傳 CGM 資料</h2>
+            <div class="form-group">
+                <label for="cgmPatientName">姓名</label>
+                <input type="text" id="cgmPatientName" required>
+            </div>
+            <div class="form-group">
+                <label for="cgmPatientId">身分證字號</label>
+                <input type="text" id="cgmPatientId" required>
+            </div>
+            <div class="form-group">
+                <label for="fileInput">選擇 CSV 檔案</label>
+                <input type="file" id="fileInput" accept=".csv" required>
+            </div>
+            <button type="submit" id="cgmUploadBtn" class="submit-btn">上傳 CGM 檔案</button>
+        </form>
+    </div>
+
+    <div id="section-cgm-analysis" class="content-section" style="display: none;">
+        <h2>CGM資料與分析</h2>
+        <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
+    </div>
+
+    <div id="section-food-data" class="content-section" style="display: none;">
+        <h2>食物資料</h2>
+        <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
+    </div>
+
+    <div id="section-liff-test" class="content-section" style="display: none;">
+        <h2>LIFF 使用者資料測試</h2>
+        <p style="text-align: center; padding-bottom: 10px;">點擊下方按鈕以獲取並顯示您的 LINE 使用者資訊。</p>
+        <button id="liffTestBtn" class="submit-btn">獲取 LIFF 資料</button>
+        <div id="liff-output-container" style="margin-top: 20px;">
+            <h3 style="text-align: center; color: var(--label-color);">獲取到的資料：</h3>
+            <pre id="liff-data-output">尚未獲取資料...</pre>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // 檢查 liff 是否已定義
+    if (typeof liff === 'undefined') {
+        console.warn('LIFF SDK not found. Running in local fallback mode.');
         window.liff = {
-          init: () => Promise.resolve(),
-          getProfile: () => Promise.resolve({ userId: 'LOCAL_ID', displayName: 'LOCAL_NAME' })
+            init: () => Promise.resolve(),
+            isInClient: () => false,
+            getProfile: () => Promise.resolve({ userId: 'U_LOCAL_TEST_ID_12345' })
         };
-      }
-      liff.init({ liffId: '2007301708-7r2WyMpB' }).then(() => {
-        document.getElementById('uploadBtn').addEventListener('click', async () => {
-          const manualUserId = document.getElementById('userIdInput').value.trim();
-          const customName   = document.getElementById('username').value.trim();
-          const fileEl       = document.getElementById('fileInput');
-          if (!fileEl.files.length) return alert('請先選擇 CSV 檔');
-          const file = fileEl.files[0];
+    }
 
-          // 取得 LINE profile
-          let profile = {};
-          try { profile = await liff.getProfile(); }
-          catch { return alert('無法取得 LINE 資訊'); }
-
-          const finalUserId = manualUserId || profile.userId;
-          const finalName   = customName   || profile.displayName;
-
-          // 準備表單
-          const form = new FormData();
-          form.append('userId', finalUserId);
-          form.append('username', finalName);
-          form.append('file', file);
-
-          // 發送到 Flask /uploadcsv
-          fetch('https://e397-2001-288-7001-10d7-3d04-b4c7-bd49-3645.ngrok-free.app/uploadcsv', {
-            method: 'POST',
-            body: form
-          })
-          .then(res => res.json())
-          .then(json => {
-            if (json.status === 'ok') {
-              alert(`上傳成功！使用者 ID：${json.userId}\n名稱：${json.username}`);
-            } else {
-              alert('上傳失敗：' + json.msg);
-            }
-          })
-          .catch(err => {
-            console.error(err);
-            alert('網路或伺服器錯誤');
-          });
+    liff.init({ liffId: '2007301708-7r2WyMpB' })
+        .then(() => console.log('LIFF initialization succeeded.'))
+        .catch(err => {
+            console.error('LIFF initialization failed', err);
+            alert('LIFF 初始化失敗，請確認您在 LINE 環境中開啟此頁面。');
         });
-      });
+
+    // --- Tab Navigation Logic ---
+    const navButtons = document.querySelectorAll('.nav-btn');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const targetSectionId = button.id.replace('btn-', 'section-');
+            contentSections.forEach(section => {
+                section.style.display = section.id === targetSectionId ? 'block' : 'none';
+            });
+        });
     });
-  </script>
+
+    // --- LIFF Test Logic ---
+    const liffTestBtn = document.getElementById('liffTestBtn');
+    const liffDataOutput = document.getElementById('liff-data-output');
+
+    liffTestBtn.addEventListener('click', async () => {
+        liffDataOutput.textContent = '正在獲取資料...';
+        try {
+            // 確認使用者已登入
+            if (!liff.isLoggedIn()) {
+                liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
+                liff.login(); // 導向登入頁面
+                return;
+            }
+
+            const profile = await liff.getProfile();
+            const decodedIDToken = liff.getDecodedIDToken();
+
+            const outputData = {
+                'liff.getProfile()': profile,
+                'liff.getDecodedIDToken()': decodedIDToken,
+                'liff.getOS()': liff.getOS(),
+                'liff.getLanguage()': liff.getLanguage(),
+                'liff.getVersion()': liff.getVersion(),
+                'liff.getContext()': liff.getContext(),
+                'liff.isInClient()': liff.isInClient(),
+            };
+
+            // 將物件轉換為格式化的 JSON 字串並顯示
+            liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
+
+        } catch (err) {
+            console.error('LIFF test error:', err);
+            liffDataOutput.textContent = `獲取資料時發生錯誤：\n${err.toString()}`;
+        }
+    });
+
+    // --- CGM 檔案上傳表單處理 ---
+    const cgmUploadForm = document.getElementById('cgm-upload-form');
+    cgmUploadForm.addEventListener('submit', async (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('cgmPatientName').value.trim();
+        const customId = document.getElementById('cgmPatientId').value.trim();
+        const fileEl = document.getElementById('fileInput');
+
+        if (!name || !customId) return alert('請輸入姓名與身分證字號！');
+        if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
+        
+        const file = fileEl.files[0];
+
+        let lineProfile;
+        try {
+            lineProfile = await liff.getProfile();
+        } catch (error) {
+            console.error('Failed to get LINE profile', error);
+            return alert('無法獲取 LINE 使用者資訊，請確認授權。');
+        }
+
+        const formData = new FormData();
+        formData.append('userId', lineProfile.userId);
+        formData.append('username', name);
+        formData.append('customId', customId);
+        formData.append('file', file);
+
+        const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
+
+        try {
+            const response = await fetch(endpoint, {
+                method: 'POST',
+                body: formData,
+            });
+            const result = await response.json();
+            if (response.ok && result.status === 'ok') {
+                alert(`CGM 檔案上傳成功！`);
+            } else {
+                throw new Error(result.msg || '發生未知錯誤');
+            }
+        } catch (error) {
+            console.error('Error uploading CGM file:', error);
+            alert(`CGM 檔案上傳失敗：${error.message}`);
+        }
+    });
+});
+</script>
+
 </body>
 </html>
