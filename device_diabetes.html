@@ -246,7 +246,28 @@ document.addEventListener('DOMContentLoaded', () => {
         window.liff = {
             init: () => Promise.resolve(),
             isInClient: () => false,
-            getProfile: () => Promise.resolve({ userId: 'U_LOCAL_TEST_ID_12345' })
+            getProfile: () => Promise.resolve({ 
+                userId: 'U_LOCAL_TEST_ID_12345',
+                displayName: 'Test User',
+                pictureUrl: 'https://via.placeholder.com/100'
+            }),
+            getDecodedIDToken: () => ({
+                sub: 'U_LOCAL_TEST_ID_12345',
+                name: 'Test User',
+                picture: 'https://via.placeholder.com/100'
+            }),
+            getOS: () => 'web',
+            getLanguage: () => 'zh-Hant',
+            getVersion: () => '2.0.0',
+            getContext: () => ({
+                type: 'external',
+                viewType: 'full',
+                userId: 'U_LOCAL_TEST_ID_12345'
+            }),
+            login: () => {
+                console.log('Login called in fallback mode');
+                alert('這是本地測試模式，無法真正登入 LINE');
+            }
         };
     }
 
@@ -279,17 +300,60 @@ document.addEventListener('DOMContentLoaded', () => {
                 try {
                     // 直接嘗試獲取用戶資料
                     const profile = await liff.getProfile();
-                    const decodedIDToken = liff.getDecodedIDToken();
-
+                    
+                    // 安全地調用各種 LIFF 方法
                     const outputData = {
-                        'liff.getProfile()': profile,
-                        'liff.getDecodedIDToken()': decodedIDToken,
-                        'liff.getOS()': liff.getOS(),
-                        'liff.getLanguage()': liff.getLanguage(),
-                        'liff.getVersion()': liff.getVersion(),
-                        'liff.getContext()': liff.getContext(),
-                        'liff.isInClient()': liff.isInClient(),
+                        'liff.getProfile()': profile
                     };
+
+                    // 安全地嘗試調用其他方法
+                    try {
+                        outputData['liff.getDecodedIDToken()'] = typeof liff.getDecodedIDToken === 'function' 
+                            ? liff.getDecodedIDToken() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.getDecodedIDToken()'] = 'Error: ' + e.message;
+                    }
+
+                    try {
+                        outputData['liff.getOS()'] = typeof liff.getOS === 'function' 
+                            ? liff.getOS() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.getOS()'] = 'Error: ' + e.message;
+                    }
+
+                    try {
+                        outputData['liff.getLanguage()'] = typeof liff.getLanguage === 'function' 
+                            ? liff.getLanguage() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.getLanguage()'] = 'Error: ' + e.message;
+                    }
+
+                    try {
+                        outputData['liff.getVersion()'] = typeof liff.getVersion === 'function' 
+                            ? liff.getVersion() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.getVersion()'] = 'Error: ' + e.message;
+                    }
+
+                    try {
+                        outputData['liff.getContext()'] = typeof liff.getContext === 'function' 
+                            ? liff.getContext() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.getContext()'] = 'Error: ' + e.message;
+                    }
+
+                    try {
+                        outputData['liff.isInClient()'] = typeof liff.isInClient === 'function' 
+                            ? liff.isInClient() 
+                            : 'Method not available';
+                    } catch (e) {
+                        outputData['liff.isInClient()'] = 'Error: ' + e.message;
+                    }
 
                     // 將物件轉換為格式化的 JSON 字串並顯示
                     liffDataOutput.textContent = JSON.stringify(outputData, null, 2);
@@ -300,7 +364,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (err.message && err.message.includes('unauthorized')) {
                         liffDataOutput.textContent = '您尚未登入 LINE，將為您導向登入頁面...';
                         try {
-                            liff.login();
+                            if (typeof liff.login === 'function') {
+                                liff.login();
+                            } else {
+                                liffDataOutput.textContent = '登入功能不可用（本地測試模式）';
+                            }
                         } catch (loginErr) {
                             liffDataOutput.textContent = `登入失敗：${loginErr.toString()}`;
                         }
