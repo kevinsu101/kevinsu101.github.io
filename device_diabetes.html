@@ -2,48 +2,58 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <title>LIFF LogViewer2</title>
+  <title>LIFF v3 Profile 測試</title>
+  <!-- 1. 載入 v3 SDK，一定要是 edge/3 -->
   <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
   <style>
-    #logPanel {
-      white-space: pre-wrap;
-      background: #f7f7f7;
-      border: 1px solid #ccc;
-      padding: 10px;
-      height: 200px;
-      overflow-y: scroll;
-      font-family: monospace;
-      margin-top: 10px;
-    }
+    body { font-family: Arial, sans-serif; padding: 20px; }
+    #log { white-space: pre-wrap; background: #f7f7f7; padding:10px; height:200px; overflow-y: auto; }
   </style>
 </head>
 <body>
-  <h1>LIFF 除錯 LogViewer</h1>
-  <div id="logPanel"></div>
+  <h1>LIFF v3 Profile 測試</h1>
+  <div id="log"></div>
 
   <script>
-    // 攔截 console.log，順便往 #logPanel 印
-    (function(){
-      const oldLog = console.log;
-      console.log = function(...args){
-        oldLog.apply(console, args);
-        const panel = document.getElementById('logPanel');
-        if (panel) {
-          const txt = args.map(a =>
-            (typeof a==='object' ? JSON.stringify(a,null,2) : a)
-          ).join(' ');
-          panel.textContent += txt + '\n';
-          panel.scrollTop = panel.scrollHeight;
-        }
-      };
-    })();
+    // 小 helper：把訊息印到畫面上
+    function lg(...args) {
+      console.log(...args);
+      const d = document.getElementById('log');
+      d.textContent += args.map(a =>
+        typeof a==='object' ? JSON.stringify(a,null,2) : a
+      ).join(' ') + '\n';
+      d.scrollTop = d.scrollHeight;
+    }
 
-    // LIFF 初始化範例
-    liff.init({ liffId: '2007301708-m51Qed5Y' })
-      .then(() => console.log('LIFF 初始化成功'))
-      .catch(err => console.log('LIFF 初始化失敗', err));
+    window.addEventListener('DOMContentLoaded', () => {
+      lg('→ DOMContentLoaded，開始 liff.init()');
 
-    // 之後你所有 console.log 都會在畫面上顯示
+      // 2. 呼叫 init，一定要在 SDK 載完後才呼
+      liff.init({ liffId: '2007301708-m51Qed5Y' })
+        .then(() => {
+          lg('✅ liff.init 成功');
+
+          if (!liff.isLoggedIn()) {
+            lg('🔐 尚未登入，呼叫 liff.login()');
+            return liff.login();
+          }
+        })
+        .then(() => {
+          lg('📡 呼叫 liff.getProfile()');
+          return liff.getProfile();
+        })
+        .then(profile => {
+          if (!profile) return;
+          lg('👤 getProfile 回傳：', profile);
+          lg('   displayName:', profile.displayName);
+          lg('   userId:     ', profile.userId);
+          lg('   pictureUrl: ', profile.pictureUrl);
+        })
+        .catch(err => {
+          console.error(err);
+          lg('❌ 初始化或取得 Profile 失敗：', err);
+        });
+    });
   </script>
 </body>
 </html>
