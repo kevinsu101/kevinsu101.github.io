@@ -2,57 +2,48 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LIFF 前端互動測試</title>
-  <!-- LIFF SDK -->
+  <title>LIFF LogViewer1</title>
   <script src="https://static.line-scdn.net/liff/edge/3/sdk.js"></script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; }
-    #profile img { border-radius: 50%; width: 80px; height: 80px; }
-    #profile div { margin-top: 10px; }
+    #logPanel {
+      white-space: pre-wrap;
+      background: #f7f7f7;
+      border: 1px solid #ccc;
+      padding: 10px;
+      height: 200px;
+      overflow-y: scroll;
+      font-family: monospace;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
-  <h1>LIFF 前端互動測試</h1>
-  <p id="status">正在初始化 LIFF…</p>
-
-  <div id="profile" style="display:none;">
-    <h2>使用者資訊</h2>
-    <img id="avatar" src="" alt="大頭照"/>
-    <div><strong>名稱：</strong><span id="name"></span></div>
-    <div><strong>User ID：</strong><span id="userId"></span></div>
-  </div>
+  <h1>LIFF 除錯 LogViewer</h1>
+  <div id="logPanel"></div>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      // 1. 初始化 LIFF
-      liff.init({ liffId: '2007301708-m51Qed5Y' })
-        .then(() => {
-          document.getElementById('status').innerText = 'LIFF 初始化成功！';
+    // 攔截 console.log，順便往 #logPanel 印
+    (function(){
+      const oldLog = console.log;
+      console.log = function(...args){
+        oldLog.apply(console, args);
+        const panel = document.getElementById('logPanel');
+        if (panel) {
+          const txt = args.map(a =>
+            (typeof a==='object' ? JSON.stringify(a,null,2) : a)
+          ).join(' ');
+          panel.textContent += txt + '\n';
+          panel.scrollTop = panel.scrollHeight;
+        }
+      };
+    })();
 
-          // 2. 如果未登入，導到登入
-          if (!liff.isLoggedIn()) {
-            document.getElementById('status').innerText = '請先登入 LINE…';
-            return liff.login();
-          }
-          
-          // 3. 已登入，取得 profile
-          return liff.getProfile();
-        })
-        .then(profile => {
-          if (!profile) return;
-          // 4. 顯示資訊
-          document.getElementById('status').style.display = 'none';
-          document.getElementById('profile').style.display = 'block';
-          document.getElementById('avatar').src    = profile.pictureUrl;
-          document.getElementById('name').innerText   = profile.displayName;
-          document.getElementById('userId').innerText = profile.userId;
-        })
-        .catch(err => {
-          console.error(err);
-          document.getElementById('status').innerText = 'LIFF 初始化或取得資料失敗';
-        });
-    });
+    // LIFF 初始化範例
+    liff.init({ liffId: 'YOUR_LIFF_ID' })
+      .then(() => console.log('LIFF 初始化成功'))
+      .catch(err => console.log('LIFF 初始化失敗', err));
+
+    // 之後你所有 console.log 都會在畫面上顯示
   </script>
 </body>
 </html>
