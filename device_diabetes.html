@@ -242,6 +242,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     console.log('=== 頁面載入完成 ===');
     
+    // 全域變數儲存用戶資料
+    let globalUserId = null;
+    let globalUserProfile = null;
+
     // --- Tab Navigation Logic ---
     const navButtons = document.querySelectorAll('.nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
@@ -296,8 +300,11 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('   getProfile 回傳：', profile);
             console.log('   displayName:', profile.displayName);
             console.log('   userId:     ', profile.userId);
-            console.log('   pictureUrl: ', profile.pictureUrl);
             console.log('   statusMessage:', profile.statusMessage);
+
+            // 儲存到全域變數
+            globalUserId = profile.userId;
+            globalUserProfile = profile;
 
             return profile;
         } catch (err) {
@@ -306,6 +313,33 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 自動執行登入流程
+    async function autoLogin() {
+        try {
+            console.log('=== 自動登入開始 ===');
+            
+            const isLoggedIn = await initLiffAndLogin();
+            
+            if (!isLoggedIn) {
+                console.log('導向登入頁面...');
+                return;
+            }
+
+            // 獲取用戶資料
+            await getProfileData();
+            console.log('=== 自動登入完成，userId:', globalUserId, '===');
+            
+        } catch (err) {
+            console.error('自動登入失敗:', err);
+            // 使用 fallback ID
+            globalUserId = 'FALLBACK_USER_ID';
+            console.log('使用 Fallback User ID');
+        }
+    }
+
+    // 頁面載入時自動執行登入
+    autoLogin();
+
     // --- LIFF 測試 ---
     const liffTestBtn = document.getElementById('liffTestBtn');
     const liffDataOutput = document.getElementById('liff-data-output');
@@ -313,27 +347,19 @@ document.addEventListener('DOMContentLoaded', () => {
     if (liffTestBtn) {
         liffTestBtn.addEventListener('click', async () => {
             console.log('=== LIFF 測試按鈕被點擊 ===');
-            liffDataOutput.textContent = '正在初始化 LIFF...';
+            
+            if (!globalUserProfile) {
+                liffDataOutput.textContent = '尚未取得用戶資料，請重新整理頁面';
+                return;
+            }
             
             try {
-                // 初始化和登入
-                const isLoggedIn = await initLiffAndLogin();
-                
-                if (!isLoggedIn) {
-                    liffDataOutput.textContent = '正在導向登入頁面...';
-                    return;
-                }
-
-                // 獲取用戶資料
-                liffDataOutput.textContent = '正在獲取用戶資料...';
-                const profile = await getProfileData();
-                
-                // 顯示用戶資訊
+                // 顯示已取得的用戶資訊
                 const userInfo = {
-                    'User ID': profile.userId,
-                    'Display Name': profile.displayName || 'Unknown',
-                    'Status Message': profile.statusMessage || 'No status',
-                    'Picture URL': profile.pictureUrl || 'No picture',
+                    'User ID': globalUserProfile.userId,
+                    'Display Name': globalUserProfile.displayName || 'Unknown',
+                    'Status Message': globalUserProfile.statusMessage || 'No status',
+                    'Picture URL': globalUserProfile.pictureUrl || 'No picture',
                     'Environment': `LIFF ${liff.getVersion()}`,
                     'OS': liff.getOS(),
                     'Language': liff.getLanguage(),
@@ -364,21 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
             
             const file = fileEl.files[0];
-            let userId = 'FALLBACK_USER_ID';
-
-            try {
-                // 嘗試獲取 LIFF 用戶 ID
-                const initSuccess = await initLiffAndLogin();
-                if (initSuccess && liff.isLoggedIn()) {
-                    const profile = await getProfileData();
-                    userId = profile.userId;
-                    console.log('使用 LIFF 用戶 ID:', userId);
-                } else {
-                    console.log('使用 Fallback 用戶 ID');
-                }
-            } catch (error) {
-                console.error('獲取用戶資料失敗', error);
-            }
+            
+            // 直接使用全域的 userId
+            const userId = globalUserId || 'FALLBACK_USER_ID';
+            console.log('上傳檔案使用的 User ID:', userId);
 
             const formData = new FormData();
             formData.append('userId', userId);
