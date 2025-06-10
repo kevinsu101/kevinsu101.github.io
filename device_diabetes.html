@@ -209,15 +209,15 @@
                 <h3 style="color: var(--title-color); margin-bottom: 20px;">主要功能</h3>
                 <div style="display: grid; gap: 15px; text-align: left;">
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong>📊 CGM 資料上傳</strong><br>
+                        <strong> CGM 資料上傳</strong><br>
                         <span style="color: #666;">上傳您的連續血糖監測 CSV 檔案</span>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong>📈 資料分析</strong><br>
+                        <strong> 資料分析</strong><br>
                         <span style="color: #666;">智能分析血糖變化趨勢與模式</span>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong>🤖 AI 食物辨識</strong><br>
+                        <strong> AI 食物辨識</strong><br>
                         <span style="color: #666;">自動識別食物並估算營養成分</span>
                     </div>
                 </div>
@@ -279,7 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let globalUserId = null;
     let globalUserProfile = null;
 
-    // --- Tab Navigation Logic ---
+    // ------------------------- Tab Navigation Logic -------------------------
     const navButtons = document.querySelectorAll('.nav-btn');
     const contentSections = document.querySelectorAll('.content-section');
 
@@ -378,7 +378,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 頁面載入時自動執行登入
     autoLogin();
 
-    // --- LIFF 測試 ---
+    // ------------------------- LIFF 測試 -------------------------
     const liffTestBtn = document.getElementById('liffTestBtn');
     const liffDataOutput = document.getElementById('liff-data-output');
 
@@ -414,7 +414,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- CGM 檔案上傳表單處理 ---
+    // ------------------------- CGM 檔案上傳表單處理 -------------------------
     const cgmUploadForm = document.getElementById('cgm-upload-form');
     if (cgmUploadForm) {
         cgmUploadForm.addEventListener('submit', async (event) => {
@@ -463,7 +463,7 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchUserData() {
         if (!globalUserId) {
             document.getElementById('user-info-status').innerHTML = 
-                '<span style="color: red;">⚠️ 尚未取得用戶 ID，請重新整理頁面</span>';
+                '<span style="color: red;"> 尚未取得用戶 ID，請重新整理頁面</span>';
             return;
         }
 
@@ -488,12 +488,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.getElementById('cgmPatientId').value = result.data.custom_id || '';
                 
                 document.getElementById('user-info-status').innerHTML = 
-                    `<span style="color: green;">✅ 已自動填入用戶資料：${result.data.patient_name}</span>`;
+                    `<span style="color: green;"> 已自動填入用戶資料：${result.data.patient_name}</span>`;
                 
                 console.log('用戶資料查詢成功:', result.data);
             } else {
                 document.getElementById('user-info-status').innerHTML = 
-                    `<span style="color: orange;">⚠️ ${result.message}</span>`;
+                    `<span style="color: orange;"> ${result.message}</span>`;
                 
                 // 如果查詢失敗，允許手動輸入
                 document.getElementById('cgmPatientName').removeAttribute('readonly');
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             console.error('查詢用戶資料失敗:', error);
             document.getElementById('user-info-status').innerHTML = 
-                '<span style="color: red;">❌ 查詢用戶資料失敗，請手動輸入</span>';
+                '<span style="color: red;"> 查詢用戶資料失敗，請手動輸入</span>';
             
             // 允許手動輸入
             document.getElementById('cgmPatientName').removeAttribute('readonly');
