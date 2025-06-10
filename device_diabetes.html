@@ -143,23 +143,27 @@
 
         input[type="file"] {
             width: 100%;
-            padding: 10px;
-            font-size: 1.1em;
+            padding: 8px;
+            font-size: 0.95em;
             color: var(--label-color);
             background-color: var(--input-bg);
             border: 1px solid var(--input-border);
             border-radius: 8px;
+            box-sizing: border-box;
+            overflow: hidden;
         }
         
         input[type="file"]::file-selector-button {
             background-color: var(--button-bg);
             color: var(--button-text);
             border: none;
-            padding: 10px 15px;
+            padding: 8px 12px;
             border-radius: 6px;
             cursor: pointer;
             transition: background-color 0.3s;
             font-weight: 500;
+            font-size: 0.9em;
+            margin-right: 8px;
         }
 
         input[type="file"]::file-selector-button:hover {
@@ -232,6 +236,11 @@
                 padding: 0 3px 8px 3px;
             }
             
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            
             .form-group {
                 margin-bottom: 15px;
             }
@@ -247,6 +256,17 @@
                 font-size: 1em;
             }
             
+            input[type="file"] {
+                padding: 6px;
+                font-size: 0.85em;
+            }
+            
+            input[type="file"]::file-selector-button {
+                padding: 6px 10px;
+                font-size: 0.85em;
+                margin-right: 6px;
+            }
+            
             .submit-btn {
                 padding: 12px;
                 font-size: 1.1em;
@@ -257,6 +277,37 @@
                 margin-bottom: 15px !important;
                 padding: 8px !important;
                 font-size: 0.9em;
+            }
+            
+            /* 首頁功能介紹區塊優化 */
+            .content-section div[style*="padding: 40px 20px"] {
+                padding: 20px 10px !important;
+            }
+            
+            .content-section div[style*="padding: 25px"] {
+                padding: 15px !important;
+                margin: 15px 0 !important;
+            }
+            
+            .content-section div[style*="padding: 10px"] {
+                padding: 8px !important;
+            }
+            
+            .content-section p[style*="font-size: 1.3em"] {
+                font-size: 1.1em !important;
+                margin-bottom: 20px !important;
+            }
+            
+            /* LIFF 測試區塊優化 */
+            #liff-data-output {
+                font-size: 0.85em;
+                padding: 10px;
+                word-break: break-all;
+            }
+            
+            #liff-output-container h3 {
+                font-size: 1em;
+                margin-bottom: 10px;
             }
         }
 
