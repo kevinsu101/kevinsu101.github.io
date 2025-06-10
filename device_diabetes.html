@@ -192,22 +192,55 @@
     <h1>CGM飯後血糖管理平台</h1>
 
     <div class="navigation-tabs">
-        <button id="btn-cgm-upload" class="nav-btn active">CGM資料上傳</button>
+        <button id="btn-home" class="nav-btn active">首頁</button>
+        <button id="btn-cgm-upload" class="nav-btn">CGM資料上傳</button>
         <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
         <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
         <button id="btn-liff-test" class="nav-btn">LIFF測試</button>
     </div>
 
-    <div id="section-cgm-upload" class="content-section">
+    <div id="section-home" class="content-section">
+        <h2>歡迎使用 CGM 飯後血糖管理平台</h2>
+        <div style="text-align: center; padding: 40px 20px;">
+            <p style="font-size: 1.3em; color: var(--label-color); margin-bottom: 30px;">
+                🩺 專業的連續血糖監測管理系統
+            </p>
+            <div style="background-color: #f8f9fa; padding: 25px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: var(--title-color); margin-bottom: 20px;">主要功能</h3>
+                <div style="display: grid; gap: 15px; text-align: left;">
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong>📊 CGM 資料上傳</strong><br>
+                        <span style="color: #666;">上傳您的連續血糖監測 CSV 檔案</span>
+                    </div>
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong>📈 資料分析</strong><br>
+                        <span style="color: #666;">智能分析血糖變化趨勢與模式</span>
+                    </div>
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong>🤖 AI 食物辨識</strong><br>
+                        <span style="color: #666;">自動識別食物並估算營養成分</span>
+                    </div>
+                </div>
+            </div>
+            <p style="color: #666; margin-top: 30px;">
+                請選擇上方功能開始使用
+            </p>
+        </div>
+    </div>
+
+    <div id="section-cgm-upload" class="content-section" style="display: none;">
         <form id="cgm-upload-form">
             <h2>上傳 CGM 資料</h2>
+            <div id="user-info-status" style="margin-bottom: 20px; padding: 10px; border-radius: 6px; background-color: #e9ecef; text-align: center;">
+                正在查詢用戶資料...
+            </div>
             <div class="form-group">
                 <label for="cgmPatientName">姓名</label>
-                <input type="text" id="cgmPatientName" required>
+                <input type="text" id="cgmPatientName" required readonly>
             </div>
             <div class="form-group">
                 <label for="cgmPatientId">身分證字號</label>
-                <input type="text" id="cgmPatientId" required>
+                <input type="text" id="cgmPatientId" required readonly>
             </div>
             <div class="form-group">
                 <label for="fileInput">選擇 CSV 檔案</label>
@@ -259,6 +292,11 @@ document.addEventListener('DOMContentLoaded', () => {
             contentSections.forEach(section => {
                 section.style.display = section.id === targetSectionId ? 'block' : 'none';
             });
+
+            // 當切換到 CGM 上傳頁面時，自動查詢用戶資料
+            if (targetSectionId === 'section-cgm-upload') {
+                fetchUserData();
+            }
         });
     });
 
@@ -419,6 +457,58 @@ document.addEventListener('DOMContentLoaded', () => {
                 alert(`CGM 檔案上傳失敗：${error.message}`);
             }
         });
+    }
+
+    // 查詢用戶資料並自動填入表單
+    async function fetchUserData() {
+        if (!globalUserId) {
+            document.getElementById('user-info-status').innerHTML = 
+                '<span style="color: red;">⚠️ 尚未取得用戶 ID，請重新整理頁面</span>';
+            return;
+        }
+
+        try {
+            document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
+            
+            const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ask_user_name_and_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: globalUserId
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // 自動填入表單欄位
+                document.getElementById('cgmPatientName').value = result.data.patient_name || '';
+                document.getElementById('cgmPatientId').value = result.data.custom_id || '';
+                
+                document.getElementById('user-info-status').innerHTML = 
+                    `<span style="color: green;">✅ 已自動填入用戶資料：${result.data.patient_name}</span>`;
+                
+                console.log('用戶資料查詢成功:', result.data);
+            } else {
+                document.getElementById('user-info-status').innerHTML = 
+                    `<span style="color: orange;">⚠️ ${result.message}</span>`;
+                
+                // 如果查詢失敗，允許手動輸入
+                document.getElementById('cgmPatientName').removeAttribute('readonly');
+                document.getElementById('cgmPatientId').removeAttribute('readonly');
+            }
+            
+        } catch (error) {
+            console.error('查詢用戶資料失敗:', error);
+            document.getElementById('user-info-status').innerHTML = 
+                '<span style="color: red;">❌ 查詢用戶資料失敗，請手動輸入</span>';
+            
+            // 允許手動輸入
+            document.getElementById('cgmPatientName').removeAttribute('readonly');
+            document.getElementById('cgmPatientId').removeAttribute('readonly');
+        }
     }
 
     console.log('頁面初始化完成');
