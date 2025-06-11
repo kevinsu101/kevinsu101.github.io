@@ -352,6 +352,7 @@
                 font-size: 0.9em !important;
                 gap: 6px !important;
                 min-width: 80px !important;
+                height: 40px !important;
             }
             
             #voiceStatus {
@@ -366,15 +367,31 @@
                 font-size: 0.9em !important;
                 gap: 6px !important;
                 min-width: 80px !important;
+                height: 40px !important;
             }
             
             /* 按鈕容器在手機版的優化 */
-            .input-section div[style*="display: flex"] {
+            .button-container {
                 gap: 10px !important;
                 margin-top: 8px !important;
                 flex-direction: row !important;
                 justify-content: flex-start !important;
                 align-items: center !important;
+            }
+            
+            .input-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                height: 40px !important;
+                min-width: 80px !important;
+                padding: 8px 12px !important;
+                font-size: 0.9em !important;
+                border-radius: 6px !important;
+                border: none !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s !important;
+                gap: 6px !important;
             }
             
             #imagePreview img {
@@ -394,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台7</h1>
+    <h1>CGM飯後血糖管理平台11</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -473,19 +490,17 @@
                          style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
                 
                 <!-- 語音和圖片輸入按鈕 -->
-                <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
-                    <button id="voiceBtn" 
-                            style="background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; gap: 6px;">
+                <div class="button-container" style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+                    <button id="voiceBtn" class="input-btn"
+                            style="background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; min-width: 80px;">
                         ⚪ 錄音
                     </button>
                     
-                    <div style="position: relative; overflow: hidden; display: inline-block;">
-                        <input type="file" id="imageUpload" accept="image/*" style="position: absolute; left: -9999px;">
-                        <button id="uploadImageBtn" class="image-input-btn" 
-                                style="background-color: var(--button-bg); color: var(--button-text); border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; gap: 6px;">
-                            📸 圖片
-                        </button>
-                    </div>
+                    <button id="uploadImageBtn" class="input-btn image-input-btn" 
+                            style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; min-width: 80px;">
+                        📸 圖片
+                    </button>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
                 </div>
                 
                 <div id="voiceStatus" style="margin-top: 5px; font-size: 0.85em; color: #666; display: none;"></div>
@@ -787,6 +802,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let audioChunks = [];
     let recordedBlob = null;
     let currentStream = null;
+    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
     // 檢查瀏覽器是否支援語音識別
     function initSpeechRecognition() {
@@ -797,6 +813,12 @@ document.addEventListener('DOMContentLoaded', () => {
             recognition.continuous = false;
             recognition.interimResults = false;
             recognition.lang = 'zh-TW'; // 設定為繁體中文
+            
+            // 手機裝置特別設定
+            if (isMobileDevice) {
+                recognition.maxAlternatives = 1;
+                console.log('偵測到手機裝置，使用手機優化設定');
+            }
             
             recognition.onstart = () => {
                 console.log('語音識別開始');
@@ -836,6 +858,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     case 'network':
                         errorMessage = '網路錯誤，請檢查網路連線';
+                        break;
+                    case 'service-not-allowed':
+                        errorMessage = '語音服務被拒絕，請重試';
                         break;
                     default:
                         errorMessage = `語音識別錯誤：${event.error}`;
@@ -918,6 +943,20 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // 檢查麥克風權限
+    async function checkMicrophonePermission() {
+        try {
+            if (navigator.permissions && navigator.permissions.query) {
+                const permission = await navigator.permissions.query({ name: 'microphone' });
+                console.log('麥克風權限狀態:', permission.state);
+                return permission.state;
+            }
+        } catch (error) {
+            console.log('無法查詢權限狀態:', error);
+        }
+        return 'unknown';
+    }
+
     // 初始化錄音功能
     async function initRecording() {
         try {
@@ -928,15 +967,30 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('您的瀏覽器不支援媒體錄製功能');
             }
             
-            // 請求麥克風權限
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+            // 檢查麥克風權限
+            const permissionState = await checkMicrophonePermission();
+            console.log('權限檢查結果:', permissionState);
+            
+            // 手機裝置使用簡化的音訊設定
+            const constraints = isMobileDevice ? {
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true
+                }
+            } : {
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     autoGainControl: true,
                     sampleRate: 44100
                 }
-            });
+            };
+            
+            console.log('使用音訊約束:', constraints);
+            
+            // 請求麥克風權限
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
             
             console.log('麥克風權限獲取成功');
             currentStream = stream;
@@ -946,17 +1000,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error('您的瀏覽器不支援錄音功能');
             }
             
-            // 選擇支援的媒體類型
-            let options = { mimeType: 'audio/webm' };
-            if (!MediaRecorder.isTypeSupported('audio/webm')) {
-                if (MediaRecorder.isTypeSupported('audio/wav')) {
+            // 選擇支援的媒體類型 - 手機優先使用 mp4
+            let options = {};
+            if (isMobileDevice) {
+                if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options = { mimeType: 'audio/mp4' };
+                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                } else if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    options = { mimeType: 'audio/wav' };
+                }
+            } else {
+                if (MediaRecorder.isTypeSupported('audio/webm')) {
+                    options = { mimeType: 'audio/webm' };
+                } else if (MediaRecorder.isTypeSupported('audio/wav')) {
                     options = { mimeType: 'audio/wav' };
                 } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
                     options = { mimeType: 'audio/mp4' };
-                } else {
-                    options = {}; // 使用預設格式
                 }
             }
+            
+            console.log('使用媒體格式:', options);
             
             mediaRecorder = new MediaRecorder(stream, options);
             
@@ -997,6 +1061,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 errorMessage = '找不到麥克風設備';
             } else if (error.name === 'NotSupportedError') {
                 errorMessage = '您的設備不支援錄音功能';
+            } else if (error.name === 'SecurityError') {
+                errorMessage = '安全性限制，請確保使用 HTTPS 連線';
             } else if (error.message) {
                 errorMessage = error.message;
             }
@@ -1015,6 +1081,7 @@ document.addEventListener('DOMContentLoaded', () => {
             event.preventDefault();
             
             console.log('語音按鈕被點擊，當前狀態 isListening:', isListening);
+            console.log('裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
             
             if (!speechRecognitionSupported) {
                 showVoiceStatus('❌ 您的瀏覽器不支援語音輸入功能', '#dc3545');
@@ -1048,17 +1115,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 // 開始錄音
                 if (mediaRecorder && mediaRecorder.state === 'inactive') {
-                    mediaRecorder.start(1000); // 每秒產生一個資料片段
-                    console.log('MediaRecorder 開始錄音');
+                    // 手機裝置使用較大的時間間隔
+                    const timeslice = isMobileDevice ? 2000 : 1000;
+                    mediaRecorder.start(timeslice);
+                    console.log('MediaRecorder 開始錄音, timeslice:', timeslice);
                 }
                 
-                // 開始語音識別
-                if (recognition) {
-                    recognition.start();
-                    console.log('語音識別已啟動');
-                } else {
-                    throw new Error('語音識別初始化失敗');
-                }
+                // 稍微延遲啟動語音識別，避免衝突
+                setTimeout(() => {
+                    if (recognition && !isListening) {
+                        try {
+                            recognition.start();
+                            console.log('語音識別已啟動');
+                        } catch (startError) {
+                            console.error('啟動語音識別失敗:', startError);
+                            showVoiceStatus('❌ 語音識別啟動失敗，請重試', '#dc3545');
+                            resetVoiceState();
+                        }
+                    }
+                }, isMobileDevice ? 500 : 100);
                 
             } catch (error) {
                 console.error('啟動語音識別失敗:', error);
@@ -1079,11 +1154,15 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 初始化按鈕狀態
         updateVoiceButtonState('ready');
+        
+        // 顯示設備類型信息
+        console.log('初始化完成 - 裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
     }
 
     // 上傳圖片按鈕點擊
     if (uploadImageBtn) {
-        uploadImageBtn.addEventListener('click', () => {
+        uploadImageBtn.addEventListener('click', (event) => {
+            event.preventDefault();
             imageUpload.click();
         });
     }
