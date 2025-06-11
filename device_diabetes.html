@@ -348,11 +348,11 @@
             
             #voiceBtn {
                 margin-top: 6px !important;
-                padding: 8px 12px !important;
+                padding: 10px 15px !important;
                 font-size: 0.9em !important;
-                gap: 6px !important;
-                min-width: 80px !important;
-                height: 40px !important;
+                gap: 8px !important;
+                min-width: 90px !important;
+                height: 42px !important;
             }
             
             #voiceStatus {
@@ -363,17 +363,17 @@
             }
             
             .image-input-btn {
-                padding: 8px 12px !important;
+                padding: 10px 15px !important;
                 font-size: 0.9em !important;
-                gap: 6px !important;
-                min-width: 80px !important;
-                height: 40px !important;
+                gap: 8px !important;
+                min-width: 90px !important;
+                height: 42px !important;
             }
             
             /* 按鈕容器在手機版的優化 */
             .button-container {
-                gap: 10px !important;
-                margin-top: 8px !important;
+                gap: 15px !important;
+                margin-top: 10px !important;
                 flex-direction: row !important;
                 justify-content: flex-start !important;
                 align-items: center !important;
@@ -383,15 +383,15 @@
                 display: flex !important;
                 align-items: center !important;
                 justify-content: center !important;
-                height: 40px !important;
-                min-width: 80px !important;
-                padding: 8px 12px !important;
+                height: 42px !important;
+                min-width: 90px !important;
+                padding: 10px 15px !important;
                 font-size: 0.9em !important;
                 border-radius: 6px !important;
                 border: none !important;
                 cursor: pointer !important;
                 transition: background-color 0.3s !important;
-                gap: 6px !important;
+                gap: 8px !important;
             }
             
             #imagePreview img {
@@ -490,14 +490,14 @@
                          style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
                 
                 <!-- 語音和圖片輸入按鈕 -->
-                <div class="button-container" style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; align-items: center;">
+                <div class="button-container" style="display: flex; gap: 20px; margin-top: 12px; flex-wrap: wrap; align-items: center; justify-content: flex-start;">
                     <button id="voiceBtn" class="input-btn"
-                            style="background-color: #17a2b8; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; min-width: 80px;">
+                            style="background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px;">
                         ⚪ 錄音
                     </button>
                     
                     <button id="uploadImageBtn" class="input-btn image-input-btn" 
-                            style="background-color: #28a745; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 6px; height: 40px; min-width: 80px;">
+                            style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px;">
                         📸 圖片
                     </button>
                     <input type="file" id="imageUpload" accept="image/*" style="display: none;">
@@ -539,7 +539,7 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', () => {
     console.log('=== 頁面載入完成 ===');
     
     // 全域變數儲存用戶資料
@@ -700,8 +700,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!name || !customId) return alert('請輸入姓名與身分證字號！');
             if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
             
-            const file = fileEl.files[0];
-            
+          const file = fileEl.files[0];
+
             // 直接使用全域的 userId
             const userId = globalUserId || 'FALLBACK_USER_ID';
             console.log('上傳檔案使用的 User ID:', userId);
@@ -744,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
             
             const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ask_user_name_and_id', {
-                method: 'POST',
+            method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
@@ -803,9 +803,30 @@ document.addEventListener('DOMContentLoaded', () => {
     let recordedBlob = null;
     let currentStream = null;
     let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    let isInLiffEnv = false;
+
+    // 檢查是否在LIFF環境中
+    function checkLiffEnvironment() {
+        try {
+            if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
+                isInLiffEnv = true;
+                console.log('偵測到LIFF環境');
+                return true;
+            }
+        } catch (error) {
+            console.log('LIFF環境檢查錯誤:', error);
+        }
+        isInLiffEnv = false;
+        return false;
+    }
 
     // 檢查瀏覽器是否支援語音識別
     function initSpeechRecognition() {
+        // 在LIFF環境中，語音功能可能受限
+        if (isInLiffEnv) {
+            console.log('LIFF環境偵測，語音功能可能受限');
+        }
+        
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
@@ -854,16 +875,28 @@ document.addEventListener('DOMContentLoaded', () => {
                         errorMessage = '無法捕獲音訊，請檢查麥克風';
                         break;
                     case 'not-allowed':
-                        errorMessage = '麥克風權限被拒絕，請允許使用麥克風';
+                        if (isInLiffEnv) {
+                            errorMessage = 'LINE環境限制錄音權限，建議使用文字輸入或在瀏覽器中開啟';
+                        } else {
+                            errorMessage = '麥克風權限被拒絕，請允許使用麥克風';
+                        }
                         break;
                     case 'network':
                         errorMessage = '網路錯誤，請檢查網路連線';
                         break;
                     case 'service-not-allowed':
-                        errorMessage = '語音服務被拒絕，請重試';
+                        if (isInLiffEnv) {
+                            errorMessage = 'LINE環境不支援語音服務，建議使用文字輸入';
+                        } else {
+                            errorMessage = '語音服務被拒絕，請重試';
+                        }
                         break;
                     default:
-                        errorMessage = `語音識別錯誤：${event.error}`;
+                        if (isInLiffEnv) {
+                            errorMessage = `LINE環境語音限制：${event.error}，建議使用文字輸入`;
+                        } else {
+                            errorMessage = `語音識別錯誤：${event.error}`;
+                        }
                 }
                 
                 showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
@@ -876,7 +909,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 setTimeout(() => {
                     hideVoiceStatus();
-                }, 3000);
+                }, 5000); // LIFF環境延長顯示時間
             };
             
             return true;
@@ -1073,6 +1106,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 初始化語音功能
+    checkLiffEnvironment(); // 檢查LIFF環境
     const speechRecognitionSupported = initSpeechRecognition();
 
     // 語音按鈕點擊事件
@@ -1082,11 +1116,24 @@ document.addEventListener('DOMContentLoaded', () => {
             
             console.log('語音按鈕被點擊，當前狀態 isListening:', isListening);
             console.log('裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
+            console.log('LIFF環境:', isInLiffEnv ? '是' : '否');
             
             if (!speechRecognitionSupported) {
-                showVoiceStatus('❌ 您的瀏覽器不支援語音輸入功能', '#dc3545');
-                setTimeout(hideVoiceStatus, 3000);
+                let message = '您的瀏覽器不支援語音輸入功能';
+                if (isInLiffEnv) {
+                    message = 'LINE環境限制語音功能，建議使用文字輸入或在瀏覽器中開啟此頁面';
+                }
+                showVoiceStatus(`❌ ${message}`, '#dc3545');
+                setTimeout(hideVoiceStatus, 5000);
                 return;
+            }
+            
+            // LIFF環境警告
+            if (isInLiffEnv && !isListening) {
+                showVoiceStatus('⚠️ LINE環境可能限制語音功能，如失敗請使用文字輸入', '#ff8c00');
+                setTimeout(() => {
+                    hideVoiceStatus();
+                }, 3000);
             }
             
             // 如果正在錄音，則停止
@@ -1122,6 +1169,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
                 // 稍微延遲啟動語音識別，避免衝突
+                const delay = isInLiffEnv ? 800 : (isMobileDevice ? 500 : 100);
                 setTimeout(() => {
                     if (recognition && !isListening) {
                         try {
@@ -1129,11 +1177,15 @@ document.addEventListener('DOMContentLoaded', () => {
                             console.log('語音識別已啟動');
                         } catch (startError) {
                             console.error('啟動語音識別失敗:', startError);
-                            showVoiceStatus('❌ 語音識別啟動失敗，請重試', '#dc3545');
+                            let errorMsg = '❌ 語音識別啟動失敗，請重試';
+                            if (isInLiffEnv) {
+                                errorMsg = '❌ LINE環境限制語音功能，建議使用文字輸入';
+                            }
+                            showVoiceStatus(errorMsg, '#dc3545');
                             resetVoiceState();
                         }
                     }
-                }, isMobileDevice ? 500 : 100);
+                }, delay);
                 
             } catch (error) {
                 console.error('啟動語音識別失敗:', error);
@@ -1141,6 +1193,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let errorMessage = '無法啟動語音輸入';
                 if (error.message.includes('already started')) {
                     errorMessage = '語音識別已在運行中，請稍候再試';
+                } else if (isInLiffEnv) {
+                    errorMessage = 'LINE環境限制語音功能，建議使用文字輸入';
                 } else if (error.message) {
                     errorMessage = error.message;
                 }
@@ -1148,7 +1202,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
                 resetVoiceState();
                 
-                setTimeout(hideVoiceStatus, 3000);
+                setTimeout(hideVoiceStatus, 5000);
             }
         });
         
@@ -1157,6 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // 顯示設備類型信息
         console.log('初始化完成 - 裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
+        console.log('初始化完成 - LIFF環境:', isInLiffEnv ? '是' : '否');
     }
 
     // 上傳圖片按鈕點擊
@@ -1241,7 +1296,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (response.ok && result.success) {
                     // 顯示成功結果
                     let resultHtml = '<div style="color: #28a745; padding: 20px;">';
-                    resultHtml += '<h4 style="margin-top: 0;">✅ 資料傳送成功！</h4>';
+                    resultHtml += '<h4 style="margin-top: 0;">資料傳送成功！</h4>';
                     resultHtml += `<p><strong>用戶ID:</strong> ${result.data.user_id}</p>`;
                     
                     if (result.data.text_description) {
@@ -1276,8 +1331,8 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     console.log('頁面初始化完成');
-});
-</script>
+    });
+  </script>
 
 </body>
 </html>
