@@ -248,17 +248,25 @@
             label {
                 margin-bottom: 5px;
                 font-size: 0.95em;
+                display: block !important;
+                text-align: left !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             input[type="text"],
             select {
                 padding: 10px;
                 font-size: 1em;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             input[type="file"] {
                 padding: 6px;
                 font-size: 0.85em;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             input[type="file"]::file-selector-button {
@@ -271,6 +279,8 @@
                 padding: 12px;
                 font-size: 1.1em;
                 margin-top: 12px;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             #user-info-status {
@@ -325,39 +335,57 @@
             .output-section h3 {
                 font-size: 1em !important;
                 margin-bottom: 12px !important;
+                text-align: left !important;
             }
             
             #foodTextInput {
                 min-height: 60px !important;
                 padding: 10px !important;
                 font-size: 0.95em !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
             }
             
             #voiceBtn {
                 margin-top: 6px !important;
-                padding: 6px 10px !important;
-                font-size: 0.85em !important;
-                gap: 4px !important;
+                padding: 8px 12px !important;
+                font-size: 0.9em !important;
+                gap: 6px !important;
+                min-width: 80px !important;
             }
             
             #voiceStatus {
-                font-size: 0.8em !important;
+                font-size: 0.85em !important;
+                margin-top: 8px !important;
+                padding: 5px !important;
+                text-align: left !important;
             }
             
             .image-input-btn {
-                padding: 6px 10px !important;
-                font-size: 0.85em !important;
-                gap: 4px !important;
+                padding: 8px 12px !important;
+                font-size: 0.9em !important;
+                gap: 6px !important;
+                min-width: 80px !important;
             }
             
             /* 按鈕容器在手機版的優化 */
             .input-section div[style*="display: flex"] {
-                gap: 8px !important;
-                margin-top: 6px !important;
+                gap: 10px !important;
+                margin-top: 8px !important;
+                flex-direction: row !important;
+                justify-content: flex-start !important;
+                align-items: center !important;
             }
             
             #imagePreview img {
                 max-height: 150px !important;
+            }
+            
+            /* 確保textarea在手機版的正確對齊 */
+            textarea {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                resize: vertical !important;
             }
         }
 
@@ -366,7 +394,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台10</h1>
+    <h1>CGM飯後血糖管理平台7</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -758,134 +786,299 @@ document.addEventListener('DOMContentLoaded', () => {
     let mediaRecorder = null;
     let audioChunks = [];
     let recordedBlob = null;
+    let currentStream = null;
 
     // 檢查瀏覽器是否支援語音識別
-    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        recognition = new SpeechRecognition();
-        
-        recognition.continuous = false;
-        recognition.interimResults = false;
-        recognition.lang = 'zh-TW'; // 設定為繁體中文
-        
-        recognition.onstart = () => {
-            isListening = true;
-            voiceBtn.style.backgroundColor = '#dc3545'; // 紅色表示正在錄音
-            voiceBtn.textContent = '🔴 錄音中';
-            voiceStatus.style.display = 'block';
-            voiceStatus.textContent = '正在聆聽中...請說話';
-            voiceStatus.style.color = '#dc3545';
-        };
-        
-        recognition.onresult = (event) => {
-            const transcript = event.results[0][0].transcript;
-            console.log('語音識別結果:', transcript);
+    function initSpeechRecognition() {
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
             
-            // 將識別結果添加到文字輸入框
-            const currentText = foodTextInput.value;
-            if (currentText) {
-                foodTextInput.value = currentText + '，' + transcript;
-            } else {
-                foodTextInput.value = transcript;
+            recognition.continuous = false;
+            recognition.interimResults = false;
+            recognition.lang = 'zh-TW'; // 設定為繁體中文
+            
+            recognition.onstart = () => {
+                console.log('語音識別開始');
+                isListening = true;
+                updateVoiceButtonState('recording');
+                showVoiceStatus('正在聆聽中...請說話', '#dc3545');
+            };
+            
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                console.log('語音識別結果:', transcript);
+                
+                // 將識別結果添加到文字輸入框
+                const currentText = foodTextInput.value;
+                if (currentText) {
+                    foodTextInput.value = currentText + '，' + transcript;
+                } else {
+                    foodTextInput.value = transcript;
+                }
+                
+                showVoiceStatus(`✅ 已識別：${transcript}`, '#28a745');
+            };
+            
+            recognition.onerror = (event) => {
+                console.error('語音識別錯誤:', event.error);
+                let errorMessage = '語音識別發生錯誤';
+                
+                switch(event.error) {
+                    case 'no-speech':
+                        errorMessage = '沒有檢測到語音，請重新嘗試';
+                        break;
+                    case 'audio-capture':
+                        errorMessage = '無法捕獲音訊，請檢查麥克風';
+                        break;
+                    case 'not-allowed':
+                        errorMessage = '麥克風權限被拒絕，請允許使用麥克風';
+                        break;
+                    case 'network':
+                        errorMessage = '網路錯誤，請檢查網路連線';
+                        break;
+                    default:
+                        errorMessage = `語音識別錯誤：${event.error}`;
+                }
+                
+                showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
+                resetVoiceState();
+            };
+            
+            recognition.onend = () => {
+                console.log('語音識別結束');
+                resetVoiceState();
+                
+                setTimeout(() => {
+                    hideVoiceStatus();
+                }, 3000);
+            };
+            
+            return true;
+        }
+        return false;
+    }
+
+    // 更新語音按鈕狀態
+    function updateVoiceButtonState(state) {
+        if (!voiceBtn) return;
+        
+        switch(state) {
+            case 'recording':
+                voiceBtn.style.backgroundColor = '#dc3545';
+                voiceBtn.textContent = '🔴 錄音中';
+                voiceBtn.style.cursor = 'pointer';
+                break;
+            case 'ready':
+            default:
+                voiceBtn.style.backgroundColor = '#17a2b8';
+                voiceBtn.textContent = '⚪ 錄音';
+                voiceBtn.style.cursor = 'pointer';
+                break;
+        }
+    }
+
+    // 顯示語音狀態
+    function showVoiceStatus(message, color = '#666') {
+        if (!voiceStatus) return;
+        
+        voiceStatus.style.display = 'block';
+        voiceStatus.textContent = message;
+        voiceStatus.style.color = color;
+    }
+
+    // 隱藏語音狀態
+    function hideVoiceStatus() {
+        if (voiceStatus) {
+            voiceStatus.style.display = 'none';
+        }
+    }
+
+    // 重設語音狀態
+    function resetVoiceState() {
+        isListening = false;
+        updateVoiceButtonState('ready');
+        
+        // 清理媒體錄製器
+        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+            try {
+                mediaRecorder.stop();
+            } catch (e) {
+                console.error('停止媒體錄製器時發生錯誤:', e);
             }
-            
-            voiceStatus.textContent = ` 已識別：${transcript}`;
-            voiceStatus.style.color = '#28a745';
-        };
+        }
         
-        recognition.onerror = (event) => {
-            console.error('語音識別錯誤:', event.error);
-            voiceStatus.textContent = ` 語音識別錯誤：${event.error}`;
-            voiceStatus.style.color = '#dc3545';
-            
-            // 重設按鈕狀態
-            isListening = false;
-            voiceBtn.style.backgroundColor = '#17a2b8';
-            voiceBtn.textContent = '⚪ 錄音';
-        };
-        
-        recognition.onend = () => {
-            isListening = false;
-            voiceBtn.style.backgroundColor = '#17a2b8';
-            voiceBtn.textContent = '⚪ 錄音';
-            
-            setTimeout(() => {
-                voiceStatus.style.display = 'none';
-            }, 3000);
-        };
+        // 清理音訊串流
+        if (currentStream) {
+            currentStream.getTracks().forEach(track => {
+                track.stop();
+                console.log('已停止音訊軌道');
+            });
+            currentStream = null;
+        }
     }
 
     // 初始化錄音功能
     async function initRecording() {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
+            console.log('請求麥克風權限...');
+            
+            // 檢查媒體設備支援
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error('您的瀏覽器不支援媒體錄製功能');
+            }
+            
+            // 請求麥克風權限
+            const stream = await navigator.mediaDevices.getUserMedia({ 
+                audio: {
+                    echoCancellation: true,
+                    noiseSuppression: true,
+                    autoGainControl: true,
+                    sampleRate: 44100
+                }
+            });
+            
+            console.log('麥克風權限獲取成功');
+            currentStream = stream;
+            
+            // 檢查 MediaRecorder 支援
+            if (!window.MediaRecorder) {
+                throw new Error('您的瀏覽器不支援錄音功能');
+            }
+            
+            // 選擇支援的媒體類型
+            let options = { mimeType: 'audio/webm' };
+            if (!MediaRecorder.isTypeSupported('audio/webm')) {
+                if (MediaRecorder.isTypeSupported('audio/wav')) {
+                    options = { mimeType: 'audio/wav' };
+                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
+                    options = { mimeType: 'audio/mp4' };
+                } else {
+                    options = {}; // 使用預設格式
+                }
+            }
+            
+            mediaRecorder = new MediaRecorder(stream, options);
             
             mediaRecorder.ondataavailable = (event) => {
-                audioChunks.push(event.data);
+                if (event.data.size > 0) {
+                    audioChunks.push(event.data);
+                    console.log('錄音資料片段:', event.data.size, 'bytes');
+                }
             };
             
             mediaRecorder.onstop = () => {
-                recordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                audioChunks = [];
-                console.log('錄音完成，檔案大小:', recordedBlob.size, 'bytes');
+                console.log('錄音停止，開始處理音訊資料...');
                 
-                // 停止所有音軌
-                stream.getTracks().forEach(track => track.stop());
+                if (audioChunks.length > 0) {
+                    recordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    console.log('錄音完成，檔案大小:', recordedBlob.size, 'bytes');
+                } else {
+                    console.warn('沒有錄製到音訊資料');
+                }
+                
+                audioChunks = [];
+            };
+            
+            mediaRecorder.onerror = (event) => {
+                console.error('錄音錯誤:', event.error);
+                showVoiceStatus('❌ 錄音發生錯誤', '#dc3545');
+                resetVoiceState();
             };
             
             return true;
         } catch (error) {
-            console.error('無法初始化錄音:', error);
+            console.error('初始化錄音失敗:', error);
+            
+            let errorMessage = '無法啟動錄音功能';
+            if (error.name === 'NotAllowedError') {
+                errorMessage = '麥克風權限被拒絕，請允許使用麥克風後重試';
+            } else if (error.name === 'NotFoundError') {
+                errorMessage = '找不到麥克風設備';
+            } else if (error.name === 'NotSupportedError') {
+                errorMessage = '您的設備不支援錄音功能';
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
             return false;
         }
     }
 
+    // 初始化語音功能
+    const speechRecognitionSupported = initSpeechRecognition();
+
     // 語音按鈕點擊事件
     if (voiceBtn) {
-        voiceBtn.addEventListener('click', async () => {
-            if (!recognition) {
-                alert('您的瀏覽器不支援語音輸入功能');
+        voiceBtn.addEventListener('click', async (event) => {
+            event.preventDefault();
+            
+            console.log('語音按鈕被點擊，當前狀態 isListening:', isListening);
+            
+            if (!speechRecognitionSupported) {
+                showVoiceStatus('❌ 您的瀏覽器不支援語音輸入功能', '#dc3545');
+                setTimeout(hideVoiceStatus, 3000);
                 return;
             }
             
+            // 如果正在錄音，則停止
             if (isListening) {
-                recognition.stop();
-                if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop();
+                console.log('停止錄音...');
+                if (recognition) {
+                    recognition.stop();
                 }
+                resetVoiceState();
+                showVoiceStatus('🛑 錄音已停止', '#ff8c00');
+                setTimeout(hideVoiceStatus, 2000);
                 return;
             }
             
             try {
+                console.log('開始初始化錄音...');
+                showVoiceStatus('🎤 正在準備錄音...', '#007bff');
+                
                 // 初始化錄音功能
                 const recordingReady = await initRecording();
                 if (!recordingReady) {
-                    voiceStatus.style.display = 'block';
-                    voiceStatus.textContent = '❌ 無法啟動錄音功能，請檢查麥克風權限';
-                    voiceStatus.style.color = '#dc3545';
-                    
-                    setTimeout(() => {
-                        voiceStatus.style.display = 'none';
-                    }, 3000);
-                    return;
+                    return; // 錯誤訊息已在 initRecording 中顯示
                 }
                 
-                // 開始語音識別和錄音
-                recognition.start();
-                mediaRecorder.start();
+                console.log('開始語音識別和錄音...');
+                
+                // 開始錄音
+                if (mediaRecorder && mediaRecorder.state === 'inactive') {
+                    mediaRecorder.start(1000); // 每秒產生一個資料片段
+                    console.log('MediaRecorder 開始錄音');
+                }
+                
+                // 開始語音識別
+                if (recognition) {
+                    recognition.start();
+                    console.log('語音識別已啟動');
+                } else {
+                    throw new Error('語音識別初始化失敗');
+                }
                 
             } catch (error) {
                 console.error('啟動語音識別失敗:', error);
-                voiceStatus.style.display = 'block';
-                voiceStatus.textContent = ' 無法啟動語音輸入，請檢查麥克風權限';
-                voiceStatus.style.color = '#dc3545';
                 
-                setTimeout(() => {
-                    voiceStatus.style.display = 'none';
-                }, 3000);
+                let errorMessage = '無法啟動語音輸入';
+                if (error.message.includes('already started')) {
+                    errorMessage = '語音識別已在運行中，請稍候再試';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
+                resetVoiceState();
+                
+                setTimeout(hideVoiceStatus, 3000);
             }
         });
+        
+        // 初始化按鈕狀態
+        updateVoiceButtonState('ready');
     }
 
     // 上傳圖片按鈕點擊
