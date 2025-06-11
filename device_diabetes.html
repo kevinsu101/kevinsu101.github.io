@@ -333,6 +333,17 @@
                 font-size: 0.95em !important;
             }
             
+            #voiceBtn {
+                right: 6px !important;
+                top: 6px !important;
+                padding: 6px 8px !important;
+                font-size: 0.8em !important;
+            }
+            
+            #voiceStatus {
+                font-size: 0.8em !important;
+            }
+            
             .image-input-btn {
                 padding: 10px 12px !important;
                 font-size: 0.85em !important;
@@ -349,7 +360,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台8</h1>
+    <h1>CGM飯後血糖管理平台7</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -423,9 +434,16 @@
             <!-- 文字輸入 -->
             <div class="form-group">
                 <label for="foodTextInput">文字描述食物</label>
-                <textarea id="foodTextInput" 
-                         placeholder="請描述您吃的食物，例如：一碗白飯、兩片吐司..."
-                         style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
+                <div style="position: relative;">
+                    <textarea id="foodTextInput" 
+                             placeholder="請描述您吃的食物，例如：一碗白飯、兩片吐司..."
+                             style="width: 100%; padding: 12px 50px 12px 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
+                    <button id="voiceBtn" 
+                            style="position: absolute; right: 8px; top: 8px; background-color: #17a2b8; color: white; border: none; padding: 8px 10px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s;">
+                        🎤
+                    </button>
+                </div>
+                <div id="voiceStatus" style="margin-top: 5px; font-size: 0.85em; color: #666; display: none;"></div>
             </div>
             
             <!-- 圖片輸入區 -->
@@ -441,12 +459,6 @@
                             📁 上傳圖片
                         </button>
                     </div>
-                    
-                    <!-- 拍照按鈕 -->
-                    <button id="cameraBtn" class="image-input-btn"
-                            style="background-color: #28a745; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; gap: 8px;">
-                        📷 拍照
-                    </button>
                 </div>
                 
                 <!-- 圖片預覽區 -->
@@ -731,12 +743,101 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- AI 食物辨識 ---
     const uploadImageBtn = document.getElementById('uploadImageBtn');
     const imageUpload = document.getElementById('imageUpload');
-    const cameraBtn = document.getElementById('cameraBtn');
     const imagePreview = document.getElementById('imagePreview');
     const previewImg = document.getElementById('previewImg');
     const analyzeBtn = document.getElementById('analyzeBtn');
     const analysisOutput = document.getElementById('analysisOutput');
     const foodTextInput = document.getElementById('foodTextInput');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const voiceStatus = document.getElementById('voiceStatus');
+
+    // 語音輸入功能
+    let recognition = null;
+    let isListening = false;
+
+    // 檢查瀏覽器是否支援語音識別
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        recognition = new SpeechRecognition();
+        
+        recognition.continuous = false;
+        recognition.interimResults = false;
+        recognition.lang = 'zh-TW'; // 設定為繁體中文
+        
+        recognition.onstart = () => {
+            isListening = true;
+            voiceBtn.style.backgroundColor = '#dc3545'; // 紅色表示正在錄音
+            voiceBtn.textContent = '🔴';
+            voiceStatus.style.display = 'block';
+            voiceStatus.textContent = '正在聆聽中...請說話';
+            voiceStatus.style.color = '#dc3545';
+        };
+        
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript;
+            console.log('語音識別結果:', transcript);
+            
+            // 將識別結果添加到文字輸入框
+            const currentText = foodTextInput.value;
+            if (currentText) {
+                foodTextInput.value = currentText + '，' + transcript;
+            } else {
+                foodTextInput.value = transcript;
+            }
+            
+            voiceStatus.textContent = `✅ 已識別：${transcript}`;
+            voiceStatus.style.color = '#28a745';
+        };
+        
+        recognition.onerror = (event) => {
+            console.error('語音識別錯誤:', event.error);
+            voiceStatus.textContent = `❌ 語音識別錯誤：${event.error}`;
+            voiceStatus.style.color = '#dc3545';
+            
+            // 重設按鈕狀態
+            isListening = false;
+            voiceBtn.style.backgroundColor = '#17a2b8';
+            voiceBtn.textContent = '🎤';
+        };
+        
+        recognition.onend = () => {
+            isListening = false;
+            voiceBtn.style.backgroundColor = '#17a2b8';
+            voiceBtn.textContent = '🎤';
+            
+            setTimeout(() => {
+                voiceStatus.style.display = 'none';
+            }, 3000);
+        };
+    }
+
+    // 語音按鈕點擊事件
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', () => {
+            if (!recognition) {
+                alert('您的瀏覽器不支援語音輸入功能');
+                return;
+            }
+            
+            if (isListening) {
+                recognition.stop();
+                return;
+            }
+            
+            try {
+                recognition.start();
+            } catch (error) {
+                console.error('啟動語音識別失敗:', error);
+                voiceStatus.style.display = 'block';
+                voiceStatus.textContent = '❌ 無法啟動語音輸入，請檢查麥克風權限';
+                voiceStatus.style.color = '#dc3545';
+                
+                setTimeout(() => {
+                    voiceStatus.style.display = 'none';
+                }, 3000);
+            }
+        });
+    }
 
     // 上傳圖片按鈕點擊
     if (uploadImageBtn) {
@@ -757,85 +858,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     console.log('圖片已選擇:', file.name);
                 };
                 reader.readAsDataURL(file);
-            }
-        });
-    }
-
-    // 拍照按鈕（使用相機）
-    if (cameraBtn) {
-        cameraBtn.addEventListener('click', async () => {
-            try {
-                // 請求相機權限
-                const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { 
-                        facingMode: 'environment' // 後置鏡頭
-                    } 
-                });
-                
-                // 創建視頻元素來顯示相機畫面
-                const video = document.createElement('video');
-                video.srcObject = stream;
-                video.autoplay = true;
-                video.style.width = '100%';
-                video.style.maxWidth = '400px';
-                video.style.borderRadius = '8px';
-                
-                // 創建拍照按鈕
-                const captureBtn = document.createElement('button');
-                captureBtn.textContent = '📸 拍照';
-                captureBtn.className = 'submit-btn';
-                captureBtn.style.marginTop = '10px';
-                
-                // 創建取消按鈕
-                const cancelBtn = document.createElement('button');
-                cancelBtn.textContent = '❌ 取消';
-                cancelBtn.style.marginTop = '10px';
-                cancelBtn.style.marginLeft = '10px';
-                cancelBtn.style.backgroundColor = '#dc3545';
-                cancelBtn.style.color = 'white';
-                cancelBtn.style.border = 'none';
-                cancelBtn.style.padding = '10px 15px';
-                cancelBtn.style.borderRadius = '5px';
-                cancelBtn.style.cursor = 'pointer';
-                
-                // 替換分析輸出區域內容
-                analysisOutput.innerHTML = '';
-                analysisOutput.appendChild(video);
-                
-                const buttonContainer = document.createElement('div');
-                buttonContainer.appendChild(captureBtn);
-                buttonContainer.appendChild(cancelBtn);
-                analysisOutput.appendChild(buttonContainer);
-                
-                // 拍照事件
-                captureBtn.addEventListener('click', () => {
-                    const canvas = document.createElement('canvas');
-                    const context = canvas.getContext('2d');
-                    canvas.width = video.videoWidth;
-                    canvas.height = video.videoHeight;
-                    context.drawImage(video, 0, 0);
-                    
-                    // 將畫面轉為圖片
-                    const imageDataUrl = canvas.toDataURL('image/jpeg');
-                    previewImg.src = imageDataUrl;
-                    imagePreview.style.display = 'block';
-                    
-                    // 停止相機
-                    stream.getTracks().forEach(track => track.stop());
-                    analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
-                    
-                    console.log('照片已拍攝');
-                });
-                
-                // 取消事件
-                cancelBtn.addEventListener('click', () => {
-                    stream.getTracks().forEach(track => track.stop());
-                    analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
-                });
-                
-            } catch (error) {
-                console.error('無法啟動相機:', error);
-                alert('無法啟動相機，請確認瀏覽器權限設定或使用上傳圖片功能');
             }
         });
     }
