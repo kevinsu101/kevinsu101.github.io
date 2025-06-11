@@ -309,6 +309,39 @@
                 font-size: 1em;
                 margin-bottom: 10px;
             }
+            
+            /* AI 食物辨識手機優化 */
+            .input-section {
+                padding: 15px 12px !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .output-section {
+                padding: 15px 12px !important;
+                min-height: 150px !important;
+            }
+            
+            .input-section h3,
+            .output-section h3 {
+                font-size: 1em !important;
+                margin-bottom: 12px !important;
+            }
+            
+            #foodTextInput {
+                min-height: 60px !important;
+                padding: 10px !important;
+                font-size: 0.95em !important;
+            }
+            
+            .image-input-btn {
+                padding: 10px 12px !important;
+                font-size: 0.85em !important;
+                gap: 6px !important;
+            }
+            
+            #imagePreview img {
+                max-height: 150px !important;
+            }
         }
 
     </style>
@@ -316,7 +349,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台7</h1>
+    <h1>CGM飯後血糖管理平台8</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -382,7 +415,60 @@
 
     <div id="section-ai-food" class="content-section" style="display: none;">
         <h2>AI 食物辨識</h2>
-        <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
+        
+        <!-- 輸入區塊 -->
+        <div class="input-section" style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e9ecef;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;">📝 輸入區</h3>
+            
+            <!-- 文字輸入 -->
+            <div class="form-group">
+                <label for="foodTextInput">文字描述食物</label>
+                <textarea id="foodTextInput" 
+                         placeholder="請描述您吃的食物，例如：一碗白飯、兩片吐司..."
+                         style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
+            </div>
+            
+            <!-- 圖片輸入區 -->
+            <div class="image-input-section" style="margin-top: 15px;">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--label-color); font-size: 1em;">📸 圖片輸入</label>
+                
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <!-- 上傳圖片按鈕 -->
+                    <div style="position: relative; overflow: hidden; display: inline-block;">
+                        <input type="file" id="imageUpload" accept="image/*" style="position: absolute; left: -9999px;">
+                        <button id="uploadImageBtn" class="image-input-btn" 
+                                style="background-color: var(--button-bg); color: var(--button-text); border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; gap: 8px;">
+                            📁 上傳圖片
+                        </button>
+                    </div>
+                    
+                    <!-- 拍照按鈕 -->
+                    <button id="cameraBtn" class="image-input-btn"
+                            style="background-color: #28a745; color: white; border: none; padding: 12px 16px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; transition: background-color 0.3s; display: flex; align-items: center; gap: 8px;">
+                        📷 拍照
+                    </button>
+                </div>
+                
+                <!-- 圖片預覽區 -->
+                <div id="imagePreview" style="margin-top: 15px; display: none;">
+                    <p style="margin: 0 0 8px 0; font-size: 0.9em; color: var(--label-color);">圖片預覽：</p>
+                    <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                </div>
+            </div>
+            
+            <!-- 分析按鈕 -->
+            <button id="analyzeBtn" class="submit-btn" style="margin-top: 20px;">
+                🔍 開始分析
+            </button>
+        </div>
+        
+        <!-- 輸出區塊 -->
+        <div class="output-section" style="background-color: #fff; padding: 20px; border-radius: 12px; border: 2px solid #e9ecef; min-height: 200px;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;">📊 分析結果</h3>
+            <div id="analysisOutput" style="color: #666; text-align: center; padding: 40px 20px;">
+                等待輸入食物資訊進行分析...
+            </div>
+        </div>
     </div>
 
     <div id="section-liff-test" class="content-section" style="display: none;">
@@ -640,6 +726,141 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('cgmPatientName').removeAttribute('readonly');
             document.getElementById('cgmPatientId').removeAttribute('readonly');
         }
+    }
+
+    // --- AI 食物辨識 ---
+    const uploadImageBtn = document.getElementById('uploadImageBtn');
+    const imageUpload = document.getElementById('imageUpload');
+    const cameraBtn = document.getElementById('cameraBtn');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const analysisOutput = document.getElementById('analysisOutput');
+    const foodTextInput = document.getElementById('foodTextInput');
+
+    // 上傳圖片按鈕點擊
+    if (uploadImageBtn) {
+        uploadImageBtn.addEventListener('click', () => {
+            imageUpload.click();
+        });
+    }
+
+    // 圖片選擇處理
+    if (imageUpload) {
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    console.log('圖片已選擇:', file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 拍照按鈕（使用相機）
+    if (cameraBtn) {
+        cameraBtn.addEventListener('click', async () => {
+            try {
+                // 請求相機權限
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment' // 後置鏡頭
+                    } 
+                });
+                
+                // 創建視頻元素來顯示相機畫面
+                const video = document.createElement('video');
+                video.srcObject = stream;
+                video.autoplay = true;
+                video.style.width = '100%';
+                video.style.maxWidth = '400px';
+                video.style.borderRadius = '8px';
+                
+                // 創建拍照按鈕
+                const captureBtn = document.createElement('button');
+                captureBtn.textContent = '📸 拍照';
+                captureBtn.className = 'submit-btn';
+                captureBtn.style.marginTop = '10px';
+                
+                // 創建取消按鈕
+                const cancelBtn = document.createElement('button');
+                cancelBtn.textContent = '❌ 取消';
+                cancelBtn.style.marginTop = '10px';
+                cancelBtn.style.marginLeft = '10px';
+                cancelBtn.style.backgroundColor = '#dc3545';
+                cancelBtn.style.color = 'white';
+                cancelBtn.style.border = 'none';
+                cancelBtn.style.padding = '10px 15px';
+                cancelBtn.style.borderRadius = '5px';
+                cancelBtn.style.cursor = 'pointer';
+                
+                // 替換分析輸出區域內容
+                analysisOutput.innerHTML = '';
+                analysisOutput.appendChild(video);
+                
+                const buttonContainer = document.createElement('div');
+                buttonContainer.appendChild(captureBtn);
+                buttonContainer.appendChild(cancelBtn);
+                analysisOutput.appendChild(buttonContainer);
+                
+                // 拍照事件
+                captureBtn.addEventListener('click', () => {
+                    const canvas = document.createElement('canvas');
+                    const context = canvas.getContext('2d');
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    context.drawImage(video, 0, 0);
+                    
+                    // 將畫面轉為圖片
+                    const imageDataUrl = canvas.toDataURL('image/jpeg');
+                    previewImg.src = imageDataUrl;
+                    imagePreview.style.display = 'block';
+                    
+                    // 停止相機
+                    stream.getTracks().forEach(track => track.stop());
+                    analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
+                    
+                    console.log('照片已拍攝');
+                });
+                
+                // 取消事件
+                cancelBtn.addEventListener('click', () => {
+                    stream.getTracks().forEach(track => track.stop());
+                    analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
+                });
+                
+            } catch (error) {
+                console.error('無法啟動相機:', error);
+                alert('無法啟動相機，請確認瀏覽器權限設定或使用上傳圖片功能');
+            }
+        });
+    }
+
+    // 分析按鈕
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', () => {
+            const textInput = foodTextInput.value.trim();
+            const hasImage = imagePreview.style.display === 'block';
+            
+            if (!textInput && !hasImage) {
+                alert('請輸入文字描述或選擇圖片');
+                return;
+            }
+            
+            // 顯示分析中狀態
+            analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在分析中...</div>';
+            
+            // TODO: 這裡之後會連接到後端API進行實際分析
+            setTimeout(() => {
+                analysisOutput.innerHTML = '<div style="color: #28a745; text-align: center; padding: 40px 20px;">✅ 分析功能開發中，敬請期待！</div>';
+            }, 2000);
+            
+            console.log('開始分析:', { textInput, hasImage });
+        });
     }
 
     console.log('頁面初始化完成');
