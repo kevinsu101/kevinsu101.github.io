@@ -316,7 +316,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台6</h1>
+    <h1>CGM飯後血糖管理平台7</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -386,12 +386,12 @@
     </div>
 
     <div id="section-liff-test" class="content-section" style="display: none;">
-        <h2>LIFF 使用者資料測試</h2>
-        <p style="text-align: center; padding-bottom: 10px;">點擊下方按鈕以獲取並顯示您的 LINE 使用者資訊。</p>
-        <button id="liffTestBtn" class="submit-btn">獲取 LIFF 資料</button>
+        <h2>LIFF 測試</h2>
+        <p style="text-align: center; padding-bottom: 10px;">點擊下方按鈕發送 "你好" 訊息給 LINE 機器人。</p>
+        <button id="liffTestBtn" class="submit-btn">發送訊息給機器人</button>
         <div id="liff-output-container" style="margin-top: 20px;">
-            <h3 style="text-align: center; color: var(--label-color);">獲取到的資料：</h3>
-            <pre id="liff-data-output">尚未獲取資料...</pre>
+            <h3 style="text-align: center; color: var(--label-color);">發送結果：</h3>
+            <pre id="liff-data-output">尚未發送訊息...</pre>
         </div>
     </div>
 </div>
@@ -503,7 +503,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // 頁面載入時自動執行登入
     autoLogin();
 
-    // ------------------------- LIFF 測試 -------------------------
+    // --- LIFF 測試 ---
     const liffTestBtn = document.getElementById('liffTestBtn');
     const liffDataOutput = document.getElementById('liff-data-output');
 
@@ -515,26 +515,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 liffDataOutput.textContent = '尚未取得用戶資料，請重新整理頁面';
                 return;
             }
+
+            // 檢查是否在 LINE 應用內
+            if (!liff.isInClient()) {
+                liffDataOutput.textContent = '此功能需要在 LINE 應用內使用';
+                console.log('不在 LINE 客戶端內，無法發送訊息');
+                return;
+            }
             
             try {
-                // 顯示已取得的用戶資訊
-                const userInfo = {
-                    'User ID': globalUserProfile.userId,
-                    'Display Name': globalUserProfile.displayName || 'Unknown',
-                    'Status Message': globalUserProfile.statusMessage || 'No status',
-                    'Picture URL': globalUserProfile.pictureUrl || 'No picture',
-                    'Environment': `LIFF ${liff.getVersion()}`,
-                    'OS': liff.getOS(),
-                    'Language': liff.getLanguage(),
-                    'Is In Client': liff.isInClient(),
-                    'Is Logged In': liff.isLoggedIn()
-                };
+                console.log('準備發送訊息給機器人...');
+                liffDataOutput.textContent = '正在發送訊息...';
+                
+                // 發送訊息給機器人
+                await liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: '你好'
+                    }
+                ]);
 
-                liffDataOutput.textContent = JSON.stringify(userInfo, null, 2);
+                console.log('訊息發送成功');
+                liffDataOutput.textContent = '✅ 已成功發送 "你好" 訊息給機器人！\n請查看 LINE 聊天室中的回覆。';
                 
             } catch (err) {
-                console.error(' LIFF 錯誤:', err);
-                liffDataOutput.textContent = `錯誤: ${err.message}`;
+                console.error(' 發送訊息失敗:', err);
+                liffDataOutput.textContent = `❌ 發送訊息失敗: ${err.message}`;
             }
         });
     }
