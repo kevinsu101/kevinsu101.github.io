@@ -1387,7 +1387,7 @@
                     
                     // 準備上傳
                     const formData = new FormData();
-                    formData.append('audioFile', audioBlob, 'test_recording.wav');
+                    formData.append('voiceFile', audioBlob, 'voice_recording.wav');
                     formData.append('userId', globalUserId || 'test_user');
 
                     try {
@@ -1403,10 +1403,14 @@
                                 '檔案名稱: ' + result.data.voice_filename + '\n' +
                                 '處理時間: ' + result.data.timestamp;
                         } else {
-                            throw new Error(result.message || '上傳失敗');
+                            throw new Error(result.message || '上傳失敗: ' + JSON.stringify(result));
                         }
                     } catch (error) {
-                        micTestOutput.textContent += '\n❌ 上傳失敗: ' + error.message;
+                        micTestOutput.textContent += '\n❌ 上傳失敗: ' + error.message + '\n' +
+                            '請確認：\n' +
+                            '1. 網路連線狀態\n' +
+                            '2. 後端服務是否正常運行\n' +
+                            '3. 檔案大小是否過大';
                     }
 
                     // 停止所有音軌
