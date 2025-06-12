@@ -492,26 +492,18 @@
                 <div class="button-container" style="display: flex; gap: 20px; margin-top: 12px; flex-wrap: nowrap; align-items: center; justify-content: flex-start;">
                     <button id="voiceBtn" class="input-btn"
                             style="background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
-                        ⚪ 錄音
+                        錄音
                     </button>
                     
                     <button id="uploadImageBtn" class="input-btn image-input-btn" 
                             style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
                         圖片
                     </button>
-
-                    <button id="testMicBtn" class="input-btn"
-                            style="background-color: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
-                        測試麥克風
-                    </button>
                 </div>
                 
                 <div id="micTestResult" style="margin-top: 10px; padding: 10px; border-radius: 6px; background-color: #f8f9fa; display: none;">
-                    <p style="margin: 0; font-size: 0.9em; color: #666;">測試結果：</p>
-                    <pre id="micTestOutput" style="margin: 5px 0 0 0; font-size: 0.85em; white-space: pre-wrap; word-break: break-all;"></pre>
+                    <pre id="micTestOutput" style="margin: 0; font-size: 0.85em; white-space: pre-wrap; word-break: break-all;"></pre>
                 </div>
-                
-                <div id="voiceStatus" style="margin-top: 5px; font-size: 0.85em; color: #666; display: none;"></div>
             </div>
             
             <!-- 圖片預覽區 -->
@@ -800,428 +792,95 @@
     const analyzeBtn = document.getElementById('analyzeBtn');
     const analysisOutput = document.getElementById('analysisOutput');
     const foodTextInput = document.getElementById('foodTextInput');
-    const voiceBtn = document.getElementById('voiceBtn');
-    const voiceStatus = document.getElementById('voiceStatus');
 
-    // 語音輸入功能
-    let recognition = null;
-    let isListening = false;
+    // 錄音功能
+    const voiceBtn = document.getElementById('voiceBtn');
+    const micTestResult = document.getElementById('micTestResult');
+    const micTestOutput = document.getElementById('micTestOutput');
     let mediaRecorder = null;
     let audioChunks = [];
-    let recordedBlob = null;
-    let currentStream = null;
-    let isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    let isInLiffEnv = false;
+    let isRecording = false;
 
-    // 檢查是否在LIFF環境中
-    function checkLiffEnvironment() {
-        try {
-            if (typeof liff !== 'undefined' && liff.isInClient && liff.isInClient()) {
-                isInLiffEnv = true;
-                console.log('偵測到LIFF環境');
-                return true;
-            }
-        } catch (error) {
-            console.log('LIFF環境檢查錯誤:', error);
-        }
-        isInLiffEnv = false;
-        return false;
-    }
-
-    // 檢查瀏覽器是否支援語音識別
-    function initSpeechRecognition() {
-        // 在LIFF環境中，語音功能可能受限
-        if (isInLiffEnv) {
-            console.log('LIFF環境偵測，語音功能可能受限');
-        }
-        
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            
-            recognition.continuous = true;  // 改為持續錄音
-            recognition.interimResults = true;  // 允許即時結果
-            recognition.lang = 'zh-TW';
-            
-            // 手機裝置特別設定
-            if (isMobileDevice) {
-                recognition.maxAlternatives = 1;
-                console.log('偵測到手機裝置，使用手機優化設定');
-            }
-            
-            recognition.onstart = () => {
-                console.log('語音識別開始');
-                isListening = true;
-                updateVoiceButtonState('recording');
-                showVoiceStatus('正在聆聽中...請說話', '#dc3545');
-            };
-            
-            recognition.onresult = (event) => {
-                const transcript = Array.from(event.results)
-                    .map(result => result[0].transcript)
-                    .join('');
-                console.log('語音識別結果:', transcript);
-                
-                // 將識別結果添加到文字輸入框
-                const currentText = foodTextInput.value;
-                if (currentText) {
-                    foodTextInput.value = currentText + '，' + transcript;
-                } else {
-                    foodTextInput.value = transcript;
-                }
-                
-                showVoiceStatus(`✅ 已識別：${transcript}`, '#28a745');
-            };
-            
-            recognition.onerror = (event) => {
-                console.error('語音識別錯誤:', event.error);
-                let errorMessage = '語音識別發生錯誤';
-                
-                switch(event.error) {
-                    case 'no-speech':
-                        errorMessage = '沒有檢測到語音，請重新嘗試';
-                        break;
-                    case 'audio-capture':
-                        errorMessage = '無法捕獲音訊，請檢查麥克風';
-                        break;
-                    case 'not-allowed':
-                        if (isInLiffEnv) {
-                            errorMessage = 'LINE環境限制錄音權限，建議使用文字輸入或在瀏覽器中開啟';
-                        } else {
-                            errorMessage = '麥克風權限被拒絕，請允許使用麥克風';
-                        }
-                        break;
-                    case 'network':
-                        errorMessage = '網路錯誤，請檢查網路連線';
-                        break;
-                    case 'service-not-allowed':
-                        if (isInLiffEnv) {
-                            errorMessage = 'LINE環境不支援語音服務，建議使用文字輸入';
-                        } else {
-                            errorMessage = '語音服務被拒絕，請重試';
-                        }
-                        break;
-                    default:
-                        if (isInLiffEnv) {
-                            errorMessage = `LINE環境語音限制：${event.error}，建議使用文字輸入`;
-                        } else {
-                            errorMessage = `語音識別錯誤：${event.error}`;
-                        }
-                }
-                
-                showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
-                resetVoiceState();
-            };
-            
-            recognition.onend = () => {
-                console.log('語音識別結束');
-                resetVoiceState();
-                
-                setTimeout(() => {
-                    hideVoiceStatus();
-                }, 5000); // LIFF環境延長顯示時間
-            };
-            
-            return true;
-        }
-        return false;
-    }
-
-    // 更新語音按鈕狀態
-    function updateVoiceButtonState(state) {
-        if (!voiceBtn) return;
-        
-        switch(state) {
-            case 'recording':
-                voiceBtn.style.backgroundColor = '#dc3545';
-                voiceBtn.textContent = '🔴 錄音中';
-                voiceBtn.style.cursor = 'pointer';
-                break;
-            case 'ready':
-            default:
-                voiceBtn.style.backgroundColor = '#17a2b8';
-                voiceBtn.textContent = '⚪ 錄音';
-                voiceBtn.style.cursor = 'pointer';
-                break;
-        }
-    }
-
-    // 顯示語音狀態
-    function showVoiceStatus(message, color = '#666') {
-        if (!voiceStatus) return;
-        
-        voiceStatus.style.display = 'block';
-        voiceStatus.textContent = message;
-        voiceStatus.style.color = color;
-    }
-
-    // 隱藏語音狀態
-    function hideVoiceStatus() {
-        if (voiceStatus) {
-            voiceStatus.style.display = 'none';
-        }
-    }
-
-    // 重設語音狀態
-    function resetVoiceState() {
-        isListening = false;
-        updateVoiceButtonState('ready');
-        
-        // 清理媒體錄製器
-        if (mediaRecorder && mediaRecorder.state !== 'inactive') {
-            try {
-                mediaRecorder.stop();
-            } catch (e) {
-                console.error('停止媒體錄製器時發生錯誤:', e);
-            }
-        }
-        
-        // 清理音訊串流
-        if (currentStream) {
-            currentStream.getTracks().forEach(track => {
-                track.stop();
-                console.log('已停止音訊軌道');
-            });
-            currentStream = null;
-        }
-    }
-
-    // 檢查麥克風權限
-    async function checkMicrophonePermission() {
-        try {
-            if (navigator.permissions && navigator.permissions.query) {
-                const permission = await navigator.permissions.query({ name: 'microphone' });
-                console.log('麥克風權限狀態:', permission.state);
-                return permission.state;
-            }
-        } catch (error) {
-            console.log('無法查詢權限狀態:', error);
-        }
-        return 'unknown';
-    }
-
-    // 初始化錄音功能
-    async function initRecording() {
-        try {
-            console.log('請求麥克風權限...');
-            
-            // 檢查媒體設備支援
-            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                throw new Error('您的瀏覽器不支援媒體錄製功能');
-            }
-            
-            // 檢查麥克風權限
-            const permissionState = await checkMicrophonePermission();
-            console.log('權限檢查結果:', permissionState);
-            
-            // 手機裝置使用簡化的音訊設定
-            const constraints = isMobileDevice ? {
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true
-                }
-            } : {
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    autoGainControl: true,
-                    sampleRate: 44100
-                }
-            };
-            
-            console.log('使用音訊約束:', constraints);
-            
-            // 請求麥克風權限
-            const stream = await navigator.mediaDevices.getUserMedia(constraints);
-            
-            console.log('麥克風權限獲取成功');
-            currentStream = stream;
-            
-            // 檢查 MediaRecorder 支援
-            if (!window.MediaRecorder) {
-                throw new Error('您的瀏覽器不支援錄音功能');
-            }
-            
-            // 選擇支援的媒體類型 - 手機優先使用 mp4
-            let options = {};
-            if (isMobileDevice) {
-                if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options = { mimeType: 'audio/mp4' };
-                } else if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options = { mimeType: 'audio/webm' };
-                } else if (MediaRecorder.isTypeSupported('audio/wav')) {
-                    options = { mimeType: 'audio/wav' };
-                }
-            } else {
-                if (MediaRecorder.isTypeSupported('audio/webm')) {
-                    options = { mimeType: 'audio/webm' };
-                } else if (MediaRecorder.isTypeSupported('audio/wav')) {
-                    options = { mimeType: 'audio/wav' };
-                } else if (MediaRecorder.isTypeSupported('audio/mp4')) {
-                    options = { mimeType: 'audio/mp4' };
-                }
-            }
-            
-            console.log('使用媒體格式:', options);
-            
-            mediaRecorder = new MediaRecorder(stream, options);
-            
-            mediaRecorder.ondataavailable = (event) => {
-                if (event.data.size > 0) {
-                    audioChunks.push(event.data);
-                    console.log('錄音資料片段:', event.data.size, 'bytes');
-                }
-            };
-            
-            mediaRecorder.onstop = () => {
-                console.log('錄音停止，開始處理音訊資料...');
-                
-                if (audioChunks.length > 0) {
-                    recordedBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    console.log('錄音完成，檔案大小:', recordedBlob.size, 'bytes');
-                } else {
-                    console.warn('沒有錄製到音訊資料');
-                }
-                
-                audioChunks = [];
-            };
-            
-            mediaRecorder.onerror = (event) => {
-                console.error('錄音錯誤:', event.error);
-                showVoiceStatus('❌ 錄音發生錯誤', '#dc3545');
-                resetVoiceState();
-            };
-            
-            return true;
-        } catch (error) {
-            console.error('初始化錄音失敗:', error);
-            
-            let errorMessage = '無法啟動錄音功能';
-            if (error.name === 'NotAllowedError') {
-                errorMessage = '麥克風權限被拒絕，請允許使用麥克風後重試';
-            } else if (error.name === 'NotFoundError') {
-                errorMessage = '找不到麥克風設備';
-            } else if (error.name === 'NotSupportedError') {
-                errorMessage = '您的設備不支援錄音功能';
-            } else if (error.name === 'SecurityError') {
-                errorMessage = '安全性限制，請確保使用 HTTPS 連線';
-            } else if (error.message) {
-                errorMessage = error.message;
-            }
-            
-            showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
-            return false;
-        }
-    }
-
-    // 初始化語音功能
-    checkLiffEnvironment(); // 檢查LIFF環境
-    const speechRecognitionSupported = initSpeechRecognition();
-
-    // 語音按鈕點擊事件
     if (voiceBtn) {
-        voiceBtn.addEventListener('click', async (event) => {
-            event.preventDefault();
-            
-            console.log('語音按鈕被點擊，當前狀態 isListening:', isListening);
-            console.log('裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
-            console.log('LIFF環境:', isInLiffEnv ? '是' : '否');
-            
-            if (!speechRecognitionSupported) {
-                let message = '您的瀏覽器不支援語音輸入功能';
-                if (isInLiffEnv) {
-                    message = 'LINE環境限制語音功能，建議使用文字輸入或在瀏覽器中開啟此頁面';
+        voiceBtn.addEventListener('click', async () => {
+            if (isRecording) {
+                // 停止錄音
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    voiceBtn.textContent = '錄音';
+                    voiceBtn.style.backgroundColor = '#17a2b8';
+                    isRecording = false;
                 }
-                showVoiceStatus(`❌ ${message}`, '#dc3545');
-                setTimeout(hideVoiceStatus, 5000);
                 return;
             }
-            
-            // LIFF環境警告
-            if (isInLiffEnv && !isListening) {
-                showVoiceStatus('⚠️ LINE環境可能限制語音功能，如失敗請使用文字輸入', '#ff8c00');
-                setTimeout(() => {
-                    hideVoiceStatus();
-                }, 3000);
-            }
-            
-            // 如果正在錄音，則停止
-            if (isListening) {
-                console.log('停止錄音...');
-                if (recognition) {
-                    recognition.stop();
-                }
-                resetVoiceState();
-                showVoiceStatus('🛑 錄音已停止', '#ff8c00');
-                setTimeout(hideVoiceStatus, 2000);
-                return;
-            }
+
+            micTestResult.style.display = 'block';
+            micTestOutput.textContent = '正在準備錄音...';
             
             try {
-                console.log('開始初始化錄音...');
-                showVoiceStatus('🎤 正在準備錄音...', '#007bff');
-                
-                // 初始化錄音功能
-                const recordingReady = await initRecording();
-                if (!recordingReady) {
-                    return; // 錯誤訊息已在 initRecording 中顯示
-                }
-                
-                console.log('開始語音識別和錄音...');
-                
-                // 開始錄音
-                if (mediaRecorder && mediaRecorder.state === 'inactive') {
-                    // 手機裝置使用較大的時間間隔
-                    const timeslice = isMobileDevice ? 2000 : 1000;
-                    mediaRecorder.start(timeslice);
-                    console.log('MediaRecorder 開始錄音, timeslice:', timeslice);
-                }
-                
-                // 稍微延遲啟動語音識別，避免衝突
-                const delay = isInLiffEnv ? 800 : (isMobileDevice ? 500 : 100);
-                setTimeout(() => {
-                    if (recognition && !isListening) {
-                        try {
-                            recognition.start();
-                            console.log('語音識別已啟動');
-                        } catch (startError) {
-                            console.error('啟動語音識別失敗:', startError);
-                            let errorMsg = '❌ 語音識別啟動失敗，請重試';
-                            if (isInLiffEnv) {
-                                errorMsg = '❌ LINE環境限制語音功能，建議使用文字輸入';
-                            }
-                            showVoiceStatus(errorMsg, '#dc3545');
-                            resetVoiceState();
-                        }
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micTestOutput.textContent = '✅ 已取得麥克風權限\n開始錄音...';
+
+                // 設置錄音
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
                     }
-                }, delay);
-                
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    micTestOutput.textContent = '錄音完成，檔案大小: ' + (audioBlob.size / 1024).toFixed(2) + ' KB\n正在上傳...';
+                    
+                    // 準備上傳
+                    const formData = new FormData();
+                    formData.append('voiceFile', audioBlob, 'voice_recording.wav');
+                    formData.append('userId', globalUserId || 'test_user');
+
+                    try {
+                        const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            micTestOutput.textContent = '✅ 錄音上傳成功！\n' +
+                                '檔案名稱: ' + result.data.voice_filename + '\n' +
+                                '處理時間: ' + result.data.timestamp;
+                        } else {
+                            throw new Error(result.message || '上傳失敗: ' + JSON.stringify(result));
+                        }
+                    } catch (error) {
+                        micTestOutput.textContent = '❌ 上傳失敗: ' + error.message + '\n' +
+                            '請確認：\n' +
+                            '1. 網路連線狀態\n' +
+                            '2. 後端服務是否正常運行\n' +
+                            '3. 檔案大小是否過大';
+                    }
+
+                    // 停止所有音軌
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // 開始錄音
+                mediaRecorder.start();
+                isRecording = true;
+                voiceBtn.textContent = '停止錄音';
+                voiceBtn.style.backgroundColor = '#dc3545';
+
             } catch (error) {
-                console.error('啟動語音識別失敗:', error);
-                
-                let errorMessage = '無法啟動語音輸入';
-                if (error.message.includes('already started')) {
-                    errorMessage = '語音識別已在運行中，請稍候再試';
-                } else if (isInLiffEnv) {
-                    errorMessage = 'LINE環境限制語音功能，建議使用文字輸入';
-                } else if (error.message) {
-                    errorMessage = error.message;
-                }
-                
-                showVoiceStatus(`❌ ${errorMessage}`, '#dc3545');
-                resetVoiceState();
-                
-                setTimeout(hideVoiceStatus, 5000);
+                micTestOutput.textContent = '❌ 無法使用麥克風\n' +
+                    '錯誤訊息: ' + error.message + '\n' +
+                    '請確認：\n' +
+                    '1. 已授予麥克風權限\n' +
+                    '2. 麥克風設備正常\n' +
+                    '3. 瀏覽器支援錄音功能';
             }
         });
-        
-        // 初始化按鈕狀態
-        updateVoiceButtonState('ready');
-        
-        // 顯示設備類型信息
-        console.log('初始化完成 - 裝置類型:', isMobileDevice ? '手機裝置' : '桌面裝置');
-        console.log('初始化完成 - LIFF環境:', isInLiffEnv ? '是' : '否');
     }
 
     // 上傳圖片按鈕點擊
@@ -1337,99 +996,6 @@
             }
             
             console.log('分析請求完成');
-        });
-    }
-
-    // 測試麥克風按鈕
-    const testMicBtn = document.getElementById('testMicBtn');
-    const micTestResult = document.getElementById('micTestResult');
-    const micTestOutput = document.getElementById('micTestOutput');
-    let isRecording = false;
-
-    if (testMicBtn) {
-        testMicBtn.addEventListener('click', async () => {
-            if (isRecording) {
-                // 停止錄音
-                if (mediaRecorder && mediaRecorder.state === 'recording') {
-                    mediaRecorder.stop();
-                    testMicBtn.textContent = '測試麥克風';
-                    testMicBtn.style.backgroundColor = '#6c757d';
-                    isRecording = false;
-                }
-                return;
-            }
-
-            micTestResult.style.display = 'block';
-            micTestOutput.textContent = '正在測試麥克風權限...';
-            
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-                micTestOutput.textContent = '✅ 成功取得麥克風權限\n' +
-                    'Stream ID: ' + stream.id + '\n' +
-                    'Stream Active: ' + stream.active + '\n' +
-                    'Tracks: ' + stream.getTracks().map(track => 
-                        `[${track.kind}] ${track.label} (enabled: ${track.enabled})`
-                    ).join('\n');
-
-                // 設置錄音
-                mediaRecorder = new MediaRecorder(stream);
-                audioChunks = [];
-
-                mediaRecorder.ondataavailable = (event) => {
-                    if (event.data.size > 0) {
-                        audioChunks.push(event.data);
-                    }
-                };
-
-                mediaRecorder.onstop = async () => {
-                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
-                    micTestOutput.textContent += '\n\n錄音完成，檔案大小: ' + (audioBlob.size / 1024).toFixed(2) + ' KB';
-                    
-                    // 準備上傳
-                    const formData = new FormData();
-                    formData.append('voiceFile', audioBlob, 'voice_recording.wav');
-                    formData.append('userId', globalUserId || 'test_user');
-
-                    try {
-                        micTestOutput.textContent += '\n正在上傳音檔...';
-                        const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
-                            method: 'POST',
-                            body: formData
-                        });
-
-                        const result = await response.json();
-                        if (response.ok && result.success) {
-                            micTestOutput.textContent += '\n✅ 音檔上傳成功！\n' +
-                                '檔案名稱: ' + result.data.voice_filename + '\n' +
-                                '處理時間: ' + result.data.timestamp;
-                        } else {
-                            throw new Error(result.message || '上傳失敗: ' + JSON.stringify(result));
-                        }
-                    } catch (error) {
-                        micTestOutput.textContent += '\n❌ 上傳失敗: ' + error.message + '\n' +
-                            '請確認：\n' +
-                            '1. 網路連線狀態\n' +
-                            '2. 後端服務是否正常運行\n' +
-                            '3. 檔案大小是否過大';
-                    }
-
-                    // 停止所有音軌
-                    stream.getTracks().forEach(track => track.stop());
-                };
-
-                // 開始錄音
-                mediaRecorder.start();
-                isRecording = true;
-                testMicBtn.textContent = '停止錄音';
-                testMicBtn.style.backgroundColor = '#dc3545';
-                micTestOutput.textContent += '\n\n🎤 開始錄音...';
-
-            } catch (error) {
-                micTestOutput.textContent = '❌ 取得麥克風權限失敗\n' +
-                    '錯誤名稱: ' + error.name + '\n' +
-                    '錯誤訊息: ' + error.message + '\n' +
-                    '錯誤堆疊: ' + error.stack;
-            }
         });
     }
 
