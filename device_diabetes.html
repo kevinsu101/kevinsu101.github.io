@@ -1344,9 +1344,21 @@
     const testMicBtn = document.getElementById('testMicBtn');
     const micTestResult = document.getElementById('micTestResult');
     const micTestOutput = document.getElementById('micTestOutput');
+    let isRecording = false;
 
     if (testMicBtn) {
         testMicBtn.addEventListener('click', async () => {
+            if (isRecording) {
+                // 停止錄音
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    testMicBtn.textContent = '測試麥克風';
+                    testMicBtn.style.backgroundColor = '#6c757d';
+                    isRecording = false;
+                }
+                return;
+            }
+
             micTestResult.style.display = 'block';
             micTestOutput.textContent = '正在測試麥克風權限...';
             
@@ -1358,9 +1370,56 @@
                     'Tracks: ' + stream.getTracks().map(track => 
                         `[${track.kind}] ${track.label} (enabled: ${track.enabled})`
                     ).join('\n');
-                
-                // 停止所有音軌
-                stream.getTracks().forEach(track => track.stop());
+
+                // 設置錄音
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    micTestOutput.textContent += '\n\n錄音完成，檔案大小: ' + (audioBlob.size / 1024).toFixed(2) + ' KB';
+                    
+                    // 準備上傳
+                    const formData = new FormData();
+                    formData.append('audioFile', audioBlob, 'test_recording.wav');
+                    formData.append('userId', globalUserId || 'test_user');
+
+                    try {
+                        micTestOutput.textContent += '\n正在上傳音檔...';
+                        const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            micTestOutput.textContent += '\n✅ 音檔上傳成功！\n' +
+                                '檔案名稱: ' + result.data.voice_filename + '\n' +
+                                '處理時間: ' + result.data.timestamp;
+                        } else {
+                            throw new Error(result.message || '上傳失敗');
+                        }
+                    } catch (error) {
+                        micTestOutput.textContent += '\n❌ 上傳失敗: ' + error.message;
+                    }
+
+                    // 停止所有音軌
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // 開始錄音
+                mediaRecorder.start();
+                isRecording = true;
+                testMicBtn.textContent = '停止錄音';
+                testMicBtn.style.backgroundColor = '#dc3545';
+                micTestOutput.textContent += '\n\n🎤 開始錄音...';
+
             } catch (error) {
                 micTestOutput.textContent = '❌ 取得麥克風權限失敗\n' +
                     '錯誤名稱: ' + error.name + '\n' +
