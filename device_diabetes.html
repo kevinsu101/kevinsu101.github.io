@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台11</h1>
+    <h1>CGM飯後血糖管理平台12</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -484,7 +484,6 @@
             
             <!-- 文字輸入 -->
             <div class="form-group">
-                <label for="foodTextInput">描述食物</label>
                 <textarea id="foodTextInput" 
                          placeholder="請描述您吃的食物，例如：一碗白飯、兩片吐司..."
                          style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
@@ -492,15 +491,24 @@
                 <!-- 語音和圖片輸入按鈕 -->
                 <div class="button-container" style="display: flex; gap: 20px; margin-top: 12px; flex-wrap: nowrap; align-items: center; justify-content: flex-start;">
                     <button id="voiceBtn" class="input-btn"
-                            style="background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px;">
+                            style="background-color: #17a2b8; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
                         ⚪ 錄音
                     </button>
                     
                     <button id="uploadImageBtn" class="input-btn image-input-btn" 
-                            style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px;">
+                            style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
                         圖片
                     </button>
-                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+
+                    <button id="testMicBtn" class="input-btn"
+                            style="background-color: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; flex: 1;">
+                        測試麥克風
+                    </button>
+                </div>
+                
+                <div id="micTestResult" style="margin-top: 10px; padding: 10px; border-radius: 6px; background-color: #f8f9fa; display: none;">
+                    <p style="margin: 0; font-size: 0.9em; color: #666;">測試結果：</p>
+                    <pre id="micTestOutput" style="margin: 5px 0 0 0; font-size: 0.85em; white-space: pre-wrap; word-break: break-all;"></pre>
                 </div>
                 
                 <div id="voiceStatus" style="margin-top: 5px; font-size: 0.85em; color: #666; display: none;"></div>
@@ -831,9 +839,9 @@
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             recognition = new SpeechRecognition();
             
-            recognition.continuous = false;
-            recognition.interimResults = false;
-            recognition.lang = 'zh-TW'; // 設定為繁體中文
+            recognition.continuous = true;  // 改為持續錄音
+            recognition.interimResults = true;  // 允許即時結果
+            recognition.lang = 'zh-TW';
             
             // 手機裝置特別設定
             if (isMobileDevice) {
@@ -849,7 +857,9 @@
             };
             
             recognition.onresult = (event) => {
-                const transcript = event.results[0][0].transcript;
+                const transcript = Array.from(event.results)
+                    .map(result => result[0].transcript)
+                    .join('');
                 console.log('語音識別結果:', transcript);
                 
                 // 將識別結果添加到文字輸入框
@@ -1327,6 +1337,36 @@
             }
             
             console.log('分析請求完成');
+        });
+    }
+
+    // 測試麥克風按鈕
+    const testMicBtn = document.getElementById('testMicBtn');
+    const micTestResult = document.getElementById('micTestResult');
+    const micTestOutput = document.getElementById('micTestOutput');
+
+    if (testMicBtn) {
+        testMicBtn.addEventListener('click', async () => {
+            micTestResult.style.display = 'block';
+            micTestOutput.textContent = '正在測試麥克風權限...';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micTestOutput.textContent = '✅ 成功取得麥克風權限\n' +
+                    'Stream ID: ' + stream.id + '\n' +
+                    'Stream Active: ' + stream.active + '\n' +
+                    'Tracks: ' + stream.getTracks().map(track => 
+                        `[${track.kind}] ${track.label} (enabled: ${track.enabled})`
+                    ).join('\n');
+                
+                // 停止所有音軌
+                stream.getTracks().forEach(track => track.stop());
+            } catch (error) {
+                micTestOutput.textContent = '❌ 取得麥克風權限失敗\n' +
+                    '錯誤名稱: ' + error.name + '\n' +
+                    '錯誤訊息: ' + error.message + '\n' +
+                    '錯誤堆疊: ' + error.stack;
+            }
         });
     }
 
