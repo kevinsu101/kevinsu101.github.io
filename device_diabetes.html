@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台13</h1>
+    <h1>CGM飯後血糖管理平台14</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -918,90 +918,48 @@
         analyzeBtn.addEventListener('click', async () => {
             const textInput = foodTextInput.value.trim();
             const hasImage = imagePreview.style.display === 'block';
-            const hasVoice = recordedBlob !== null;
-            
-            if (!textInput && !hasImage && !hasVoice) {
-                alert('請輸入文字描述、選擇圖片或錄製語音');
+            // const hasVoice = recordedBlob !== null; // 只處理圖片互動
+
+            if (!textInput && !hasImage) {
+                alert('請輸入文字描述、選擇圖片');
                 return;
             }
-            
+
             if (!globalUserId) {
                 alert('尚未取得用戶 ID，請重新整理頁面');
                 return;
             }
-            
+
             // 顯示分析中狀態
             analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在分析中...</div>';
-            
+
             try {
-                // 準備表單數據
                 const formData = new FormData();
                 formData.append('userId', globalUserId);
-                
-                // 添加文字描述
                 if (textInput) {
                     formData.append('textDescription', textInput);
                 }
-                
-                // 添加圖片檔案
                 if (hasImage && imageUpload.files.length > 0) {
                     formData.append('imageFile', imageUpload.files[0]);
                 }
-                
-                // 添加語音檔案
-                if (recordedBlob) {
-                    formData.append('voiceFile', recordedBlob, 'voice_recording.wav');
-                    console.log('- 有語音錄音:', recordedBlob.size, 'bytes');
-                }
-                
-                console.log('準備發送到後台的資料:');
-                console.log('- 用戶ID:', globalUserId);
-                console.log('- 文字描述:', textInput);
-                console.log('- 有圖片:', hasImage);
-                console.log('- 有語音:', !!recordedBlob);
-                
-                // 發送到後台
+
                 const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
                     method: 'POST',
                     body: formData
                 });
-                
                 const result = await response.json();
-                
                 if (response.ok && result.success) {
-                    // 顯示成功結果
-                    let resultHtml = '<div style="color: #28a745; padding: 20px;">';
-                    resultHtml += '<h4 style="margin-top: 0;">資料傳送成功！</h4>';
-                    resultHtml += `<p><strong>用戶ID:</strong> ${result.data.user_id}</p>`;
-                    
-                    if (result.data.text_description) {
-                        resultHtml += `<p><strong>文字描述:</strong> ${result.data.text_description}</p>`;
+                    if (result.data.nutrition_info) {
+                        analysisOutput.innerHTML = result.data.nutrition_info;
+                    } else {
+                        analysisOutput.innerHTML = '<div style="color: #28a745; padding: 20px;">分析完成，但未取得營養資訊。</div>';
                     }
-                    
-                    if (result.data.image_filename) {
-                        resultHtml += `<p><strong>圖片檔案:</strong> ${result.data.image_filename}</p>`;
-                    }
-                    
-                    if (result.data.voice_filename) {
-                        resultHtml += `<p><strong>語音檔案:</strong> ${result.data.voice_filename}</p>`;
-                    }
-                    
-                    resultHtml += `<p><strong>處理時間:</strong> ${result.data.timestamp}</p>`;
-                    resultHtml += '<p style="color: #666; font-size: 0.9em; margin-top: 15px;">後續將進行 AI 營養分析...</p>';
-                    resultHtml += '</div>';
-                    
-                    analysisOutput.innerHTML = resultHtml;
-                    
                 } else {
                     throw new Error(result.message || '未知錯誤');
                 }
-                
             } catch (error) {
-                console.error('發送資料失敗:', error);
                 analysisOutput.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 40px 20px;">❌ 傳送失敗：${error.message}</div>`;
             }
-            
-            console.log('分析請求完成');
         });
     }
 
