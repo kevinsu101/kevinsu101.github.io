@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台16</h1>
+    <h1>CGM飯後血糖管理平台17</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -979,11 +979,34 @@
     console.log('頁面初始化完成');
     });
 
-    // 在<script>區塊內新增 handleNutritionInfoCards 函數，將 nutrition_info 依 ***** 分割，渲染為卡片+checkbox+下一步
+    // 在<script>區塊內，找到 handleNutritionInfoCards 函數，將其內容替換為：
     function handleNutritionInfoCards(nutritionInfo) {
-        // 實現將 nutrition_info 依 ***** 分割，渲染為卡片+checkbox+下一步的邏輯
-        // 這裡需要根據實際的 HTML 結構和樣式來實現這個功能
-        console.log('Nutrition Info:', nutritionInfo);
+        // 依 ***** 分割 nutrition_info
+        const cards = nutritionInfo.split('*****').filter(card => card.trim() !== '');
+        let html = '';
+        cards.forEach((card, index) => {
+            html += `
+                <div class="nutrition-card" style="margin-bottom: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9;">
+                    <input type="checkbox" id="card-${index}" style="margin-right: 10px;">
+                    <label for="card-${index}">${card}</label>
+                </div>
+            `;
+        });
+        html += `
+            <button id="nextStepBtn" style="margin-top: 15px; padding: 10px 15px; background-color: #28a745; color: white; border: none; border-radius: 6px; cursor: pointer;">下一步</button>
+        `;
+        analysisOutput.innerHTML = html;
+
+        // 下一步按鈕點擊事件
+        document.getElementById('nextStepBtn').addEventListener('click', () => {
+            const selectedCards = [];
+            cards.forEach((card, index) => {
+                if (document.getElementById(`card-${index}`).checked) {
+                    selectedCards.push(card);
+                }
+            });
+            handleNextStep(selectedCards);
+        });
     }
 
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
