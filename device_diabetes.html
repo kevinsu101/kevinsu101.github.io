@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台14</h1>
+    <h1>CGM飯後血糖管理平台15</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -511,6 +511,7 @@
             <div id="imagePreview" style="margin-top: 15px; display: none;">
                 <p style="margin: 0 0 8px 0; font-size: 0.9em; color: var(--label-color);">圖片預覽：</p>
                 <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                <button id="cancelImageBtn" type="button" style="margin-top: 10px; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 0.95em; cursor: pointer;">取消</button>
             </div>
             
             <!-- 分析按鈕 -->
@@ -910,6 +911,18 @@
                 };
                 reader.readAsDataURL(file);
             }
+        });
+    }
+
+    // 新增：取消圖片按鈕
+    const cancelImageBtn = document.getElementById('cancelImageBtn');
+    if (cancelImageBtn) {
+        cancelImageBtn.addEventListener('click', () => {
+            // 清除預覽
+            previewImg.src = '';
+            imagePreview.style.display = 'none';
+            // 清除 input file
+            imageUpload.value = '';
         });
     }
 
