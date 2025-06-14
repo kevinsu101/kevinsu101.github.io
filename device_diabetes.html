@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台18</h1>
+    <h1>CGM飯後血糖管理平台19</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -983,127 +983,105 @@
     function handleNutritionInfoCards(nutritionInfo) {
         // 依 ***** 分割 nutrition_info
         const cards = nutritionInfo.split('*****').filter(card => card.trim() !== '');
+        // 解析提醒
+        let reminder = '';
+        if (cards.length > 0 && cards[cards.length-1].includes('提醒您')) {
+            reminder = cards.pop();
+        }
         // 解析每筆卡片內容
-        const parsedCards = cards.map((card, idx) => {
-            // 解析食物名稱、熱量、碳水、蛋白質、脂肪
+        let parsedCards = cards.map((card, idx) => {
             const nameMatch = card.match(/食物名稱[:：]\s*(.*)/);
             const calMatch = card.match(/熱量[:：]\s*([\d\.]+)kcal/);
             const carbMatch = card.match(/碳水化合物[:：]\s*([\d\.]+)g/);
             const proMatch = card.match(/蛋白質[:：]\s*([\d\.]+)g/);
             const fatMatch = card.match(/脂肪[:：]\s*([\d\.]+)g/);
+            const timeMatch = card.match(/飲食的時間[:：]?\s*([\d\- :]+)/);
             return {
                 raw: card,
                 idx,
                 name: nameMatch ? nameMatch[1].trim() : '',
-                cal: calMatch ? calMatch[1] : '',
-                carb: carbMatch ? carbMatch[1] : '',
-                pro: proMatch ? proMatch[1] : '',
-                fat: fatMatch ? fatMatch[1] : '',
-                checked: false
+                cal: calMatch ? parseFloat(calMatch[1]) : 0,
+                carb: carbMatch ? parseFloat(carbMatch[1]) : 0,
+                pro: proMatch ? parseFloat(proMatch[1]) : 0,
+                fat: fatMatch ? parseFloat(fatMatch[1]) : 0,
+                time: timeMatch ? timeMatch[1].trim() : '',
+                portion: 1
             };
         });
-        // 狀態：已選/未選
-        let selected = [];
-        let unselected = parsedCards.slice();
-        // 渲染區塊
-        function renderCards() {
-            // 已選區
-            let leftHtml = '<div style="min-width:220px;max-width:320px;overflow-x:auto;white-space:nowrap;padding:8px 0 8px 0;">';
-            selected.forEach(card => {
-                leftHtml += renderCard(card, true);
-            });
-            leftHtml += '</div>';
-            // 可選區
-            let rightHtml = '<div style="min-width:220px;max-width:320px;overflow-x:auto;white-space:nowrap;padding:8px 0 8px 0;">';
-            unselected.forEach(card => {
-                rightHtml += renderCard(card, false);
-            });
-            rightHtml += '</div>';
-            // 主區塊
-            analysisOutput.innerHTML = `
-                <div style="display:flex;gap:12px;align-items:flex-start;justify-content:center;">
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:700;font-size:1.05em;margin-bottom:6px;">已選食物</div>
-                        ${leftHtml}
-                    </div>
-                    <div style="flex:1;min-width:0;">
-                        <div style="font-weight:700;font-size:1.05em;margin-bottom:6px;">可選食物</div>
-                        ${rightHtml}
-                    </div>
+        // 只顯示一個餐次（同一時間只顯示一筆）
+        const seenTimes = new Set();
+        parsedCards = parsedCards.filter(card => {
+            if (!card.time) return true;
+            if (seenTimes.has(card.time)) return false;
+            seenTimes.add(card.time);
+            return true;
+        });
+        // 垂直排列卡片
+        let html = '';
+        parsedCards.forEach(card => {
+            html += `
+            <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                    <span style="font-weight:700;font-size:1.15em;">${card.name}</span>
                 </div>
-                <button id="nextStepBtn" style="margin-top:18px;padding:12px 24px;background-color:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.1em;float:right;">下一步</button>
-            `;
-            // 綁定事件
-            parsedCards.forEach(card => {
-                const cb = document.getElementById(`card-cb-${card.idx}`);
-                if (cb) {
-                    cb.checked = card.checked;
-                    cb.onchange = () => {
-                        card.checked = cb.checked;
-                        if (cb.checked) {
-                            selected.push(card);
-                            unselected = unselected.filter(c => c.idx !== card.idx);
-                        } else {
-                            unselected.push(card);
-                            selected = selected.filter(c => c.idx !== card.idx);
-                        }
-                        renderCards();
-                    };
-                }
-                // 編輯營養素
-                ['cal','carb','pro','fat'].forEach(key => {
-                    const el = document.getElementById(`edit-${key}-${card.idx}`);
-                    if (el) {
-                        el.onclick = () => {
-                            const val = prompt(`請輸入新的${key==='cal'?'熱量(kcal)':key==='carb'?'碳水(g)':key==='pro'?'蛋白質(g)':'脂肪(g)'}`, card[key]);
-                            if (val!==null && val!=='' && !isNaN(val)) {
-                                card[key] = val;
-                                renderCards();
-                            }
-                        };
-                    }
-                });
-            });
-            // 下一步
-            document.getElementById('nextStepBtn').onclick = () => {
-                const selectedCards = selected.map(card => card.raw);
-                handleNextStep(selectedCards);
-            };
-        }
-        // 卡片渲染
-        function renderCard(card, checked) {
-            return `
-            <div class="nutrition-card" style="display:inline-block;vertical-align:top;width:200px;margin:0 8px 12px 0;padding:14px 12px;border:1px solid #ddd;border-radius:12px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04);">
-                <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
-                    <input type="checkbox" id="card-cb-${card.idx}" ${checked?'checked':''} style="accent-color:#28a745;transform:scale(1.2);">
-                    <span style="font-weight:700;font-size:1.1em;">${card.name}</span>
+                <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                    <span style="color:#888;font-size:0.98em;">份數</span>
+                    <button type="button" id="minus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">-</button>
+                    <span id="portion-${card.idx}" style="font-weight:700;font-size:1.1em;min-width:24px;display:inline-block;text-align:center;">${card.portion}</span>
+                    <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
                 </div>
-                <div style="display:flex;gap:8px;overflow-x:auto;">
+                <div style="display:flex;gap:16px;overflow-x:auto;margin-bottom:8px;">
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">熱量</span>
-                        <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${card.cal}</span>
+                        <span id="cal-${card.idx}" style="font-weight:700;color:#007bff;">${(card.cal*card.portion).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">kcal</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">碳水</span>
-                        <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${card.carb}</span>
+                        <span id="carb-${card.idx}" style="font-weight:700;color:#007bff;">${(card.carb*card.portion).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">蛋白質</span>
-                        <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${card.pro}</span>
+                        <span id="pro-${card.idx}" style="font-weight:700;color:#007bff;">${(card.pro*card.portion).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">脂肪</span>
-                        <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${card.fat}</span>
+                        <span id="fat-${card.idx}" style="font-weight:700;color:#007bff;">${(card.fat*card.portion).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                 </div>
+                <div style="color:#666;font-size:0.97em;margin-bottom:4px;">時間：${card.time}</div>
             </div>`;
+        });
+        if(reminder) {
+            html += `<div style="background:#f8f9fa;border-left:4px solid #ff9900;padding:12px 16px;border-radius:8px;margin-bottom:10px;color:#b36b00;font-size:1em;">${reminder}</div>`;
         }
-        // 初始化渲染
-        renderCards();
+        html += `<button id="nextStepBtn" style="margin-top:18px;padding:12px 24px;background-color:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.1em;float:right;">下一步</button>`;
+        analysisOutput.innerHTML = html;
+        // 份數調整事件
+        parsedCards.forEach(card => {
+            document.getElementById(`minus-${card.idx}`).onclick = () => {
+                if(card.portion>1) { card.portion--; updateCard(card); }
+            };
+            document.getElementById(`plus-${card.idx}`).onclick = () => {
+                card.portion++; updateCard(card);
+            };
+        });
+        function updateCard(card) {
+            document.getElementById(`portion-${card.idx}`).textContent = card.portion;
+            document.getElementById(`cal-${card.idx}`).textContent = (card.cal*card.portion).toFixed(1);
+            document.getElementById(`carb-${card.idx}`).textContent = (card.carb*card.portion).toFixed(1);
+            document.getElementById(`pro-${card.idx}`).textContent = (card.pro*card.portion).toFixed(1);
+            document.getElementById(`fat-${card.idx}`).textContent = (card.fat*card.portion).toFixed(1);
+        }
+        // 下一步
+        document.getElementById('nextStepBtn').onclick = () => {
+            // 回傳時可帶上份數資訊
+            const selectedCards = parsedCards.map(card => ({...card, portion: card.portion}));
+            handleNextStep(selectedCards);
+        };
     }
 
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
