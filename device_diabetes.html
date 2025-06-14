@@ -411,7 +411,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台15</h1>
+    <h1>CGM飯後血糖管理平台16</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -963,7 +963,7 @@
                 const result = await response.json();
                 if (response.ok && result.success) {
                     if (result.data.nutrition_info) {
-                        analysisOutput.innerHTML = result.data.nutrition_info;
+                        handleNutritionInfoCards(result.data.nutrition_info);
                     } else {
                         analysisOutput.innerHTML = '<div style="color: #28a745; padding: 20px;">分析完成，但未取得營養資訊。</div>';
                     }
@@ -978,6 +978,20 @@
 
     console.log('頁面初始化完成');
     });
+
+    // 在<script>區塊內新增 handleNutritionInfoCards 函數，將 nutrition_info 依 ***** 分割，渲染為卡片+checkbox+下一步
+    function handleNutritionInfoCards(nutritionInfo) {
+        // 實現將 nutrition_info 依 ***** 分割，渲染為卡片+checkbox+下一步的邏輯
+        // 這裡需要根據實際的 HTML 結構和樣式來實現這個功能
+        console.log('Nutrition Info:', nutritionInfo);
+    }
+
+    // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
+    function handleNextStep(selectedCards) {
+        // 實現將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應的邏輯
+        // 這裡需要根據實際的 API 端點和請求方式來實現這個功能
+        console.log('Selected Cards:', selectedCards);
+    }
   </script>
 
 </body>
