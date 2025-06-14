@@ -852,6 +852,11 @@
                             micTestOutput.textContent = '✅ 錄音上傳成功！\n' +
                                 '檔案名稱: ' + result.data.voice_filename + '\n' +
                                 '處理時間: ' + result.data.timestamp;
+                            if (result.data.speech_text) {
+                                micTestOutput.textContent += '\n語音辨識結果: ' + result.data.speech_text;
+                                // 自動填入 foodTextInput
+                                document.getElementById('foodTextInput').value = result.data.speech_text;
+                            }
                         } else {
                             throw new Error(result.message || '上傳失敗: ' + JSON.stringify(result));
                         }
