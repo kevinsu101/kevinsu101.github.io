@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台35</h1>
+    <h1>CGM飯後血糖管理平台36</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1268,13 +1268,36 @@
                     ${nutHtml}
                     <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
                     <div style="margin-top:8px;">
-                        <button class="edit-diary-btn" data-date="${item.date}" data-time="${item.time}" style="margin-right:10px;">編輯</button>
+                        <!-- <button class="edit-diary-btn" data-date="${item.date}" data-time="${item.time}" style="margin-right:10px;">編輯</button> -->
                     </div>
                 </div>`;
             });
         });
         diaryDiv.innerHTML = html;
     }
+
+    // 綁定刪除與編輯事件
+    document.querySelectorAll('.delete-diary-btn').forEach(btn => {
+        btn.onclick = async function() {
+            if(confirm('確定要刪除此餐次所有食物紀錄？')) {
+                const userId = window.globalUserId || 'FALLBACK_USER_ID';
+                const date = btn.dataset.date;
+                const time = btn.dataset.time;
+                try {
+                    const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_delete_db', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, date, time })
+                    });
+                    const result = await res.json();
+                    alert(result.message);
+                    if(result.success) fetchFoodDiary();
+                } catch (e) {
+                    alert('刪除失敗: ' + e.message);
+                }
+            }
+        };
+    });
 
 </script>
 </body>
