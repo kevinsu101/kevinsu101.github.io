@@ -462,7 +462,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台39</h1>
+    <h1>CGM飯後血糖管理平台40</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -470,7 +470,6 @@
         <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
         <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
         <button id="btn-food-diary" class="nav-btn">飲食日誌</button>
-        <button id="btn-liff-test" class="nav-btn">LIFF測試</button>
         
     </div>
 
@@ -629,6 +628,10 @@
             // 當切換到飲食日誌分頁時，自動載入資料
             if (targetSectionId === 'section-food-diary') {
                 fetchFoodDiary();
+            }
+            // 當切換到 CGM 分析頁面時，自動載入資料
+            if (targetSectionId === 'section-cgm-analysis') {
+                loadCgmPeriods();
             }
         });
     });
