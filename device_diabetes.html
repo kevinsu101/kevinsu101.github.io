@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台36</h1>
+    <h1>CGM飯後血糖管理平台37</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1279,7 +1279,7 @@
     // 綁定刪除與編輯事件
     document.querySelectorAll('.delete-diary-btn').forEach(btn => {
         btn.onclick = async function() {
-            if(confirm('確定要刪除此餐次所有食物紀錄？')) {
+            showCustomConfirm('確定要刪除此餐次所有食物紀錄？', async () => {
                 const userId = window.globalUserId || 'FALLBACK_USER_ID';
                 const date = btn.dataset.date;
                 const time = btn.dataset.time;
@@ -1290,14 +1290,44 @@
                         body: JSON.stringify({ userId, date, time })
                     });
                     const result = await res.json();
-                    alert(result.message);
-                    if(result.success) fetchFoodDiary();
+                    if(result.success) {
+                        alert(result.message);
+                        fetchFoodDiary();
+                    } else {
+                        alert('刪除失敗: ' + (result.message || '未知錯誤'));
+                    }
                 } catch (e) {
                     alert('刪除失敗: ' + e.message);
                 }
-            }
+            });
         };
     });
+
+    // 美觀自訂彈窗 confirm
+    function showCustomConfirm(message, onConfirm, onCancel) {
+        // 避免重複彈窗
+        if(document.getElementById('custom-confirm-mask')) return;
+        const mask = document.createElement('div');
+        mask.id = 'custom-confirm-mask';
+        mask.style = 'position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;';
+        const card = document.createElement('div');
+        card.style = 'background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);padding:32px 28px 22px 28px;max-width:90vw;min-width:240px;text-align:center;';
+        card.innerHTML = `<div style="font-size:1.15em;color:#333;margin-bottom:18px;">${message}</div>
+            <div style="display:flex;gap:18px;justify-content:center;">
+                <button id="custom-confirm-ok" style="padding:8px 24px;background:#e57373;color:#fff;border:none;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;">確定</button>
+                <button id="custom-confirm-cancel" style="padding:8px 24px;background:#eee;color:#666;border:none;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;">取消</button>
+            </div>`;
+        mask.appendChild(card);
+        document.body.appendChild(mask);
+        document.getElementById('custom-confirm-ok').onclick = () => {
+            document.body.removeChild(mask);
+            if(onConfirm) onConfirm();
+        };
+        document.getElementById('custom-confirm-cancel').onclick = () => {
+            document.body.removeChild(mask);
+            if(onCancel) onCancel();
+        };
+    }
 
 </script>
 </body>
