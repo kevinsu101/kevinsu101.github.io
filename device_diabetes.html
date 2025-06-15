@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台32</h1>
+    <h1>CGM飯後血糖管理平台34</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1234,32 +1234,30 @@
             monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
                 // 食物名稱換行，份量小字
                 let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
-                // 橢圓形營養素區塊（新版：邊框、無填色、顏色新配色、尺寸加大）
-                let nutHtml = `
-                <div style="display:flex;gap:18px;justify-content:flex-start;margin:16px 0 8px 0;">
-                    <div style="border:3px solid #4db6ac;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                        <span style="font-size:1.35em;font-weight:700;color:#4db6ac;">${item.total_cal}</span>
-                        <span style="font-size:0.95em;color:#4db6ac;">大卡</span>
-                    </div>
-                    <div style="border:3px solid #9575cd;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                        <span style="font-size:1.35em;font-weight:700;color:#9575cd;">${item.total_carb}</span>
-                        <span style="font-size:0.95em;color:#9575cd;">公克</span>
-                    </div>
-                    <div style="border:3px solid #42a5f5;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                        <span style="font-size:1.35em;font-weight:700;color:#42a5f5;">${item.total_pro}</span>
-                        <span style="font-size:0.95em;color:#42a5f5;">公克</span>
-                    </div>
-                    <div style="border:3px solid #ffb74d;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-                        <span style="font-size:1.35em;font-weight:700;color:#ffb74d;">${item.total_fat}</span>
-                        <span style="font-size:0.95em;color:#ffb74d;">公克</span>
-                    </div>
-                </div>
-                <div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;">
-                    <span style="font-size:1em;color:#4db6ac;width:90px;text-align:center;">熱量</span>
-                    <span style="font-size:1em;color:#9575cd;width:90px;text-align:center;">碳水</span>
-                    <span style="font-size:1em;color:#42a5f5;width:90px;text-align:center;">蛋白質</span>
-                    <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">脂肪</span>
-                </div>`;
+                // 橢圓形營養素區塊（新版：指定新顏色）
+                let nutHtml = `<div style="display:flex;gap:18px;justify-content:flex-start;margin:16px 0 8px 0;">
+  <div style="border:3px solid #e57373;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#e57373;">${item.total_cal}</span>
+    <span style="font-size:0.95em;color:#e57373;">大卡</span>
+  </div>
+  <div style="border:3px solid #4fc3f7;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#4fc3f7;">${item.total_carb}</span>
+    <span style="font-size:0.95em;color:#4fc3f7;">公克</span>
+  </div>
+  <div style="border:3px solid #ffb74d;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#ffb74d;">${item.total_pro}</span>
+    <span style="font-size:0.95em;color:#ffb74d;">公克</span>
+  </div>
+  <div style="border:3px solid #ba68c8;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#ba68c8;">${item.total_fat}</span>
+    <span style="font-size:0.95em;color:#ba68c8;">公克</span>
+  </div>
+</div><div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;">
+  <span style="font-size:1em;color:#e57373;width:90px;text-align:center;">熱量</span>
+  <span style="font-size:1em;color:#4fc3f7;width:90px;text-align:center;">碳水</span>
+  <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">蛋白質</span>
+  <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
+</div>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;">
                     <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
@@ -1274,29 +1272,8 @@
             });
         });
         diaryDiv.innerHTML = html;
-        // 綁定刪除與編輯事件
-        document.querySelectorAll('.delete-diary-btn').forEach(btn => {
-            btn.onclick = function() {
-                if(confirm('確定要刪除此餐次所有食物紀錄？')) {
-                    deleteFoodDiary(btn.dataset.date, btn.dataset.time);
-                }
-            };
-        });
-        document.querySelectorAll('.edit-diary-btn').forEach(btn => {
-            btn.onclick = function() {
-                alert('編輯功能可依需求擴充');
-            };
-        });
     }
 
-    async function deleteFoodDiary(date, time) {
-        const userId = window.globalUserId || 'FALLBACK_USER_ID';
-        // 這裡可呼叫後端刪除API，需你後端支援
-        alert('刪除功能請後端實作: ' + date + ' ' + time);
-        // 刪除後自動刷新
-        // await fetchFoodDiary();
-    }
-  </script>
-
+</script>
 </body>
 </html>
