@@ -462,7 +462,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台42</h1>
+    <h1>CGM飯後血糖管理平台43</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1417,50 +1417,70 @@
             return;
         }
 
-        let html = `
-            <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
-                <thead>
-                    <tr style="background:#2c5282;color:#fff;">
-                        <th>區間</th>
-                        <th>CGM筆數</th>
-                        <th>TIR</th>
-                        <th>TAR</th>
-                        <th>TBR</th>
-                        <th>CV</th>
-                        <th>SD</th>
-                        <th>平均</th>
-                        <th>GMI</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    ${periods.sort((a, b) => b.period_index - a.period_index).map(p => `
-                        <tr>
-                            <td>第${p.period_index}期<br>${p.start_date}~${p.end_date}</td>
-                            <td>${p.CGM_Count ?? '-'}</td>
-                            <td>${p.TIR ?? '-'}</td>
-                            <td>${p.TAR ?? '-'}</td>
-                            <td>${p.TBR ?? '-'}</td>
-                            <td>${p.CV ?? '-'}</td>
-                            <td>${p.SD ?? '-'}</td>
-                            <td>${p.Avg ?? '-'}</td>
-                            <td>${p.GMI ?? '-'}</td>
-                        </tr>
-                    `).join('')}
-                </tbody>
-            </table>
-            <div class="accordion">
-                ${periods.sort((a, b) => b.period_index - a.period_index).map(p => `
-                    <div class="accordion-item">
-                        <button class="accordion-header" onclick="togglePeriod(this, ${p.period_index})">
-                            監測 ${p.period_index}: ${p.start_date} ~ ${p.end_date}
-                        </button>
-                        <div class="accordion-content" id="period-content-${p.period_index}">
-                            <!-- Chart will be loaded here -->
-                        </div>
+        // 按期數分組
+        const groupedPeriods = periods.reduce((acc, p) => {
+            if (!acc[p.period_index]) {
+                acc[p.period_index] = [];
+            }
+            acc[p.period_index].push(p);
+            return acc;
+        }, {});
+
+        let html = '';
+        
+        // 為每個期數創建一個表格
+        Object.entries(groupedPeriods).sort(([a], [b]) => b - a).forEach(([periodIndex, periodData]) => {
+            html += `
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #2c5282; margin-bottom: 15px;">第 ${periodIndex} 期</h3>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                            <thead>
+                                <tr style="background: #2c5282; color: #fff;">
+                                    <th style="padding: 12px; text-align: left;">日期範圍</th>
+                                    <th style="padding: 12px; text-align: center;">CGM筆數</th>
+                                    <th style="padding: 12px; text-align: center;">TIR</th>
+                                    <th style="padding: 12px; text-align: center;">TAR</th>
+                                    <th style="padding: 12px; text-align: center;">TBR</th>
+                                    <th style="padding: 12px; text-align: center;">CV</th>
+                                    <th style="padding: 12px; text-align: center;">SD</th>
+                                    <th style="padding: 12px; text-align: center;">平均</th>
+                                    <th style="padding: 12px; text-align: center;">GMI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${periodData.map(p => `
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 12px;">${p.start_date} ~ ${p.end_date}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.CGM_Count ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TIR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TAR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TBR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.CV ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.SD ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.Avg ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.GMI ?? '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
                     </div>
-                `).join('')}
-            </div>
-        `;
+                    <div class="accordion">
+                        ${periodData.map(p => `
+                            <div class="accordion-item">
+                                <button class="accordion-header" onclick="togglePeriod(this, ${p.period_index})">
+                                    監測 ${p.period_index}: ${p.start_date} ~ ${p.end_date}
+                                </button>
+                                <div class="accordion-content" id="period-content-${p.period_index}">
+                                    <!-- Chart will be loaded here -->
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        });
+
         container.innerHTML = html;
     }
 
