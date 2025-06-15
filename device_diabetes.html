@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台22</h1>
+    <h1>CGM飯後血糖管理平台23</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1001,6 +1001,7 @@
         // 解析每筆卡片內容
         let parsedCards = cards.map((card, idx) => {
             const nameMatch = card.match(/食物名稱[:：]\s*(.*)/);
+            const portionMatch = card.match(/食物份量[:：]\s*(.*)/);
             const calMatch = card.match(/熱量[:：]\s*([\d\.]+)kcal/);
             const carbMatch = card.match(/碳水化合物[:：]\s*([\d\.]+)g/);
             const proMatch = card.match(/蛋白質[:：]\s*([\d\.]+)g/);
@@ -1010,12 +1011,13 @@
                 raw: card,
                 idx,
                 name: nameMatch ? nameMatch[1].trim() : '',
+                portion: portionMatch ? portionMatch[1].trim() : '',
                 cal: calMatch ? parseFloat(calMatch[1]) : 0,
                 carb: carbMatch ? parseFloat(carbMatch[1]) : 0,
                 pro: proMatch ? parseFloat(proMatch[1]) : 0,
                 fat: fatMatch ? parseFloat(fatMatch[1]) : 0,
                 time: timeMatch ? timeMatch[1].trim() : '',
-                portion: 1.0
+                portion_value: 1.0
             };
         });
 
@@ -1040,34 +1042,33 @@
             html += `
             <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                    <span style="font-weight:700;font-size:1.15em;">${card.name}</span>
-                    <span style="color:#888;font-size:0.85em;">(${card.portion.toFixed(1)}份)</span>
+                    <span style="font-weight:700;font-size:1.15em;">${card.name}(${card.portion})</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
                     <span style="color:#888;font-size:0.98em;">份數</span>
                     <button type="button" id="minus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">-</button>
-                    <input id="portion-${card.idx}" type="number" min="0.1" step="0.1" value="${card.portion.toFixed(1)}" style="width:48px;text-align:center;font-weight:700;font-size:1.1em;border:1px solid #ccc;border-radius:6px;" />
+                    <input id="portion-${card.idx}" type="number" min="0.1" step="0.1" value="${card.portion_value.toFixed(1)}" style="width:48px;text-align:center;font-weight:700;font-size:1.1em;border:1px solid #ccc;border-radius:6px;" />
                     <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
                 </div>
                 <div style="display:flex;gap:16px;overflow-x:auto;margin-bottom:8px;">
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">熱量</span>
-                        <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.cal*card.portion).toFixed(1)}</span>
+                        <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.cal*card.portion_value).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">kcal</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">碳水</span>
-                        <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.carb*card.portion).toFixed(1)}</span>
+                        <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.carb*card.portion_value).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">蛋白質</span>
-                        <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.pro*card.portion).toFixed(1)}</span>
+                        <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.pro*card.portion_value).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:2px;">
                         <span style="color:#888;font-size:0.98em;">脂肪</span>
-                        <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.fat*card.portion).toFixed(1)}</span>
+                        <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;">${(card.fat*card.portion_value).toFixed(1)}</span>
                         <span style="color:#888;font-size:0.98em;">g</span>
                     </div>
                 </div>
@@ -1092,15 +1093,15 @@
         // 份數調整事件
         parsedCards.forEach(card => {
             document.getElementById(`minus-${card.idx}`).onclick = () => {
-                if(card.portion>0.1) { card.portion = Math.max(0.1, (card.portion-0.1)); updateCard(card); }
+                if(card.portion_value>0.1) { card.portion_value = Math.max(0.1, (card.portion_value-0.1)); updateCard(card); }
             };
             document.getElementById(`plus-${card.idx}`).onclick = () => {
-                card.portion = (card.portion+0.1); updateCard(card);
+                card.portion_value = (card.portion_value+0.1); updateCard(card);
             };
             document.getElementById(`portion-${card.idx}`).onchange = (e) => {
                 let val = parseFloat(e.target.value);
                 if(isNaN(val) || val<0.1) val = 0.1;
-                card.portion = Math.round(val*10)/10;
+                card.portion_value = Math.round(val*10)/10;
                 updateCard(card);
             };
             // 營養素可手動編輯
@@ -1119,17 +1120,17 @@
         });
 
         function updateCard(card) {
-            document.getElementById(`portion-${card.idx}`).value = card.portion.toFixed(1);
-            document.getElementById(`edit-cal-${card.idx}`).textContent = (card.cal*card.portion).toFixed(1);
-            document.getElementById(`edit-carb-${card.idx}`).textContent = (card.carb*card.portion).toFixed(1);
-            document.getElementById(`edit-pro-${card.idx}`).textContent = (card.pro*card.portion).toFixed(1);
-            document.getElementById(`edit-fat-${card.idx}`).textContent = (card.fat*card.portion).toFixed(1);
+            document.getElementById(`portion-${card.idx}`).value = card.portion_value.toFixed(1);
+            document.getElementById(`edit-cal-${card.idx}`).textContent = (card.cal*card.portion_value).toFixed(1);
+            document.getElementById(`edit-carb-${card.idx}`).textContent = (card.carb*card.portion_value).toFixed(1);
+            document.getElementById(`edit-pro-${card.idx}`).textContent = (card.pro*card.portion_value).toFixed(1);
+            document.getElementById(`edit-fat-${card.idx}`).textContent = (card.fat*card.portion_value).toFixed(1);
         }
 
         // 下一步
         document.getElementById('nextStepBtn').onclick = () => {
             // 回傳時可帶上份數資訊
-            const selectedCards = parsedCards.map(card => ({...card, portion: card.portion}));
+            const selectedCards = parsedCards.map(card => ({...card, portion_value: card.portion_value}));
             handleNextStep(selectedCards);
         };
     }
