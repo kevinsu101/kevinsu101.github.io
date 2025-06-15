@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台23</h1>
+    <h1>CGM飯後血糖管理平台24</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1042,7 +1042,8 @@
             html += `
             <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
                 <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                    <span style="font-weight:700;font-size:1.15em;">${card.name}(${card.portion})</span>
+                    <span style="font-weight:700;font-size:1.15em;cursor:pointer;" onclick="editFoodName(${card.idx})">${card.name}</span>
+                    <span style="color:#888;font-size:0.85em;">${card.portion}</span>
                 </div>
                 <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
                     <span style="color:#888;font-size:0.98em;">份數</span>
@@ -1080,6 +1081,19 @@
         }
         html += `<button id="nextStepBtn" style="margin-top:18px;padding:12px 24px;background-color:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.1em;float:right;">下一步</button>`;
         analysisOutput.innerHTML = html;
+
+        // 新增食物名稱編輯功能
+        window.editFoodName = function(idx) {
+            const card = parsedCards[idx];
+            const newName = prompt('請輸入新的食物名稱', card.name);
+            if (newName !== null && newName.trim() !== '') {
+                card.name = newName.trim();
+                const nameElement = document.querySelector(`.nutrition-card:nth-child(${idx + 1}) span[style*="font-weight:700"]`);
+                if (nameElement) {
+                    nameElement.textContent = card.name;
+                }
+            }
+        };
 
         // 時間選擇器事件
         const timeInput = document.getElementById('foodTimeInput');
