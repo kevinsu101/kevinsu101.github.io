@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台27</h1>
+    <h1>CGM飯後血糖管理平台28</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1151,13 +1151,24 @@
 
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
     function handleNextStep(selectedCards) {
+        // 標準化欄位，確保送出 name/portion/portion_value/cal/carb/pro/fat/time
+        const foods = selectedCards.map(card => ({
+            name: card.name,
+            portion: card.portion,
+            portion_value: card.portion_value,
+            cal: card.cal,
+            carb: card.carb,
+            pro: card.pro,
+            fat: card.fat,
+            time: card.time
+        }));
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
         fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_upload_db', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 userId,
-                foods: selectedCards
+                foods
             })
         })
         .then(res => res.json())
