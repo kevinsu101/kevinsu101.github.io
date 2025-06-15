@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台26</h1>
+    <h1>CGM飯後血糖管理平台27</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -555,7 +555,7 @@
     console.log('=== 頁面載入完成 ===');
     
     // 全域變數儲存用戶資料
-    let globalUserId = null;
+    window.globalUserId = null;
     let globalUserProfile = null;
 
     // ------------------------- Tab Navigation Logic -------------------------
@@ -620,7 +620,7 @@
             console.log('   statusMessage:', profile.statusMessage);
 
             // 儲存到全域變數
-            globalUserId = profile.userId;
+            window.globalUserId = profile.userId;
             globalUserProfile = profile;
 
             return profile;
@@ -644,12 +644,12 @@
 
             // 獲取用戶資料
             await getProfileData();
-            console.log('=== 自動登入完成，userId:', globalUserId, '===');
+            console.log('=== 自動登入完成，userId:', window.globalUserId, '===');
             
         } catch (err) {
             console.error('自動登入失敗:', err);
             // 使用 fallback ID
-            globalUserId = 'FALLBACK_USER_ID';
+            window.globalUserId = 'FALLBACK_USER_ID';
             console.log('使用 Fallback User ID');
         }
     }
@@ -715,7 +715,7 @@
           const file = fileEl.files[0];
 
             // 直接使用全域的 userId
-            const userId = globalUserId || 'FALLBACK_USER_ID';
+            const userId = window.globalUserId || 'FALLBACK_USER_ID';
             console.log('上傳檔案使用的 User ID:', userId);
 
             const formData = new FormData();
@@ -746,7 +746,7 @@
 
     // 查詢用戶資料並自動填入表單
     async function fetchUserData() {
-        if (!globalUserId) {
+        if (!window.globalUserId) {
             document.getElementById('user-info-status').innerHTML = 
                 '<span style="color: red;"> 尚未取得用戶 ID，請重新整理頁面</span>';
             return;
@@ -761,7 +761,7 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    userId: globalUserId
+                    userId: window.globalUserId
                 })
             });
 
@@ -850,7 +850,7 @@
                     // 準備上傳
                     const formData = new FormData();
                     formData.append('voiceFile', audioBlob, 'voice_recording.wav');
-                    formData.append('userId', globalUserId || 'test_user');
+                    formData.append('userId', window.globalUserId || 'test_user');
 
                     try {
                         const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
@@ -948,7 +948,7 @@
                 return;
             }
 
-            if (!globalUserId) {
+            if (!window.globalUserId) {
                 alert('尚未取得用戶 ID，請重新整理頁面');
                 return;
             }
@@ -958,7 +958,7 @@
 
             try {
                 const formData = new FormData();
-                formData.append('userId', globalUserId);
+                formData.append('userId', window.globalUserId);
                 if (textInput) {
                     formData.append('textDescription', textInput);
                 }
@@ -1151,7 +1151,7 @@
 
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
     function handleNextStep(selectedCards) {
-        const userId = globalUserId || 'FALLBACK_USER_ID';
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
         fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_upload_db', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
