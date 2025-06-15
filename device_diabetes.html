@@ -1260,16 +1260,12 @@
 </div>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;position:relative;">
-                    <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}" title="刪除" style="position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1.3em;color:#e57373;z-index:2;line-height:1;">
-                        🗑️
-                    </button>
+                    <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}" title="刪除" style="position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1em;color:#e57373;z-index:2;line-height:1;">刪除</button>
                     <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
                     <div style="margin:6px 0 2px 0;">${foodsHtml}</div>
                     ${nutHtml}
                     <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
-                    <div style="margin-top:8px;">
-                        <!-- <button class="edit-diary-btn" data-date="${item.date}" data-time="${item.time}" style="margin-right:10px;">編輯</button> -->
-                    </div>
+                    <div style="margin-top:8px;"></div>
                 </div>`;
             });
         });
