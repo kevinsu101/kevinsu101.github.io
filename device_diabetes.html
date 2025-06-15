@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台21</h1>
+    <h1>CGM飯後血糖管理平台22</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -724,7 +724,7 @@
             formData.append('customId', customId);
             formData.append('file', file);
 
-            const endpoint = 'https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/uploadcsv';
+            const endpoint = 'https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/uploadcsv';
 
             try {
                 const response = await fetch(endpoint, {
@@ -755,7 +755,7 @@
         try {
             document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
             
-            const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ask_user_name_and_id', {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
             method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -853,7 +853,7 @@
                     formData.append('userId', globalUserId || 'test_user');
 
                     try {
-                        const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
+                        const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
                             method: 'POST',
                             body: formData
                         });
@@ -966,7 +966,7 @@
                     formData.append('imageFile', imageUpload.files[0]);
                 }
 
-                const response = await fetch('https://1ca0-2001-288-7001-10d7-f938-e6dc-c3eb-6acd.ngrok-free.app/ai_food_analysis', {
+                const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
                     method: 'POST',
                     body: formData
                 });
