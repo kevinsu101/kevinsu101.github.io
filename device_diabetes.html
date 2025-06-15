@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台37</h1>
+    <h1>CGM飯後血糖管理平台38</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1270,34 +1270,33 @@
             });
         });
         diaryDiv.innerHTML = html;
-    }
-
-    // 綁定刪除與編輯事件
-    document.querySelectorAll('.delete-diary-btn').forEach(btn => {
-        btn.onclick = async function() {
-            showCustomConfirm('確定要刪除此餐次所有食物紀錄？', async () => {
-                const userId = window.globalUserId || 'FALLBACK_USER_ID';
-                const date = btn.dataset.date;
-                const time = btn.dataset.time;
-                try {
-                    const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_delete_db', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId, date, time })
-                    });
-                    const result = await res.json();
-                    if(result.success) {
-                        alert(result.message);
-                        fetchFoodDiary();
-                    } else {
-                        alert('刪除失敗: ' + (result.message || '未知錯誤'));
+        // 重新綁定刪除事件
+        diaryDiv.querySelectorAll('.delete-diary-btn').forEach(btn => {
+            btn.onclick = async function() {
+                showCustomConfirm('確定要刪除此餐次所有食物紀錄？', async () => {
+                    const userId = window.globalUserId || 'FALLBACK_USER_ID';
+                    const date = btn.dataset.date;
+                    const time = btn.dataset.time;
+                    try {
+                        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_delete_db', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId, date, time })
+                        });
+                        const result = await res.json();
+                        if(result.success) {
+                            alert(result.message);
+                            fetchFoodDiary();
+                        } else {
+                            alert('刪除失敗: ' + (result.message || '未知錯誤'));
+                        }
+                    } catch (e) {
+                        alert('刪除失敗: ' + e.message);
                     }
-                } catch (e) {
-                    alert('刪除失敗: ' + e.message);
-                }
-            });
-        };
-    });
+                });
+            };
+        });
+    }
 
     // 美觀自訂彈窗 confirm
     function showCustomConfirm(message, onConfirm, onCancel) {
