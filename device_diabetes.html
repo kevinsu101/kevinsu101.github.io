@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台30</h1>
+    <h1>CGM飯後血糖管理平台31</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1232,13 +1232,40 @@
         Object.keys(monthDict).sort().reverse().forEach(month => {
             html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
             monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
+                // 食物名稱換行，份量小字
+                let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
+                // 橢圓形營養素區塊
+                let nutHtml = `
+                <div style="display:flex;gap:12px;justify-content:flex-start;margin:10px 0 6px 0;">
+                    <div style="background:linear-gradient(90deg,#6ec6b8,#4e9a8e);border-radius:30px/18px;width:70px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <span style="font-size:1.15em;font-weight:700;color:#fff;">${item.total_cal}</span>
+                        <span style="font-size:0.8em;color:#fff;">大卡</span>
+                    </div>
+                    <div style="background:linear-gradient(90deg,#b48fd2,#7e57c2);border-radius:30px/18px;width:70px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <span style="font-size:1.15em;font-weight:700;color:#fff;">${item.total_carb}</span>
+                        <span style="font-size:0.8em;color:#fff;">公克</span>
+                    </div>
+                    <div style="background:linear-gradient(90deg,#64b5f6,#1976d2);border-radius:30px/18px;width:70px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <span style="font-size:1.15em;font-weight:700;color:#fff;">${item.total_pro}</span>
+                        <span style="font-size:0.8em;color:#fff;">公克</span>
+                    </div>
+                    <div style="background:linear-gradient(90deg,#ffe082,#ffb300);border-radius:30px/18px;width:70px;height:36px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                        <span style="font-size:1.15em;font-weight:700;color:#fff;">${item.total_fat}</span>
+                        <span style="font-size:0.8em;color:#fff;">公克</span>
+                    </div>
+                </div>
+                <div style="display:flex;gap:12px;justify-content:flex-start;margin-bottom:2px;">
+                    <span style="font-size:0.92em;color:#6ec6b8;width:70px;text-align:center;">熱量</span>
+                    <span style="font-size:0.92em;color:#b48fd2;width:70px;text-align:center;">碳水</span>
+                    <span style="font-size:0.92em;color:#64b5f6;width:70px;text-align:center;">蛋白質</span>
+                    <span style="font-size:0.92em;color:#ffb300;width:70px;text-align:center;">脂肪</span>
+                </div>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;">
                     <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
-                    <div style="font-weight:700;font-size:1.1em;margin:6px 0 2px 0;">
-                        ${item.foods.map(f=>`${f.food_name} (${f.food_portion})`).join('、')}
-                    </div>
-                    <div style="color:#666;font-size:0.98em;">熱量: <b>${item.total_cal}</b> kcal｜碳水: <b>${item.total_carb}</b>g｜蛋白質: <b>${item.total_pro}</b>g｜脂肪: <b>${item.total_fat}</b>g｜碳水份數: <b>${item.total_carb_portions}</b></div>
+                    <div style="margin:6px 0 2px 0;">${foodsHtml}</div>
+                    ${nutHtml}
+                    <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
                     <div style="margin-top:8px;">
                         <button class="edit-diary-btn" data-date="${item.date}" data-time="${item.time}" style="margin-right:10px;">編輯</button>
                         <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}">刪除</button>
