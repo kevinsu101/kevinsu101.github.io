@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台29</h1>
+    <h1>CGM飯後血糖管理平台30</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -582,6 +582,10 @@
             // 當切換到 CGM 上傳頁面時，自動查詢用戶資料
             if (targetSectionId === 'section-cgm-upload') {
                 fetchUserData();
+            }
+            // 當切換到飲食日誌分頁時，自動載入資料
+            if (targetSectionId === 'section-food-diary') {
+                fetchFoodDiary();
             }
         });
     });
@@ -1203,15 +1207,6 @@
     }
 
     // 飲食日誌分頁邏輯
-    document.getElementById('btn-food-diary').addEventListener('click', () => {
-        navButtons.forEach(btn => btn.classList.remove('active'));
-        document.getElementById('btn-food-diary').classList.add('active');
-        contentSections.forEach(section => {
-            section.style.display = section.id === 'section-food-diary' ? 'block' : 'none';
-        });
-        fetchFoodDiary();
-    });
-
     async function fetchFoodDiary() {
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
         const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_db_flask', {
