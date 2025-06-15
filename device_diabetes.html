@@ -462,7 +462,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台41</h1>
+    <h1>CGM飯後血糖管理平台42</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1416,8 +1416,38 @@
             container.innerHTML = '<div class="loader">找不到任何療程數據。</div>';
             return;
         }
-        
-        const html = `
+
+        let html = `
+            <table style="width:100%;border-collapse:collapse;margin-bottom:20px;">
+                <thead>
+                    <tr style="background:#2c5282;color:#fff;">
+                        <th>區間</th>
+                        <th>CGM筆數</th>
+                        <th>TIR</th>
+                        <th>TAR</th>
+                        <th>TBR</th>
+                        <th>CV</th>
+                        <th>SD</th>
+                        <th>平均</th>
+                        <th>GMI</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${periods.sort((a, b) => b.period_index - a.period_index).map(p => `
+                        <tr>
+                            <td>第${p.period_index}期<br>${p.start_date}~${p.end_date}</td>
+                            <td>${p.CGM_Count ?? '-'}</td>
+                            <td>${p.TIR ?? '-'}</td>
+                            <td>${p.TAR ?? '-'}</td>
+                            <td>${p.TBR ?? '-'}</td>
+                            <td>${p.CV ?? '-'}</td>
+                            <td>${p.SD ?? '-'}</td>
+                            <td>${p.Avg ?? '-'}</td>
+                            <td>${p.GMI ?? '-'}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
             <div class="accordion">
                 ${periods.sort((a, b) => b.period_index - a.period_index).map(p => `
                     <div class="accordion-item">
