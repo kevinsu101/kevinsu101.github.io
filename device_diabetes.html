@@ -421,7 +421,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台28</h1>
+    <h1>CGM飯後血糖管理平台29</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -559,6 +559,9 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
+        // 修正：navButtons 與 contentSections 提前宣告，供所有分頁切換共用
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const contentSections = document.querySelectorAll('.content-section');
     console.log('=== 頁面載入完成 ===');
     
     // 全域變數儲存用戶資料
@@ -566,9 +569,6 @@
     let globalUserProfile = null;
 
     // ------------------------- Tab Navigation Logic -------------------------
-    const navButtons = document.querySelectorAll('.nav-btn');
-    const contentSections = document.querySelectorAll('.content-section');
-
     navButtons.forEach(button => {
         button.addEventListener('click', () => {
             navButtons.forEach(btn => btn.classList.remove('active'));
