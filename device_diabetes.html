@@ -416,12 +416,53 @@
             overflow-y: auto;
         }
 
+        .accordion-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .accordion-header {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s ease;
+            font-size: 1.1em;
+        }
+        .accordion-header:hover, .accordion-header.active {
+            background-color: #0056b3;
+        }
+        .accordion-content {
+            padding: 15px;
+            background-color: white;
+            display: none;
+            border-top: 1px solid #ddd;
+        }
+        .loader, .cgm-error-message { /* Renamed from error-message to avoid conflicts */
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }
+        .cgm-error-message {
+            color: #d9534f;
+        }
+        #cgmAnalysis canvas { /* Target canvas inside the tab */
+            max-width: 100%;
+            height: auto;
+        }
+
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台38</h1>
+    <h1>CGM飯後血糖管理平台39</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -484,7 +525,9 @@
 
     <div id="section-cgm-analysis" class="content-section" style="display: none;">
         <h2>CGM資料與分析</h2>
-        <p style="text-align: center; padding: 20px 0;">此功能開發中。</p>
+        <div id="cgm-periods-container">
+            <!-- CGM Periods will be loaded here -->
+        </div>
     </div>
 
     <div id="section-ai-food" class="content-section" style="display: none;">
@@ -1324,6 +1367,220 @@
         };
     }
 
+    // ----- CGM Analysis Functions -----
+    async function loadCgmPeriods() {
+        const container = document.getElementById('cgm-periods-container');
+        container.innerHTML = '<div class="loader">正在加載療程數據...</div>';
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id'); // Use globalUserId first
+
+        if (!lineUserId) {
+            container.innerHTML = '<div class="cgm-error-message">錯誤：找不到使用者ID，請先登入。</div>';
+            return;
+        }
+
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_periods'
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errData.error || ''}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            renderCgmPeriods(data.therapy_periods);
+
+        } catch (error) {
+            container.innerHTML = `<div class="cgm-error-message">加載療程數據失敗: ${error.message}</div>`;
+            console.error('Error loading CGM periods:', error);
+        }
+    }
+
+    function renderCgmPeriods(periods) {
+        const container = document.getElementById('cgm-periods-container');
+        if (!periods || periods.length === 0) {
+            container.innerHTML = '<div class="loader">找不到任何療程數據。</div>';
+            return;
+        }
+        
+        const html = `
+            <div class="accordion">
+                ${periods.sort((a, b) => b.period_index - a.period_index).map(p => `
+                    <div class="accordion-item">
+                        <button class="accordion-header" onclick="togglePeriod(this, ${p.period_index})">
+                            療程 ${p.period_index}: ${p.start_date} ~ ${p.end_date}
+                        </button>
+                        <div class="accordion-content" id="period-content-${p.period_index}">
+                            <!-- Chart will be loaded here -->
+                        </div>
+                    </div>
+                `).join('')}
+            </div>
+        `;
+        container.innerHTML = html;
+    }
+
+    async function togglePeriod(headerElement, periodIndex) {
+        const content = document.getElementById(`period-content-${periodIndex}`);
+        const isVisible = content.style.display === 'block';
+
+        // Close all other accordions
+        document.querySelectorAll('.accordion-content').forEach(el => {
+            if (el.id !== `period-content-${periodIndex}`) {
+                el.style.display = 'none';
+            }
+        });
+        document.querySelectorAll('.accordion-header').forEach(el => {
+            if (el !== headerElement) {
+                el.classList.remove('active');
+            }
+        });
+
+        if (isVisible) {
+            content.style.display = 'none';
+            headerElement.classList.remove('active');
+        } else {
+            content.style.display = 'block';
+            headerElement.classList.add('active');
+            // Only load data if it hasn't been loaded yet
+            if (!content.hasChildNodes() || content.querySelector('.loader')) {
+                loadCgmDataForPeriod(periodIndex);
+            }
+        }
+    }
+
+    async function loadCgmDataForPeriod(periodIndex) {
+        const content = document.getElementById(`period-content-${periodIndex}`);
+        content.innerHTML = '<div class="loader">正在加載CGM數據圖表...</div>';
+        
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
+
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_cgm_data',
+                    period_index: periodIndex
+                })
+            });
+
+            if (!response.ok) {
+                 const errData = await response.json().catch(() => ({}));
+                throw new Error(`伺服器錯誤: ${response.status}. ${errData.error || ''}`);
+            }
+            
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            if (data.cgm_data.labels.length === 0) {
+                 content.innerHTML = '<div class="loader">此區間沒有CGM數據可供顯示。</div>';
+                 return;
+            }
+            
+            const canvasId = `cgm-chart-${periodIndex}`;
+            content.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            renderCgmChart(ctx, data.cgm_data, periodIndex);
+
+        } catch (error) {
+            content.innerHTML = `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
+            console.error(`Error loading CGM data for period ${periodIndex}:`, error);
+        }
+    }
+
+    const chartInstances = {}; // To keep track of charts
+    function renderCgmChart(ctx, cgmData, periodIndex) {
+        // Destroy existing chart for this canvas if it exists
+        if(chartInstances[periodIndex]) {
+            chartInstances[periodIndex].destroy();
+        }
+
+        chartInstances[periodIndex] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: cgmData.labels,
+                datasets: [{
+                    label: '血糖值 (mg/dL)',
+                    data: cgmData.values,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1.5,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 1.5,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            tooltipFormat: 'yyyy-MM-dd HH:mm',
+                            displayFormats: {
+                                day: 'yyyy-MM-dd'
+                            }
+                        },
+                        title: { display: true, text: '日期' },
+                        ticks: { source: 'auto', maxRotation: 45, minRotation: 45 }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: '血糖值 (mg/dL)' }
+                    }
+                },
+                plugins: {
+                    legend:{ position: 'top' },
+                    tooltip: { mode: 'index', intersect: false },
+                    zoom: {
+                        pan: { enabled: true, mode: 'x', threshold: 5 },
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                    }
+                }
+            }
+        });
+    }
+
+    function showTab(tabName) {
+        ['foodAnalysis', 'foodDiary', 'cgmAnalysis'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        const tab = document.getElementById(tabName);
+        if(tab) tab.style.display = 'block';
+
+        if (tabName === 'foodDiary') {
+            fetchFoodDiary();
+        } else if (tabName === 'cgmAnalysis') {
+            const container = document.getElementById('cgm-periods-container');
+            // Load data only if it's the first time
+            if (!container.hasChildNodes() || container.innerHTML.trim() === '') {
+                loadCgmPeriods();
+            }
+        }
+    }
+
 </script>
+<!-- Chart.js and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
 </body>
 </html>
