@@ -428,7 +428,9 @@
         <button id="btn-cgm-upload" class="nav-btn">CGM資料上傳</button>
         <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
         <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
+        <button id="btn-food-diary" class="nav-btn">飲食日誌</button>
         <button id="btn-liff-test" class="nav-btn">LIFF測試</button>
+        
     </div>
 
     <div id="section-home" class="content-section">
@@ -547,6 +549,11 @@
             <h3 style="text-align: center; color: var(--label-color);">發送結果：</h3>
             <pre id="liff-data-output">尚未發送訊息...</pre>
         </div>
+    </div>
+
+    <div id="section-food-diary" class="content-section" style="display: none;">
+        <h2>飲食日誌</h2>
+        <div id="foodDiaryOutput" style="padding: 10px;"></div>
     </div>
 </div>
 
@@ -1163,6 +1170,13 @@
             time: card.time
         }));
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        const nextBtn = document.getElementById('nextStepBtn');
+        if (nextBtn) {
+            nextBtn.textContent = '上傳中...';
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = 0.7;
+            nextBtn.style.cursor = 'not-allowed';
+        }
         fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_upload_db', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1177,7 +1191,88 @@
         })
         .catch(err => {
             alert('上傳失敗: ' + err.message);
+        })
+        .finally(() => {
+            if (nextBtn) {
+                nextBtn.textContent = '下一步';
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = 1;
+                nextBtn.style.cursor = 'pointer';
+            }
         });
+    }
+
+    // 飲食日誌分頁邏輯
+    document.getElementById('btn-food-diary').addEventListener('click', () => {
+        navButtons.forEach(btn => btn.classList.remove('active'));
+        document.getElementById('btn-food-diary').classList.add('active');
+        contentSections.forEach(section => {
+            section.style.display = section.id === 'section-food-diary' ? 'block' : 'none';
+        });
+        fetchFoodDiary();
+    });
+
+    async function fetchFoodDiary() {
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_db_flask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+        });
+        const result = await res.json();
+        if (result.success) {
+            renderFoodDiary(result.data);
+        } else {
+            alert(result.message);
+        }
+    }
+
+    function renderFoodDiary(monthDict) {
+        const diaryDiv = document.getElementById('foodDiaryOutput');
+        if (!monthDict || Object.keys(monthDict).length === 0) {
+            diaryDiv.innerHTML = '<div style="color:#888;">查無飲食紀錄</div>';
+            return;
+        }
+        let html = '';
+        Object.keys(monthDict).sort().reverse().forEach(month => {
+            html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
+            monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
+                html += `
+                <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;">
+                    <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
+                    <div style="font-weight:700;font-size:1.1em;margin:6px 0 2px 0;">
+                        ${item.foods.map(f=>`${f.food_name} (${f.food_portion})`).join('、')}
+                    </div>
+                    <div style="color:#666;font-size:0.98em;">熱量: <b>${item.total_cal}</b> kcal｜碳水: <b>${item.total_carb}</b>g｜蛋白質: <b>${item.total_pro}</b>g｜脂肪: <b>${item.total_fat}</b>g｜碳水份數: <b>${item.total_carb_portions}</b></div>
+                    <div style="margin-top:8px;">
+                        <button class="edit-diary-btn" data-date="${item.date}" data-time="${item.time}" style="margin-right:10px;">編輯</button>
+                        <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}">刪除</button>
+                    </div>
+                </div>`;
+            });
+        });
+        diaryDiv.innerHTML = html;
+        // 綁定刪除與編輯事件
+        document.querySelectorAll('.delete-diary-btn').forEach(btn => {
+            btn.onclick = function() {
+                if(confirm('確定要刪除此餐次所有食物紀錄？')) {
+                    deleteFoodDiary(btn.dataset.date, btn.dataset.time);
+                }
+            };
+        });
+        document.querySelectorAll('.edit-diary-btn').forEach(btn => {
+            btn.onclick = function() {
+                alert('編輯功能可依需求擴充');
+            };
+        });
+    }
+
+    async function deleteFoodDiary(date, time) {
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        // 這裡可呼叫後端刪除API，需你後端支援
+        alert('刪除功能請後端實作: ' + date + ' ' + time);
+        // 刪除後自動刷新
+        // await fetchFoodDiary();
     }
   </script>
 
