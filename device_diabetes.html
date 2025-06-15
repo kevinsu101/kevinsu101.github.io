@@ -462,7 +462,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台43</h1>
+    <h1>CGM飯後血糖管理平台44</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1451,7 +1451,12 @@
                             <tbody>
                                 ${periodData.map(p => `
                                     <tr style="border-bottom: 1px solid #e2e8f0;">
-                                        <td style="padding: 12px;">${p.start_date} ~ ${p.end_date}</td>
+                                        <td style="padding: 12px;">
+                                            <button style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-weight:700;" onclick="togglePeriod(this, ${p.period_index})">
+                                                ${p.start_date} ~ ${p.end_date}
+                                            </button>
+                                            <div class='accordion-content' id='period-content-${p.period_index}' style='display:none;margin-top:10px;'></div>
+                                        </td>
                                         <td style="padding: 12px; text-align: center;">${p.CGM_Count ?? '-'}</td>
                                         <td style="padding: 12px; text-align: center;">${p.TIR ?? '-'}</td>
                                         <td style="padding: 12px; text-align: center;">${p.TAR ?? '-'}</td>
@@ -1464,18 +1469,6 @@
                                 `).join('')}
                             </tbody>
                         </table>
-                    </div>
-                    <div class="accordion">
-                        ${periodData.map(p => `
-                            <div class="accordion-item">
-                                <button class="accordion-header" onclick="togglePeriod(this, ${p.period_index})">
-                                    監測 ${p.period_index}: ${p.start_date} ~ ${p.end_date}
-                                </button>
-                                <div class="accordion-content" id="period-content-${p.period_index}">
-                                    <!-- Chart will be loaded here -->
-                                </div>
-                            </div>
-                        `).join('')}
                     </div>
                 </div>
             `;
