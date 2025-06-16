@@ -483,7 +483,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台48</h1>
+    <h1>CGM飯後血糖管理平台49</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1516,7 +1516,10 @@
             <button id="big-cgm-close-btn" title="關閉">×</button>
             <div id='big-cgm-chart-scroll'>
                 <div class="chart-scroll"><canvas id="big-cgm-chart-canvas"></canvas></div>
-                <div class="chart-scroll"><canvas id="big-cgm-chart-canvas2"></canvas></div>
+                <div class="chart-scroll" style="display:flex;gap:24px;align-items:flex-start;">
+                    <canvas id="big-cgm-chart-canvas2"></canvas>
+                    <div id="mean-peak-table" style="min-width:260px;"></div>
+                </div>
                 <div class="chart-scroll"><canvas id="big-cgm-chart-canvas3"></canvas></div>
             </div>
             <div id="big-cgm-days-list" style="margin-top:24px;"></div>
@@ -1551,6 +1554,8 @@
             renderAgpChart(data.agp);
             // 取得單日摘要
             await renderBigCgmDaysList(periodIndex);
+            // 取得mean_peak並畫圖
+            await renderMeanPeakChart(periodIndex);
         } catch (error) {
             chartContent.innerHTML += `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
         }
@@ -1890,6 +1895,83 @@
         }
     }
 
+    // 渲染mean_peak散點圖與表格
+    async function renderMeanPeakChart(periodIndex) {
+        const canvas = document.getElementById('big-cgm-chart-canvas2');
+        const tableDiv = document.getElementById('mean-peak-table');
+        tableDiv.innerHTML = '<div class="loader">載入中...</div>';
+        let screenW = Math.max(window.innerWidth, 500);
+        let width = Math.min(Math.max(screenW, 600), 900);
+        if(window.innerWidth < 700) width = screenW;
+        canvas.width = width;
+        canvas.height = window.innerWidth < 700 ? 320 : 500;
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: window.globalUserId || localStorage.getItem('line_user_id'),
+                    request_type: 'get_mean_peak',
+                    period_index: periodIndex
+                })
+            });
+            const data = await response.json();
+            if (!data.mean_peak || !data.mean_peak.length) {
+                tableDiv.innerHTML = '<div class="loader">查無波動分析資料</div>';
+                return;
+            }
+            // 畫散點圖
+            const ctx = canvas.getContext('2d');
+            if(window.meanPeakChartInstance) window.meanPeakChartInstance.destroy();
+            const colors = ['#1976d2','#8d5524','#6a1b9a','#bdb76b','#e57373','#4fc3f7'];
+            const mealMap = {'早餐':'B','午餐':'L','晚餐':'D','其他':'O'};
+            window.meanPeakChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: data.mean_peak.map((row, i) => ({
+                        label: `${mealMap[row.meal]||row.meal} ${row.meal}`,
+                        data: [{x: (row.mean_peak_duration/60).toFixed(2), y: row.mean_peak_rise}],
+                        backgroundColor: colors[i%colors.length],
+                        pointRadius: 10,
+                        pointHoverRadius: 14
+                    }))
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}：\n持續${context.parsed.x}小時，升幅${context.parsed.y}mg/dL`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '波動持續時間 (小時)' },
+                            min: 1.5, max: 4.5
+                        },
+                        y: {
+                            title: { display: true, text: '波動升幅 (mg/dL)' },
+                            min: 10, max: 90
+                        }
+                    }
+                }
+            });
+            // 畫表格
+            let table = `<table style='border-collapse:collapse;margin-left:8px;'><thead><tr style='background:#f8f9fa;'><th style='padding:6px 12px;'>餐別</th><th style='padding:6px 12px;'>平均達峰時間</th><th style='padding:6px 12px;'>平均波動升幅</th><th style='padding:6px 12px;'>平均波動持續</th><th style='padding:6px 12px;'>≤50mg/dL</th><th style='padding:6px 12px;'>>50mg/dL</th></tr></thead><tbody>`;
+            data.mean_peak.forEach(row => {
+                table += `<tr><td style='padding:6px 12px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:6px 12px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:6px 12px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:6px 12px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:6px 12px;'>${row.count_le_50}</td><td style='padding:6px 12px;'>${row.count_gt_50}</td></tr>`;
+            });
+            table += '</tbody></table>';
+            tableDiv.innerHTML = table;
+        } catch (e) {
+            tableDiv.innerHTML = '<div class="cgm-error-message">波動分析載入失敗</div>';
+        }
+    }
 </script>
 <!-- Chart.js and dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
