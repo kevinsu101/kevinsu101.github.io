@@ -404,6 +404,35 @@
                 box-sizing: border-box !important;
                 resize: vertical !important;
             }
+            /* 新增：AI食物辨識卡片手機優化 */
+            .nutrition-card {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                padding: 10px 6px !important;
+                gap: 4px !important;
+                max-width: 100% !important;
+            }
+            .nutrition-card > input[type="checkbox"] {
+                margin-top: 0 !important;
+                margin-bottom: 8px !important;
+                align-self: flex-start !important;
+            }
+            .nutrition-info-row {
+                flex-direction: column !important;
+                gap: 6px !important;
+                width: 100% !important;
+            }
+            .nutrition-info-row > div {
+                min-width: 0 !important;
+                width: 100% !important;
+                text-align: left !important;
+            }
+            .nutrition-card .nutrition-info-row input[type="number"] {
+                width: 40px !important;
+            }
+            .nutrition-card .nutrition-info-row button {
+                width: 28px !important;
+            }
         }
 
         .output-section {
@@ -532,7 +561,7 @@
                 <input type="text" id="cgmPatientName" required readonly>
             </div>
             <div class="form-group">
-                <label for="cgmPatientId">身分證字號</label>
+                <label for="cgmPatientId">使用者ID</label>
                 <input type="text" id="cgmPatientId" required readonly>
             </div>
             <div class="form-group">
@@ -1116,36 +1145,34 @@
         }
         parsedCards.forEach(card => {
             html += `
-            <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: flex-start; gap: 10px;">
+            <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: flex-start; gap: 10px; max-width: 100%;">
                 <input type="checkbox" class="food-checkbox" id="food-check-${card.idx}" checked style="margin-top: 6px; width: 18px; height: 18px; accent-color: #28a745;">
                 <div style="flex:1;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
                         <span style="font-weight:700;font-size:1.15em;cursor:pointer;" onclick="editFoodName(${card.idx})">${card.name}</span>
                         <span style="color:#888;font-size:0.85em;">${card.portion}</span>
                     </div>
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                    <div class="nutrition-info-row" style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:8px;width:100%;">
                         <span style="color:#888;font-size:0.98em;">份數</span>
                         <button type="button" id="minus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">-</button>
                         <input id="portion-${card.idx}" type="number" min="0.1" step="0.1" value="${card.portion_value.toFixed(1)}" style="width:48px;text-align:center;font-weight:700;font-size:1.1em;border:1px solid #ccc;border-radius:6px;" />
                         <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
-                    </div>
-                    <div style="display:flex;gap:16px;overflow-x:auto;margin-bottom:8px;">
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;max-width:100%;">
                             <span style="color:#888;font-size:0.98em;">熱量</span>
                             <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.cal*card.portion_value).toFixed(1)}</span>
                             <span style="color:#888;font-size:0.95em;">kcal</span>
                         </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;max-width:100%;">
                             <span style="color:#888;font-size:0.98em;">碳水</span>
                             <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.carb*card.portion_value).toFixed(1)}</span>
                             <span style="color:#888;font-size:0.95em;">g</span>
                         </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;max-width:100%;">
                             <span style="color:#888;font-size:0.98em;">蛋白質</span>
                             <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.pro*card.portion_value).toFixed(1)}</span>
                             <span style="color:#888;font-size:0.95em;">g</span>
                         </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;max-width:100%;">
                             <span style="color:#888;font-size:0.98em;">脂肪</span>
                             <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.fat*card.portion_value).toFixed(1)}</span>
                             <span style="color:#888;font-size:0.95em;">g</span>
