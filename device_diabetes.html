@@ -483,7 +483,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台50</h1>
+    <h1>CGM飯後血糖管理平台</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1975,7 +1975,7 @@
             // 美化表格
             let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
             data.mean_peak.forEach(row => {
-                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
+                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.mean_tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
             });
             table += '</tbody></table>';
             tableDiv.innerHTML = table;
