@@ -457,12 +457,20 @@
             height: auto;
         }
 
+        /* 新增CSS，直接插入到<head> */
+        /* 放在<head>內的<style>區塊 */
+        #big-cgm-chart-area { max-width: 100vw; }
+        #big-cgm-chart-scroll { overflow-x: auto; }
+        #big-cgm-chart-canvas { min-width: 600px; max-width: 1200px; width: 100vw; height: 350px; display: block; }
+        @media (max-width: 700px) {
+          #big-cgm-chart-canvas { min-width: 500px; width: 100vw; height: 220px; }
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台45</h1>
+    <h1>CGM飯後血糖管理平台46</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1491,7 +1499,7 @@
         const chartContent = document.getElementById('big-cgm-chart-content');
         chartArea.style.display = 'block';
         chartTitle.textContent = `監測 ${periodIndex}: ${startDate} ~ ${endDate}`;
-        chartContent.innerHTML = `<div style='overflow-x:auto;'><canvas id="big-cgm-chart-canvas" style="min-width:1200px;max-width:none;height:400px;"></canvas></div>`;
+        chartContent.innerHTML = `<div id='big-cgm-chart-scroll' style='overflow-x:auto;'><canvas id="big-cgm-chart-canvas"></canvas></div>`;
 
         // 載入AGP資料
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
@@ -1525,9 +1533,16 @@
         }, 200);
     }
 
-    // AGP專用繪圖
+    // AGP專用繪圖，canvas寬高自適應
     function renderAgpChart(agpData) {
-        const ctx = document.getElementById('big-cgm-chart-canvas').getContext('2d');
+        const canvas = document.getElementById('big-cgm-chart-canvas');
+        // 桌機最大1200px，手機最大100vw，最小500px
+        let screenW = Math.max(window.innerWidth, 500);
+        let width = Math.min(Math.max(screenW, 600), 1200);
+        if(window.innerWidth < 700) width = screenW;
+        canvas.width = width;
+        canvas.height = window.innerWidth < 700 ? 220 : 350;
+        const ctx = canvas.getContext('2d');
         if(window.agpChartInstance) window.agpChartInstance.destroy();
         window.agpChartInstance = new Chart(ctx, {
             type: 'line',
