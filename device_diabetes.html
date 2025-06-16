@@ -459,11 +459,20 @@
 
         /* 新增CSS，直接插入到<head> */
         /* 放在<head>內的<style>區塊 */
-        #big-cgm-chart-area { max-width: 100vw; }
+        #big-cgm-chart-area { max-width: 100vw; position: relative; }
         #big-cgm-chart-scroll { overflow-x: auto; }
-        #big-cgm-chart-canvas { min-width: 600px; max-width: 1200px; width: 100vw; height: 350px; display: block; }
+        #big-cgm-chart-canvas, #big-cgm-chart-canvas2, #big-cgm-chart-canvas3 {
+          min-width: 600px; max-width: 1200px; width: 100vw; height: 500px; display: block; margin-bottom: 24px;
+        }
+        #big-cgm-close-btn {
+          position: absolute; top: 18px; right: 18px; z-index: 10; background: #fff; color: #1976d2; border: 2px solid #1976d2; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;
+        }
+        #big-cgm-close-btn:hover { background: #1976d2; color: #fff; }
         @media (max-width: 700px) {
-          #big-cgm-chart-canvas { min-width: 500px; width: 100vw; height: 220px; }
+          #big-cgm-chart-canvas, #big-cgm-chart-canvas2, #big-cgm-chart-canvas3 {
+            min-width: 500px; width: 100vw; height: 320px;
+          }
+          #big-cgm-close-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 1.2em; }
         }
     </style>
 </head>
@@ -1499,7 +1508,17 @@
         const chartContent = document.getElementById('big-cgm-chart-content');
         chartArea.style.display = 'block';
         chartTitle.textContent = `監測 ${periodIndex}: ${startDate} ~ ${endDate}`;
-        chartContent.innerHTML = `<div id='big-cgm-chart-scroll' style='overflow-x:auto;'><canvas id="big-cgm-chart-canvas"></canvas></div>`;
+        chartContent.innerHTML = `
+            <button id="big-cgm-close-btn" title="關閉">×</button>
+            <div id='big-cgm-chart-scroll' style='overflow-x:auto;'>
+                <canvas id="big-cgm-chart-canvas"></canvas>
+                <canvas id="big-cgm-chart-canvas2"></canvas>
+                <canvas id="big-cgm-chart-canvas3"></canvas>
+            </div>
+        `;
+        document.getElementById('big-cgm-close-btn').onclick = function() {
+            chartArea.style.display = 'none';
+        };
 
         // 載入AGP資料
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
@@ -1520,12 +1539,13 @@
             const data = await response.json();
             if (data.error) throw new Error(data.error);
             if (!data.agp || !data.agp.time_labels.length) {
-                chartContent.innerHTML = '<div class="loader">此區間沒有AGP數據可供顯示。</div>';
+                chartContent.innerHTML += '<div class="loader">此區間沒有AGP數據可供顯示。</div>';
                 return;
             }
             renderAgpChart(data.agp);
+            // 你可以在這裡呼叫 renderAgpChart2(data.agp) 或 renderOtherChart(canvasId, data) 顯示其他圖
         } catch (error) {
-            chartContent.innerHTML = `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
+            chartContent.innerHTML += `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
         }
         // 自動滾動到大圖表區
         setTimeout(() => {
@@ -1536,12 +1556,11 @@
     // AGP專用繪圖，canvas寬高自適應
     function renderAgpChart(agpData) {
         const canvas = document.getElementById('big-cgm-chart-canvas');
-        // 桌機最大1200px，手機最大100vw，最小500px
         let screenW = Math.max(window.innerWidth, 500);
         let width = Math.min(Math.max(screenW, 600), 1200);
         if(window.innerWidth < 700) width = screenW;
         canvas.width = width;
-        canvas.height = window.innerWidth < 700 ? 220 : 350;
+        canvas.height = window.innerWidth < 700 ? 320 : 500;
         const ctx = canvas.getContext('2d');
         if(window.agpChartInstance) window.agpChartInstance.destroy();
         window.agpChartInstance = new Chart(ctx, {
