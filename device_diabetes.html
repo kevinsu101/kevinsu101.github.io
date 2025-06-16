@@ -460,16 +460,20 @@
         /* 新增CSS，直接插入到<head> */
         /* 放在<head>內的<style>區塊 */
         #big-cgm-chart-area { max-width: 100vw; position: relative; }
-        #big-cgm-chart-scroll { overflow-x: auto; }
-        #big-cgm-chart-canvas, #big-cgm-chart-canvas2, #big-cgm-chart-canvas3 {
-          min-width: 600px; max-width: 1200px; width: 100vw; height: 500px; display: block; margin-bottom: 24px;
+        .chart-scroll { overflow-x: auto; margin-bottom: 24px; }
+        .chart-scroll canvas {
+          min-width: 600px;
+          max-width: 1200px;
+          width: 100vw;
+          height: 500px;
+          display: block;
         }
         #big-cgm-close-btn {
           position: absolute; top: 18px; right: 18px; z-index: 10; background: #fff; color: #1976d2; border: 2px solid #1976d2; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;
         }
         #big-cgm-close-btn:hover { background: #1976d2; color: #fff; }
         @media (max-width: 700px) {
-          #big-cgm-chart-canvas, #big-cgm-chart-canvas2, #big-cgm-chart-canvas3 {
+          .chart-scroll canvas {
             min-width: 500px; width: 100vw; height: 320px;
           }
           #big-cgm-close-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 1.2em; }
@@ -479,7 +483,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台46</h1>
+    <h1>CGM飯後血糖管理平台47</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1510,10 +1514,10 @@
         chartTitle.textContent = `監測 ${periodIndex}: ${startDate} ~ ${endDate}`;
         chartContent.innerHTML = `
             <button id="big-cgm-close-btn" title="關閉">×</button>
-            <div id='big-cgm-chart-scroll' style='overflow-x:auto;'>
-                <canvas id="big-cgm-chart-canvas"></canvas>
-                <canvas id="big-cgm-chart-canvas2"></canvas>
-                <canvas id="big-cgm-chart-canvas3"></canvas>
+            <div id='big-cgm-chart-scroll'>
+                <div class="chart-scroll"><canvas id="big-cgm-chart-canvas"></canvas></div>
+                <div class="chart-scroll"><canvas id="big-cgm-chart-canvas2"></canvas></div>
+                <div class="chart-scroll"><canvas id="big-cgm-chart-canvas3"></canvas></div>
             </div>
         `;
         document.getElementById('big-cgm-close-btn').onclick = function() {
