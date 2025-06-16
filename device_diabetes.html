@@ -462,7 +462,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台44</h1>
+    <h1>CGM飯後血糖管理平台45</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1491,9 +1491,9 @@
         const chartContent = document.getElementById('big-cgm-chart-content');
         chartArea.style.display = 'block';
         chartTitle.textContent = `監測 ${periodIndex}: ${startDate} ~ ${endDate}`;
-        chartContent.innerHTML = '<div class="loader">正在加載CGM數據圖表...</div>';
+        chartContent.innerHTML = `<div style='overflow-x:auto;'><canvas id="big-cgm-chart-canvas" style="min-width:1200px;max-width:none;height:400px;"></canvas></div>`;
 
-        // 載入圖表資料
+        // 載入AGP資料
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
             const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
@@ -1501,7 +1501,7 @@
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
                     line_user_id: lineUserId,
-                    request_type: 'get_cgm_data',
+                    request_type: 'get_agp',
                     period_index: periodIndex
                 })
             });
@@ -1511,14 +1511,11 @@
             }
             const data = await response.json();
             if (data.error) throw new Error(data.error);
-            if (data.cgm_data.labels.length === 0) {
-                chartContent.innerHTML = '<div class="loader">此區間沒有CGM數據可供顯示。</div>';
+            if (!data.agp || !data.agp.time_labels.length) {
+                chartContent.innerHTML = '<div class="loader">此區間沒有AGP數據可供顯示。</div>';
                 return;
             }
-            const canvasId = `big-cgm-chart-canvas`;
-            chartContent.innerHTML = `<canvas id="${canvasId}" style="max-width:100%;height:400px;"></canvas>`;
-            const ctx = document.getElementById(canvasId).getContext('2d');
-            renderCgmChart(ctx, data.cgm_data, `big_${periodIndex}`);
+            renderAgpChart(data.agp);
         } catch (error) {
             chartContent.innerHTML = `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
         }
@@ -1526,6 +1523,77 @@
         setTimeout(() => {
             chartArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 200);
+    }
+
+    // AGP專用繪圖
+    function renderAgpChart(agpData) {
+        const ctx = document.getElementById('big-cgm-chart-canvas').getContext('2d');
+        if(window.agpChartInstance) window.agpChartInstance.destroy();
+        window.agpChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: agpData.time_labels,
+                datasets: [
+                    {
+                        label: '平均',
+                        data: agpData.mean,
+                        borderColor: '#1976d2',
+                        backgroundColor: 'rgba(25,118,210,0.08)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: '25-75%分位帶',
+                        data: agpData.p75,
+                        borderColor: 'rgba(76,175,80,0.0)',
+                        backgroundColor: 'rgba(76,175,80,0.18)',
+                        fill: '-1',
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '25-75%分位帶下',
+                        data: agpData.p25,
+                        borderColor: 'rgba(76,175,80,0.0)',
+                        backgroundColor: 'rgba(76,175,80,0.18)',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '5-95%分位帶',
+                        data: agpData.p95,
+                        borderColor: 'rgba(255,193,7,0.0)',
+                        backgroundColor: 'rgba(255,193,7,0.12)',
+                        fill: '-1',
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '5-95%分位帶下',
+                        data: agpData.p5,
+                        borderColor: 'rgba(255,193,7,0.0)',
+                        backgroundColor: 'rgba(255,193,7,0.12)',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: '時間' }, ticks: { maxTicksLimit: 24 } },
+                    y: { title: { display: true, text: 'CGM (mg/dL)' }, min: 40, max: 300 }
+                },
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                }
+            }
+        });
     }
 
     async function togglePeriod(headerElement, periodIndex) {
