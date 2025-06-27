@@ -574,7 +574,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台5</h1>
+    <h1>CGM飯後血糖管理平台</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1605,26 +1605,28 @@
                         <input id="portion-${card.idx}" type="number" min="0.1" step="0.1" value="${card.portion_value.toFixed(1)}" style="width:48px;text-align:center;font-weight:700;font-size:1.1em;border:1px solid #ccc;border-radius:6px;" />
                         <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
                     </div>
-                    <div style="display:flex;gap:16px;overflow-x:auto;margin-bottom:8px;">
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
-                            <span style="color:#888;font-size:0.98em;">熱量</span>
-                            <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.cal*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">kcal</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
-                            <span style="color:#888;font-size:0.98em;">碳水</span>
-                            <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.carb*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
-                            <span style="color:#888;font-size:0.98em;">蛋白質</span>
-                            <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.pro*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
-                            <span style="color:#888;font-size:0.98em;">脂肪</span>
-                            <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.fat*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
+                    <div style="overflow-x:auto;padding:4px 0;margin-bottom:8px;-webkit-overflow-scrolling:touch;">
+                        <div style="display:flex;gap:12px;min-width:280px;padding:0 4px;">
+                            <div style="display:flex;flex-direction:column;align-items:center;min-width:65px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.9em;margin-bottom:2px;">熱量</span>
+                                <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#e57373;font-size:1.05em;">${(card.cal*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.85em;">kcal</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;min-width:65px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.9em;margin-bottom:2px;">碳水</span>
+                                <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#4fc3f7;font-size:1.05em;">${(card.carb*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.85em;">g</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;min-width:65px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.9em;margin-bottom:2px;">蛋白質</span>
+                                <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#ffb74d;font-size:1.05em;">${(card.pro*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.85em;">g</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:center;min-width:65px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.9em;margin-bottom:2px;">脂肪</span>
+                                <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#ba68c8;font-size:1.05em;">${(card.fat*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.85em;">g</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1778,30 +1780,30 @@
                 // 食物名稱換行，份量小字
                 let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
                 // 橢圓形營養素區塊（新版：指定新顏色）
-                let nutHtml = `<div style="overflow-x:auto;margin:16px 0 8px 0;">
-<div style="display:flex;gap:18px;justify-content:flex-start;min-width:400px;">
-  <div style="border:3px solid #e57373;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-    <span style="font-size:1.35em;font-weight:700;color:#e57373;">${item.total_cal}</span>
-    <span style="font-size:0.95em;color:#e57373;">大卡</span>
+                let nutHtml = `<div style="overflow-x:auto;margin:12px 0 6px 0;-webkit-overflow-scrolling:touch;padding:2px 0;">
+<div style="display:flex;gap:12px;justify-content:flex-start;min-width:320px;padding:0 4px;">
+  <div style="border:2px solid #e57373;background:transparent;border-radius:35px/24px;width:75px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+    <span style="font-size:1.15em;font-weight:700;color:#e57373;">${item.total_cal}</span>
+    <span style="font-size:0.8em;color:#e57373;">大卡</span>
   </div>
-  <div style="border:3px solid #4fc3f7;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-    <span style="font-size:1.35em;font-weight:700;color:#4fc3f7;">${item.total_carb}</span>
-    <span style="font-size:0.95em;color:#4fc3f7;">公克</span>
+  <div style="border:2px solid #4fc3f7;background:transparent;border-radius:35px/24px;width:75px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+    <span style="font-size:1.15em;font-weight:700;color:#4fc3f7;">${item.total_carb}</span>
+    <span style="font-size:0.8em;color:#4fc3f7;">公克</span>
   </div>
-  <div style="border:3px solid #ffb74d;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-    <span style="font-size:1.35em;font-weight:700;color:#ffb74d;">${item.total_pro}</span>
-    <span style="font-size:0.95em;color:#ffb74d;">公克</span>
+  <div style="border:2px solid #ffb74d;background:transparent;border-radius:35px/24px;width:75px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+    <span style="font-size:1.15em;font-weight:700;color:#ffb74d;">${item.total_pro}</span>
+    <span style="font-size:0.8em;color:#ffb74d;">公克</span>
   </div>
-  <div style="border:3px solid #ba68c8;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-    <span style="font-size:1.35em;font-weight:700;color:#ba68c8;">${item.total_fat}</span>
-    <span style="font-size:0.95em;color:#ba68c8;">公克</span>
+  <div style="border:2px solid #ba68c8;background:transparent;border-radius:35px/24px;width:75px;height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0;">
+    <span style="font-size:1.15em;font-weight:700;color:#ba68c8;">${item.total_fat}</span>
+    <span style="font-size:0.8em;color:#ba68c8;">公克</span>
   </div>
 </div>
-<div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;min-width:400px;">
-  <span style="font-size:1em;color:#e57373;width:90px;text-align:center;">熱量</span>
-  <span style="font-size:1em;color:#4fc3f7;width:90px;text-align:center;">碳水</span>
-  <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">蛋白質</span>
-  <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
+<div style="display:flex;gap:12px;justify-content:flex-start;margin-bottom:2px;min-width:320px;padding:0 4px;">
+  <span style="font-size:0.9em;color:#e57373;width:75px;text-align:center;">熱量</span>
+  <span style="font-size:0.9em;color:#4fc3f7;width:75px;text-align:center;">碳水</span>
+  <span style="font-size:0.9em;color:#ffb74d;width:75px;text-align:center;">蛋白質</span>
+  <span style="font-size:0.9em;color:#ba68c8;width:75px;text-align:center;">脂肪</span>
 </div>
 </div>`;
                 html += `
