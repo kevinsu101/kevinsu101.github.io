@@ -574,7 +574,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台</h1>
+    <h1>CGM飯後血糖管理平台1</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1606,25 +1606,27 @@
                         <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
                     </div>
                     <div style="overflow-x:auto;display:flex;gap:16px;margin-bottom:8px;-webkit-overflow-scrolling:touch;padding:2px 0;">
-                        <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:60px;flex-shrink:0;">
-                            <span style="color:#888;font-size:0.98em;">熱量</span>
-                            <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.cal*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">kcal</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:60px;flex-shrink:0;">
-                            <span style="color:#888;font-size:0.98em;">碳水</span>
-                            <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.carb*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:60px;flex-shrink:0;">
-                            <span style="color:#888;font-size:0.98em;">蛋白質</span>
-                            <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.pro*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
-                        </div>
-                        <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:60px;flex-shrink:0;">
-                            <span style="color:#888;font-size:0.98em;">脂肪</span>
-                            <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.fat*card.portion_value).toFixed(1)}</span>
-                            <span style="color:#888;font-size:0.95em;">g</span>
+                        <div style="display:flex;gap:16px;min-width:300px;">
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:70px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.98em;">熱量</span>
+                                <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.cal*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.95em;">kcal</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:70px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.98em;">碳水</span>
+                                <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.carb*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.95em;">g</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:70px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.98em;">蛋白質</span>
+                                <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.pro*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.95em;">g</span>
+                            </div>
+                            <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:70px;flex-shrink:0;">
+                                <span style="color:#888;font-size:0.98em;">脂肪</span>
+                                <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.fat*card.portion_value).toFixed(1)}</span>
+                                <span style="color:#888;font-size:0.95em;">g</span>
+                            </div>
                         </div>
                     </div>
                 </div>
