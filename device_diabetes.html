@@ -1,17 +1,2258 @@
-            profiles     = load_profiles(profiles_path)
-            line_user_profile = profiles.get(line_user_id)
-            fhir_name  = line_user_profile.get('patient_name')
-            fhir_id    = line_user_profile.get('custom_id')
-            fhir_bd    = line_user_profile.get('birthday')
-            fhir_gender= line_user_profile.get('gender')
-            print(fhir_name,fhir_id,fhir_bd,fhir_gender)
-            response = upload_patient_info(fhir_name, fhir_id, fhir_bd, fhir_gender)
-            create_user_data_db(engine, line_user_id, fhir_name, fhir_id, fhir_bd, fhir_gender)
-            #-------回覆-------
-            if "POST 請求成功" in response:
-                reply2 = "個人資料在FHIR伺服器建立完成"
-            elif"PUT 請求成功" in response:
-                reply2 = "FHIR伺服器已經有此筆資料"
-            else:
-                reply2 = "FHIR建檔有異常狀況"
-            messages = [TextMessage(text=reply+'\n'+reply2)]
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CGM飯後血糖管理平台</title>
+    <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color-start: #74d2ff;
+            --bg-color-end: #87CEEB;
+            --container-bg: #ffffff;
+            --text-color: #3d3d3d;
+            --label-color: #5a5a5a;
+            --input-bg: #f8f9fa;
+            --input-border: #ced4da;
+            --input-focus-border: #ffc107;
+            --button-bg: #ff9900;
+            --button-hover-bg: #ffaf33;
+            --button-text: #ffffff;
+            --title-color: #2c5282;
+            --border-gold: #ffd700;
+        }
+
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, var(--bg-color-start), var(--bg-color-end));
+            color: var(--text-color);
+            margin: 0;
+            padding: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            background-color: var(--container-bg);
+            padding: 15px 12px;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+            width: 100%;
+            max-width: 500px;
+            border: 2px solid var(--border-gold);
+        }
+
+        h1 {
+            font-size: 1.4em;
+            margin-bottom: 10px;
+            color: var(--title-color);
+            text-align: center;
+            font-weight: 700;
+        }
+
+        h2 {
+            font-size: 1.2em;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            color: var(--label-color);
+            text-align: center;
+            font-weight: 700;
+        }
+        
+        .navigation-tabs {
+            display: flex;
+            justify-content: flex-start;
+            gap: 8px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-gold);
+            padding: 0 5px 10px 5px;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .navigation-tabs::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .navigation-tabs::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 2px;
+        }
+
+        .navigation-tabs::-webkit-scrollbar-thumb {
+            background: var(--button-bg);
+            border-radius: 2px;
+        }
+
+        .nav-btn {
+            padding: 10px 15px;
+            font-size: 1em;
+            font-weight: 500;
+            color: var(--label-color);
+            background-color: transparent;
+            border: none;
+            border-bottom: 4px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+            min-width: fit-content;
+            flex-shrink: 0;
+        }
+
+        .nav-btn:hover {
+            color: var(--text-color);
+            background-color: #fff9e6;
+        }
+
+        .nav-btn.active {
+            color: var(--button-bg);
+            border-bottom-color: var(--button-bg);
+            font-weight: 700;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--label-color);
+            font-size: 1em;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
+        input[type="file"] {
+            width: 100%;
+            padding: 8px;
+            font-size: 0.95em;
+            color: var(--label-color);
+            background-color: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        
+        input[type="file"]::file-selector-button {
+            background-color: var(--button-bg);
+            color: var(--button-text);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            font-weight: 500;
+            font-size: 0.9em;
+            margin-right: 8px;
+        }
+
+        input[type="file"]::file-selector-button:hover {
+            background-color: var(--button-hover-bg);
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--input-focus-border);
+            box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
+        }
+
+        .submit-btn {
+            width: 100%;
+            padding: 12px;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--button-text);
+            background: linear-gradient(180deg, var(--button-hover-bg), var(--button-bg));
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-top: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        }
+
+        #liff-data-output {
+            background-color: #e9ecef;
+            color: #333;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        /* 手機優化 */
+        @media (max-width: 714px) {
+            body {
+                padding: 3px;
+            }
+            
+            .container {
+                padding: 12px 8px;
+                border-radius: 10px;
+                border: 1px solid var(--border-gold);
+                max-width: 90%;
+            }
+            
+            h1 {
+                font-size: 1.3em;
+                margin-bottom: 8px;
+            }
+            
+            h2 {
+                font-size: 1.1em;
+                margin-top: 8px;
+                margin-bottom: 12px;
+            }
+            
+            .navigation-tabs {
+                gap: 6px;
+                margin-bottom: 15px;
+                padding: 0 3px 8px 3px;
+            }
+            
+            .nav-btn {
+                padding: 8px 12px;
+                font-size: 0.9em;
+            }
+            
+            .form-group {
+                margin-bottom: 15px;
+            }
+            
+            label {
+                margin-bottom: 5px;
+                font-size: 0.95em;
+                display: block !important;
+                text-align: left !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            input[type="text"],
+            select {
+                padding: 10px;
+                font-size: 1em;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            input[type="file"] {
+                padding: 6px;
+                font-size: 0.85em;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            input[type="file"]::file-selector-button {
+                padding: 6px 10px;
+                font-size: 0.85em;
+                margin-right: 6px;
+            }
+            
+            .submit-btn {
+                padding: 12px;
+                font-size: 1.1em;
+                margin-top: 12px;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            #user-info-status {
+                margin-bottom: 15px !important;
+                padding: 8px !important;
+                font-size: 0.9em;
+            }
+            
+            /* 首頁功能介紹區塊優化 */
+            .content-section div[style*="padding: 40px 20px"] {
+                padding: 20px 10px !important;
+            }
+            
+            .content-section div[style*="padding: 25px"] {
+                padding: 15px !important;
+                margin: 15px 0 !important;
+            }
+            
+            .content-section div[style*="padding: 10px"] {
+                padding: 8px !important;
+            }
+            
+            .content-section p[style*="font-size: 1.3em"] {
+                font-size: 1.1em !important;
+                margin-bottom: 20px !important;
+            }
+            
+            /* LIFF 測試區塊優化 */
+            #liff-data-output {
+                font-size: 0.85em;
+                padding: 10px;
+                word-break: break-all;
+            }
+            
+            #liff-output-container h3 {
+                font-size: 1em;
+                margin-bottom: 10px;
+            }
+            
+            /* AI 食物辨識手機優化 */
+            .input-section {
+                padding: 15px 12px !important;
+                margin-bottom: 15px !important;
+            }
+            
+            .output-section {
+                padding: 15px 12px !important;
+                min-height: 150px !important;
+            }
+            
+            .input-section h3,
+            .output-section h3 {
+                font-size: 1em !important;
+                margin-bottom: 12px !important;
+                text-align: left !important;
+            }
+            
+            #foodTextInput {
+                min-height: 60px !important;
+                padding: 10px !important;
+                font-size: 0.95em !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+            
+            #voiceBtn {
+                margin-top: 6px !important;
+                padding: 10px 15px !important;
+                font-size: 0.9em !important;
+                gap: 8px !important;
+                min-width: 90px !important;
+                height: 42px !important;
+            }
+            
+            #voiceStatus {
+                font-size: 0.85em !important;
+                margin-top: 8px !important;
+                padding: 5px !important;
+                text-align: left !important;
+            }
+            
+            .image-input-btn {
+                padding: 10px 15px !important;
+                font-size: 0.9em !important;
+                gap: 8px !important;
+                min-width: 90px !important;
+                height: 42px !important;
+            }
+            
+            /* 按鈕容器在手機版的優化 */
+            .button-container {
+                gap: 15px !important;
+                margin-top: 10px !important;
+                flex-direction: row !important;
+                justify-content: flex-start !important;
+                align-items: center !important;
+            }
+            
+            .input-btn {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                height: 42px !important;
+                min-width: 90px !important;
+                padding: 10px 15px !important;
+                font-size: 0.9em !important;
+                border-radius: 6px !important;
+                border: none !important;
+                cursor: pointer !important;
+                transition: background-color 0.3s !important;
+                gap: 8px !important;
+            }
+            
+            #imagePreview img {
+                max-height: 150px !important;
+            }
+            
+            /* 確保textarea在手機版的正確對齊 */
+            textarea {
+                width: 100% !important;
+                box-sizing: border-box !important;
+                resize: vertical !important;
+            }
+        }
+
+        .output-section {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            border: 2px solid #e9ecef;
+            min-height: 200px;
+            max-height: 380px;
+            overflow-y: auto;
+        }
+
+        .accordion-item {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            overflow: hidden;
+        }
+        .accordion-header {
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            text-align: left;
+            border: none;
+            outline: none;
+            transition: background-color 0.3s ease;
+            font-size: 1.1em;
+        }
+        .accordion-header:hover, .accordion-header.active {
+            background-color: #0056b3;
+        }
+        .accordion-content {
+            padding: 15px;
+            background-color: white;
+            display: none;
+            border-top: 1px solid #ddd;
+        }
+        .loader, .cgm-error-message { /* Renamed from error-message to avoid conflicts */
+            text-align: center;
+            padding: 20px;
+            font-style: italic;
+            color: #777;
+        }
+        .cgm-error-message {
+            color: #d9534f;
+        }
+        #cgmAnalysis canvas { /* Target canvas inside the tab */
+            max-width: 100%;
+            height: auto;
+        }
+
+        /* 新增CSS，直接插入到<head> */
+        /* 放在<head>內的<style>區塊 */
+        #big-cgm-chart-area { max-width: 100vw; position: relative; }
+        .chart-scroll { overflow-x: auto; margin-bottom: 24px; }
+        .chart-scroll canvas {
+          min-width: 600px;
+          max-width: 1200px;
+          width: 100vw;
+          height: 500px;
+          display: block;
+        }
+        #big-cgm-close-btn {
+          position: absolute; top: 18px; right: 18px; z-index: 10; background: #fff; color: #1976d2; border: 2px solid #1976d2; border-radius: 50%; width: 36px; height: 36px; font-size: 1.5em; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.2s, color 0.2s;
+        }
+        #big-cgm-close-btn:hover { background: #1976d2; color: #fff; }
+        @media (max-width: 700px) {
+          .chart-scroll canvas {
+            min-width: 500px; width: 100vw; height: 320px;
+          }
+          #big-cgm-close-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 1.2em; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>CGM飯後血糖管理平台2</h1>
+
+    <div class="navigation-tabs">
+        <button id="btn-home" class="nav-btn active">首頁</button>
+        <button id="btn-cgm-upload" class="nav-btn">CGM資料上傳</button>
+        <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
+        <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
+        <button id="btn-food-diary" class="nav-btn">飲食日誌</button>
+        
+    </div>
+
+    <div id="section-home" class="content-section">
+        <!-- 使用者設定區域 -->
+        <div id="user-setting-area" style="margin-bottom: 25px;">
+            <!-- 使用者狀態顯示 -->
+            <div id="user-status" style="padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                正在載入使用者資訊...
+            </div>
+            
+            <!-- 使用者設定表單 (預設隱藏) -->
+            <div id="user-setting-form" style="display: none; background-color: #fff3cd; padding: 20px; border-radius: 10px; border: 1px solid #ffeaa7; margin-bottom: 15px;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); text-align: center;">設定使用者資訊</h3>
+                <div class="form-group">
+                    <label for="userNameInput">姓名</label>
+                    <input type="text" id="userNameInput" placeholder="請輸入您的姓名" required>
+                </div>
+                <div class="form-group">
+                    <label for="userIdInput">身分證字號</label>
+                    <input type="text" id="userIdInput" placeholder="請輸入您的身分證字號" required>
+                </div>
+                <div class="form-group">
+                    <label for="userBirthdayInput">生日</label>
+                    <input type="date" id="userBirthdayInput" required>
+                </div>
+                <div class="form-group">
+                    <label for="userGenderInput">性別</label>
+                    <select id="userGenderInput" required>
+                        <option value="">請選擇性別</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <button id="saveUserBtn" class="submit-btn">儲存設定</button>
+            </div>
+        </div>
+        
+        <h2>歡迎使用 CGM 飯後血糖管理平台</h2>
+        <div style="text-align: center; padding: 40px 20px;">
+            </p>
+            <div style="background-color: #f8f9fa; padding: 25px; border-radius: 12px; margin: 20px 0;">
+                <h3 style="color: var(--title-color); margin-bottom: 20px;">主要功能</h3>
+                <div style="display: grid; gap: 15px; text-align: left;">
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong> CGM 資料上傳</strong><br>
+                        <span style="color: #666;">上傳您的連續血糖監測 CSV 檔案</span>
+                    </div>
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong> 資料分析</strong><br>
+                        <span style="color: #666;">智能分析血糖變化趨勢與模式</span>
+                    </div>
+                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
+                        <strong> AI 食物辨識</strong><br>
+                        <span style="color: #666;">自動識別食物並估算營養成分</span>
+                    </div>
+                </div>
+            </div>
+            <p style="color: #666; margin-top: 30px;">
+                請選擇上方功能開始使用
+            </p>
+        </div>
+    </div>
+
+    <div id="section-cgm-upload" class="content-section" style="display: none;">
+        <form id="cgm-upload-form">
+            <h2>上傳 CGM 資料</h2>
+            <div id="user-info-status" style="margin-bottom: 20px; padding: 10px; border-radius: 6px; background-color: #e9ecef; text-align: center;">
+                正在查詢用戶資料...
+            </div>
+            <div class="form-group">
+                <label for="cgmPatientName">姓名</label>
+                <input type="text" id="cgmPatientName" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="cgmPatientId">使用者ID</label>
+                <input type="text" id="cgmPatientId" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="fileInput">選擇 CSV 檔案</label>
+                <input type="file" id="fileInput" accept=".csv" required>
+            </div>
+            <button type="submit" id="cgmUploadBtn" class="submit-btn">上傳 CGM 檔案</button>
+        </form>
+    </div>
+
+    <div id="section-cgm-analysis" class="content-section" style="display: none;">
+        <h2>CGM資料與分析</h2>
+        <div id="cgm-periods-container">
+            <!-- CGM Periods will be loaded here -->
+        </div>
+    </div>
+
+    <div id="section-ai-food" class="content-section" style="display: none;">
+        <h2>AI 食物辨識</h2>
+        
+        <!-- 輸入區塊 -->
+        <div class="input-section" style="background-color: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #e9ecef;">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;"> 輸入區</h3>
+            
+            <!-- 文字輸入 -->
+            <div class="form-group">
+                <textarea id="foodTextInput" 
+                         placeholder="請描述您吃的食物，例如：一碗白飯、兩片吐司..."
+                         style="width: 100%; padding: 12px; font-size: 1em; border: 1px solid var(--input-border); border-radius: 8px; background-color: var(--input-bg); color: var(--text-color); box-sizing: border-box; resize: vertical; min-height: 80px;"></textarea>
+                
+                <!-- 語音和圖片輸入按鈕 -->
+                <div class="button-container" style="display: flex; gap: 20px; margin-top: 12px; flex-wrap: nowrap; align-items: center; justify-content: flex-start;">
+                    <button id="uploadImageBtn" class="input-btn image-input-btn" 
+                            style="background-color: #28a745; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px;">
+                        圖片
+                    </button>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    
+                    <button id="voiceBtn" class="input-btn"
+                            style="background-color: #6c757d; color: white; border: none; padding: 10px 15px; border-radius: 6px; cursor: pointer; font-size: 0.9em; transition: background-color 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; height: 42px; min-width: 90px; margin-left: auto;">
+                        錄音
+                    </button>
+                </div>
+                
+                <div id="micTestResult" style="margin-top: 10px; padding: 10px; border-radius: 6px; background-color: #f8f9fa; display: none;">
+                    <pre id="micTestOutput" style="margin: 0; font-size: 0.85em; white-space: pre-wrap; word-break: break-all;"></pre>
+                </div>
+            </div>
+            
+            <!-- 圖片預覽區 -->
+            <div id="imagePreview" style="margin-top: 15px; display: none;">
+                <p style="margin: 0 0 8px 0; font-size: 0.9em; color: var(--label-color);">圖片預覽：</p>
+                <img id="previewImg" style="max-width: 100%; max-height: 200px; border-radius: 8px; border: 1px solid #ddd;">
+                <button id="cancelImageBtn" type="button" style="margin-top: 10px; background: #dc3545; color: white; border: none; border-radius: 6px; padding: 6px 16px; font-size: 0.95em; cursor: pointer;">取消</button>
+            </div>
+            
+            <!-- 分析按鈕 -->
+            <button id="analyzeBtn" class="submit-btn" style="margin-top: 20px;">
+            開始分析
+            </button>
+        </div>
+        
+        <!-- 輸出區塊 -->
+        <div class="output-section">
+            <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;"> 分析結果</h3>
+            <div id="analysisOutput" style="color: #666; text-align: center; padding: 40px 20px;">
+                等待輸入食物資訊進行分析...
+            </div>
+        </div>
+    </div>
+
+    <div id="section-liff-test" class="content-section" style="display: none;">
+        <h2>LIFF 測試</h2>
+        <p style="text-align: center; padding-bottom: 10px;">點擊下方按鈕發送 "你好" 訊息給 LINE 機器人。</p>
+        <button id="liffTestBtn" class="submit-btn">發送訊息給機器人</button>
+        <div id="liff-output-container" style="margin-top: 20px;">
+            <h3 style="text-align: center; color: var(--label-color);">發送結果：</h3>
+            <pre id="liff-data-output">尚未發送訊息...</pre>
+        </div>
+    </div>
+
+    <div id="section-food-diary" class="content-section" style="display: none;">
+        <h2>飲食日誌</h2>
+        <div id="foodDiaryOutput" style="padding: 10px;"></div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // 修正：navButtons 與 contentSections 提前宣告，供所有分頁切換共用
+        const navButtons = document.querySelectorAll('.nav-btn');
+        const contentSections = document.querySelectorAll('.content-section');
+    console.log('=== 頁面載入完成 ===');
+    
+    // 全域變數儲存用戶資料
+    window.globalUserId = null;
+    let globalUserProfile = null;
+
+    // ------------------------- Tab Navigation Logic -------------------------
+    navButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            const targetSectionId = button.id.replace('btn-', 'section-');
+            contentSections.forEach(section => {
+                section.style.display = section.id === targetSectionId ? 'block' : 'none';
+            });
+
+            // 當切換到 CGM 上傳頁面時，自動查詢用戶資料
+            if (targetSectionId === 'section-cgm-upload') {
+                fetchUserData();
+            }
+            // 當切換到飲食日誌分頁時，自動載入資料
+            if (targetSectionId === 'section-food-diary') {
+                fetchFoodDiary();
+            }
+            // 當切換到 CGM 分析頁面時，自動載入資料
+            if (targetSectionId === 'section-cgm-analysis') {
+                loadCgmPeriods();
+            }
+            // 當切換到首頁時，檢查使用者設定狀態
+            if (targetSectionId === 'section-home') {
+                setTimeout(() => {
+                    checkUserSetting();
+                }, 500);
+            }
+        });
+    });
+
+    // LIFF 初始化和登入
+    async function initLiffAndLogin() {
+        try {
+            console.log('=== 開始 LIFF 初始化 ===');
+            console.log(' liff.init 開始');
+            
+            await liff.init({
+                liffId: '2007301708-7r2WyMpB'
+            });
+            console.log(' liff.init 成功');
+
+            if (!liff.isLoggedIn()) {
+                console.log(' 尚未登入，呼叫 liff.login()');
+                await liff.login();
+                return false; // 登入後會重新載入頁面
+            }
+
+            console.log(' 已登入狀態');
+            return true;
+        } catch (err) {
+            console.error(' LIFF 初始化失敗:', err);
+            throw err;
+        }
+    }
+
+    // 獲取用戶資料
+    async function getProfileData() {
+        try {
+            console.log(' 呼叫 liff.getProfile()');
+            const profile = await liff.getProfile();
+            
+            if (!profile) {
+                throw new Error('Profile 資料為空');
+            }
+
+            console.log('   getProfile 回傳：', profile);
+            console.log('   displayName:', profile.displayName);
+            console.log('   userId:     ', profile.userId);
+            console.log('   statusMessage:', profile.statusMessage);
+
+            // 儲存到全域變數
+            window.globalUserId = profile.userId;
+            globalUserProfile = profile;
+
+            return profile;
+        } catch (err) {
+            console.error(' 獲取 Profile 失敗：', err);
+            throw err;
+        }
+    }
+
+    // 自動執行登入流程
+    async function autoLogin() {
+        try {
+            console.log('=== 自動登入開始 ===');
+            
+            const isLoggedIn = await initLiffAndLogin();
+            
+            if (!isLoggedIn) {
+                console.log('導向登入頁面...');
+                return;
+            }
+
+            // 獲取用戶資料
+            await getProfileData();
+            console.log('=== 自動登入完成，userId:', window.globalUserId, '===');
+            
+        } catch (err) {
+            console.error('自動登入失敗:', err);
+            // 使用 fallback ID
+            window.globalUserId = 'FALLBACK_USER_ID';
+            console.log('使用 Fallback User ID');
+        }
+    }
+
+    // 頁面載入時自動執行登入
+    autoLogin();
+
+    // ------------------------- 使用者設定功能 -------------------------
+    // 檢查使用者設定狀態
+    async function checkUserSetting() {
+        const userStatus = document.getElementById('user-status');
+        const userSettingForm = document.getElementById('user-setting-form');
+        
+        if (!window.globalUserId) {
+            userStatus.innerHTML = '<span style="color: red;">❌ 尚未取得用戶 ID，請重新整理頁面</span>';
+            return;
+        }
+
+        try {
+            userStatus.textContent = '正在檢查使用者設定...';
+            
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: window.globalUserId
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // 用戶已設定，顯示歡迎訊息
+                userStatus.innerHTML = `
+                    <div style="color: green; font-size: 1.1em; font-weight: 500;">
+                         歡迎你一起智慧控糖，${result.data.patient_name}！
+                    </div>
+                    <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                        您可以開始使用血糖管理功能
+                    </div>
+                `;
+                userSettingForm.style.display = 'none';
+                
+                console.log('用戶已設定:', result.data);
+            } else {
+                // 用戶尚未設定，顯示設定表單
+                userStatus.innerHTML = `
+                    <div style="color: orange; font-size: 1em;">
+                        尚未設定個人資訊，請先設定您的基本資訊
+                    </div>
+                `;
+                userSettingForm.style.display = 'block';
+            }
+            
+        } catch (error) {
+            console.error('檢查用戶設定失敗:', error);
+            userStatus.innerHTML = '<span style="color: red;">檢查用戶設定失敗，請重新整理頁面</span>';
+        }
+    }
+
+    // 儲存使用者設定
+    async function saveUserSetting() {
+        const userNameInput = document.getElementById('userNameInput');
+        const userIdInput = document.getElementById('userIdInput');
+        const userBirthdayInput = document.getElementById('userBirthdayInput');
+        const userGenderInput = document.getElementById('userGenderInput');
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        
+        const userName = userNameInput.value.trim();
+        const userId = userIdInput.value.trim();
+        const userBirthday = userBirthdayInput.value;
+        const userGender = userGenderInput.value;
+        
+        if (!userName || !userId || !userBirthday || !userGender) {
+            alert('請填寫所有欄位');
+            return;
+        }
+        
+        if (!window.globalUserId) {
+            alert('尚未取得 LINE 用戶 ID，請重新整理頁面');
+            return;
+        }
+        
+        try {
+            saveUserBtn.textContent = '儲存中...';
+            saveUserBtn.disabled = true;
+            
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/user_setting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    line_user_id: window.globalUserId,
+                    patient_name: userName,
+                    custom_id: userId,
+                    birthday: userBirthday,
+                    gender: userGender
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                let message = '使用者設定儲存成功！';
+                
+                // 如果有 FHIR 狀態資訊，加入到成功訊息中
+                if (result.fhir_status) {
+                    message += '\n' + result.fhir_status;
+                }
+                
+                alert(message);
+                // 重新檢查使用者狀態
+                await checkUserSetting();
+                // 清空表單
+                userNameInput.value = '';
+                userIdInput.value = '';
+                userBirthdayInput.value = '';
+                userGenderInput.value = '';
+            } else {
+                throw new Error(result.message || '儲存失敗');
+            }
+            
+        } catch (error) {
+            console.error('儲存用戶設定失敗:', error);
+            alert(`儲存失敗：${error.message}`);
+        } finally {
+            saveUserBtn.textContent = '儲存設定';
+            saveUserBtn.disabled = false;
+        }
+    }
+
+    // 綁定儲存按鈕事件
+    const saveUserBtn = document.getElementById('saveUserBtn');
+    if (saveUserBtn) {
+        saveUserBtn.addEventListener('click', saveUserSetting);
+    }
+
+    // 延遲檢查使用者設定狀態 (等待 LIFF 初始化完成)
+    setTimeout(() => {
+        checkUserSetting();
+    }, 2000);
+
+    // --- LIFF 測試 ---
+    const liffTestBtn = document.getElementById('liffTestBtn');
+    const liffDataOutput = document.getElementById('liff-data-output');
+
+    if (liffTestBtn) {
+        liffTestBtn.addEventListener('click', async () => {
+            console.log('=== LIFF 測試按鈕被點擊 ===');
+            
+            if (!globalUserProfile) {
+                liffDataOutput.textContent = '尚未取得用戶資料，請重新整理頁面';
+                return;
+            }
+
+            // 檢查是否在 LINE 應用內
+            if (!liff.isInClient()) {
+                liffDataOutput.textContent = '此功能需要在 LINE 應用內使用';
+                console.log('不在 LINE 客戶端內，無法發送訊息');
+                return;
+            }
+            
+            try {
+                console.log('準備發送訊息給機器人...');
+                liffDataOutput.textContent = '正在發送訊息...';
+                
+                // 發送訊息給機器人
+                await liff.sendMessages([
+                    {
+                        type: 'text',
+                        text: '你好'
+                    }
+                ]);
+
+                console.log('訊息發送成功');
+                liffDataOutput.textContent = '✅ 已成功發送 "你好" 訊息給機器人！\n請查看 LINE 聊天室中的回覆。';
+                
+            } catch (err) {
+                console.error(' 發送訊息失敗:', err);
+                liffDataOutput.textContent = `❌ 發送訊息失敗: ${err.message}`;
+            }
+        });
+    }
+
+    // ------------------------- CGM 檔案上傳表單處理 -------------------------
+    const cgmUploadForm = document.getElementById('cgm-upload-form');
+    if (cgmUploadForm) {
+        cgmUploadForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('cgmPatientName').value.trim();
+            const customId = document.getElementById('cgmPatientId').value.trim();
+            const fileEl = document.getElementById('fileInput');
+
+            if (!name || !customId) return alert('請輸入姓名與身分證字號！');
+            if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
+            
+          const file = fileEl.files[0];
+
+            // 直接使用全域的 userId
+            const userId = window.globalUserId || 'FALLBACK_USER_ID';
+            console.log('上傳檔案使用的 User ID:', userId);
+
+            const formData = new FormData();
+            formData.append('userId', userId);
+            formData.append('username', name);
+            formData.append('customId', customId);
+            formData.append('file', file);
+
+            const endpoint = 'https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/uploadcsv';
+
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const result = await response.json();
+                if (response.ok && result.status === 'ok') {
+                    alert(`CGM 檔案上傳成功！`);
+                } else {
+                    throw new Error(result.msg || '發生未知錯誤');
+                }
+            } catch (error) {
+                console.error('Error uploading CGM file:', error);
+                alert(`CGM 檔案上傳失敗：${error.message}`);
+            }
+        });
+    }
+
+    // 查詢用戶資料並自動填入表單
+    async function fetchUserData() {
+        if (!window.globalUserId) {
+            document.getElementById('user-info-status').innerHTML = 
+                '<span style="color: red;"> 尚未取得用戶 ID，請重新整理頁面</span>';
+            return;
+        }
+
+        try {
+            document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
+            
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
+            method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: window.globalUserId
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // 自動填入表單欄位
+                document.getElementById('cgmPatientName').value = result.data.patient_name || '';
+                document.getElementById('cgmPatientId').value = result.data.custom_id || '';
+                
+                document.getElementById('user-info-status').innerHTML = 
+                    `<span style="color: green;"> 已自動填入用戶資料：${result.data.patient_name}</span>`;
+                
+                console.log('用戶資料查詢成功:', result.data);
+            } else {
+                document.getElementById('user-info-status').innerHTML = 
+                    `<span style="color: orange;"> ${result.message}</span>`;
+                
+                // 如果查詢失敗，允許手動輸入
+                document.getElementById('cgmPatientName').removeAttribute('readonly');
+                document.getElementById('cgmPatientId').removeAttribute('readonly');
+            }
+            
+        } catch (error) {
+            console.error('查詢用戶資料失敗:', error);
+            document.getElementById('user-info-status').innerHTML = 
+                '<span style="color: red;"> 查詢用戶資料失敗，請手動輸入</span>';
+            
+            // 允許手動輸入
+            document.getElementById('cgmPatientName').removeAttribute('readonly');
+            document.getElementById('cgmPatientId').removeAttribute('readonly');
+        }
+    }
+
+    // ------------------------- AI食物營養辨識 -------------------------
+    const uploadImageBtn = document.getElementById('uploadImageBtn');
+    const imageUpload = document.getElementById('imageUpload');
+    const imagePreview = document.getElementById('imagePreview');
+    const previewImg = document.getElementById('previewImg');
+    const analyzeBtn = document.getElementById('analyzeBtn');
+    const analysisOutput = document.getElementById('analysisOutput');
+    const foodTextInput = document.getElementById('foodTextInput');
+
+    // 錄音功能
+    const voiceBtn = document.getElementById('voiceBtn');
+    const micTestResult = document.getElementById('micTestResult');
+    const micTestOutput = document.getElementById('micTestOutput');
+    let mediaRecorder = null;
+    let audioChunks = [];
+    let isRecording = false;
+
+    if (voiceBtn) {
+        voiceBtn.addEventListener('click', async () => {
+            if (isRecording) {
+                // 停止錄音
+                if (mediaRecorder && mediaRecorder.state === 'recording') {
+                    mediaRecorder.stop();
+                    voiceBtn.textContent = '錄音';
+                    voiceBtn.style.backgroundColor = '#17a2b8';
+                    isRecording = false;
+                }
+                return;
+            }
+
+            micTestResult.style.display = 'block';
+            micTestOutput.textContent = '正在準備錄音...';
+            
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                micTestOutput.textContent = '✅ 已取得麥克風權限\n開始錄音...';
+
+                // 設置錄音
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+
+                mediaRecorder.ondataavailable = (event) => {
+                    if (event.data.size > 0) {
+                        audioChunks.push(event.data);
+                    }
+                };
+
+                mediaRecorder.onstop = async () => {
+                    const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                    micTestOutput.textContent = '錄音完成，檔案大小: ' + (audioBlob.size / 1024).toFixed(2) + ' KB\n正在上傳...';
+                    
+                    // 準備上傳
+                    const formData = new FormData();
+                    formData.append('voiceFile', audioBlob, 'voice_recording.wav');
+                    formData.append('userId', window.globalUserId || 'test_user');
+
+                    try {
+                        const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const result = await response.json();
+                        if (response.ok && result.success) {
+                            micTestOutput.textContent = '✅ 錄音上傳成功！\n' +
+                                '檔案名稱: ' + result.data.voice_filename + '\n' +
+                                '處理時間: ' + result.data.timestamp;
+                            if (result.data.speech_text) {
+                                micTestOutput.textContent += '\n語音辨識結果: ' + result.data.speech_text;
+                                // 自動填入 foodTextInput
+                                document.getElementById('foodTextInput').value = result.data.speech_text;
+                            }
+                        } else {
+                            throw new Error(result.message || '上傳失敗: ' + JSON.stringify(result));
+                        }
+                    } catch (error) {
+                        micTestOutput.textContent = '❌ 上傳失敗: ' + error.message + '\n' +
+                            '請確認：\n' +
+                            '1. 網路連線狀態\n' +
+                            '2. 後端服務是否正常運行\n' +
+                            '3. 檔案大小是否過大';
+                    }
+
+                    // 停止所有音軌
+                    stream.getTracks().forEach(track => track.stop());
+                };
+
+                // 開始錄音
+                mediaRecorder.start();
+                isRecording = true;
+                voiceBtn.textContent = '停止錄音';
+                voiceBtn.style.backgroundColor = '#dc3545';
+
+            } catch (error) {
+                micTestOutput.textContent = '❌ 無法使用麥克風\n' +
+                    '錯誤訊息: ' + error.message + '\n' +
+                    '請確認：\n' +
+                    '1. 已授予麥克風權限\n' +
+                    '2. 麥克風設備正常\n' +
+                    '3. 瀏覽器支援錄音功能';
+            }
+        });
+    }
+
+    // 上傳圖片按鈕點擊
+    if (uploadImageBtn) {
+        uploadImageBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            imageUpload.click();
+        });
+    }
+
+    // 圖片選擇處理
+    if (imageUpload) {
+        imageUpload.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    previewImg.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                    console.log('圖片已選擇:', file.name);
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    // 新增：取消圖片按鈕
+    const cancelImageBtn = document.getElementById('cancelImageBtn');
+    if (cancelImageBtn) {
+        cancelImageBtn.addEventListener('click', () => {
+            // 清除預覽
+            previewImg.src = '';
+            imagePreview.style.display = 'none';
+            // 清除 input file
+            imageUpload.value = '';
+        });
+    }
+
+    // 分析按鈕
+    if (analyzeBtn) {
+        analyzeBtn.addEventListener('click', async () => {
+            const textInput = foodTextInput.value.trim();
+            const hasImage = imagePreview.style.display === 'block';
+            // const hasVoice = recordedBlob !== null; // 只處理圖片互動
+
+            if (!textInput && !hasImage) {
+                alert('請輸入文字描述、選擇圖片');
+                return;
+            }
+
+            if (!window.globalUserId) {
+                alert('尚未取得用戶 ID，請重新整理頁面');
+                return;
+            }
+
+            // 顯示分析中狀態
+            analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在分析中...</div>';
+
+            try {
+                const formData = new FormData();
+                formData.append('userId', window.globalUserId);
+                if (textInput) {
+                    formData.append('textDescription', textInput);
+                }
+                if (hasImage && imageUpload.files.length > 0) {
+                    formData.append('imageFile', imageUpload.files[0]);
+                }
+
+                const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
+                    method: 'POST',
+                    body: formData
+                });
+                const result = await response.json();
+                if (response.ok && result.success) {
+                    if (result.data.nutrition_info) {
+                        handleNutritionInfoCards(result.data.nutrition_info);
+                    } else {
+                        analysisOutput.innerHTML = '<div style="color: #28a745; padding: 20px;">分析完成，但未取得營養資訊。</div>';
+                    }
+                } else {
+                    throw new Error(result.message || '未知錯誤');
+                }
+            } catch (error) {
+                analysisOutput.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 40px 20px;">❌ 傳送失敗：${error.message}</div>`;
+            }
+        });
+    }
+
+    console.log('頁面初始化完成');
+    });
+
+    // 在<script>區塊內，找到 handleNutritionInfoCards 函數，將其內容替換為：
+    function handleNutritionInfoCards(nutritionInfo) {
+        // 依 ***** 分割 nutrition_info
+        const cards = nutritionInfo.split('*****').filter(card => card.trim() !== '');
+        // 解析提醒
+        let reminder = '';
+        if (cards.length > 0 && cards[cards.length-1].includes('提醒您')) {
+            reminder = cards.pop();
+        }
+        // 解析每筆卡片內容
+        let parsedCards = cards.map((card, idx) => {
+            const nameMatch = card.match(/食物名稱[:：]\s*(.*)/);
+            const portionMatch = card.match(/食物份量[:：]\s*(.*)/);
+            const calMatch = card.match(/熱量[:：]\s*([\d\.]+)kcal/);
+            const carbMatch = card.match(/碳水化合物[:：]\s*([\d\.]+)g/);
+            const proMatch = card.match(/蛋白質[:：]\s*([\d\.]+)g/);
+            const fatMatch = card.match(/脂肪[:：]\s*([\d\.]+)g/);
+            const timeMatch = card.match(/飲食的時間[:：]?[\s(]*([\d\- :]+)[)\s]*/);
+            return {
+                raw: card,
+                idx,
+                name: nameMatch ? nameMatch[1].trim() : '',
+                portion: portionMatch ? portionMatch[1].trim() : '',
+                cal: calMatch ? parseFloat(calMatch[1]) : 0,
+                carb: carbMatch ? parseFloat(carbMatch[1]) : 0,
+                pro: proMatch ? parseFloat(proMatch[1]) : 0,
+                fat: fatMatch ? parseFloat(fatMatch[1]) : 0,
+                time: timeMatch ? timeMatch[1].trim() : '',
+                portion_value: 1.0
+            };
+        });
+
+        // 垂直排列卡片，全部顯示
+        let html = '';
+        // 時間選擇器（放在最上方）
+        if (parsedCards.length > 0) {
+            const time = parsedCards[0].time;
+            html += `
+            <div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <span style="color: #666; font-size: 0.95em;">飲食時間：</span>
+                    <input type="datetime-local" id="foodTimeInput" 
+                           value="${time.replace(' ', 'T')}" 
+                           style="padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95em;">
+                </div>
+            </div>`;
+        }
+        parsedCards.forEach(card => {
+            html += `
+            <div class="nutrition-card" style="margin-bottom: 18px; padding: 16px 14px; border: 1px solid #ddd; border-radius: 12px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); display: flex; align-items: flex-start; gap: 10px;">
+                <input type="checkbox" class="food-checkbox" id="food-check-${card.idx}" checked style="margin-top: 6px; width: 18px; height: 18px; accent-color: #28a745;">
+                <div style="flex:1;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+                        <span style="font-weight:700;font-size:1.15em;cursor:pointer;" onclick="editFoodName(${card.idx})">${card.name}</span>
+                        <span style="color:#888;font-size:0.85em;">${card.portion}</span>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+                        <span style="color:#888;font-size:0.98em;">份數</span>
+                        <button type="button" id="minus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">-</button>
+                        <input id="portion-${card.idx}" type="number" min="0.1" step="0.1" value="${card.portion_value.toFixed(1)}" style="width:48px;text-align:center;font-weight:700;font-size:1.1em;border:1px solid #ccc;border-radius:6px;" />
+                        <button type="button" id="plus-${card.idx}" style="width:28px;height:28px;border:none;background:#eee;border-radius:50%;font-size:1.2em;">+</button>
+                    </div>
+                    <div style="display:flex;gap:16px;overflow-x:auto;margin-bottom:8px;">
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                            <span style="color:#888;font-size:0.98em;">熱量</span>
+                            <span id="edit-cal-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.cal*card.portion_value).toFixed(1)}</span>
+                            <span style="color:#888;font-size:0.95em;">kcal</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                            <span style="color:#888;font-size:0.98em;">碳水</span>
+                            <span id="edit-carb-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.carb*card.portion_value).toFixed(1)}</span>
+                            <span style="color:#888;font-size:0.95em;">g</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                            <span style="color:#888;font-size:0.98em;">蛋白質</span>
+                            <span id="edit-pro-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.pro*card.portion_value).toFixed(1)}</span>
+                            <span style="color:#888;font-size:0.95em;">g</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;min-width:60px;">
+                            <span style="color:#888;font-size:0.98em;">脂肪</span>
+                            <span id="edit-fat-${card.idx}" style="font-weight:700;cursor:pointer;color:#007bff;font-size:1.1em;">${(card.fat*card.portion_value).toFixed(1)}</span>
+                            <span style="color:#888;font-size:0.95em;">g</span>
+                        </div>
+                    </div>
+                </div>
+            </div>`;
+        });
+        if(reminder) {
+            html += `<div style="background:#f8f9fa;border-left:4px solid #ff9900;padding:12px 16px;border-radius:8px;margin-bottom:10px;color:#b36b00;font-size:1em;">${reminder}</div>`;
+        }
+        html += `<button id="nextStepBtn" style="margin-top:18px;padding:12px 24px;background-color:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.1em;float:right;">下一步</button>`;
+        analysisOutput.innerHTML = html;
+
+        // 新增食物名稱編輯功能
+        window.editFoodName = function(idx) {
+            const card = parsedCards[idx];
+            const newName = prompt('請輸入新的食物名稱', card.name);
+            if (newName !== null && newName.trim() !== '') {
+                card.name = newName.trim();
+                const nameElement = document.querySelector(`.nutrition-card:nth-child(${idx + 1}) span[style*="font-weight:700"]`);
+                if (nameElement) {
+                    nameElement.textContent = card.name;
+                }
+            }
+        };
+
+        // 時間選擇器事件
+        const timeInput = document.getElementById('foodTimeInput');
+        if (timeInput) {
+            timeInput.addEventListener('change', (e) => {
+                const newTime = e.target.value.replace('T', ' ');
+                parsedCards.forEach(card => card.time = newTime);
+            });
+        }
+
+        // 份數調整事件
+        parsedCards.forEach(card => {
+            document.getElementById(`minus-${card.idx}`).onclick = () => {
+                if(card.portion_value>0.1) { card.portion_value = Math.max(0.1, (card.portion_value-0.1)); updateCard(card); }
+            };
+            document.getElementById(`plus-${card.idx}`).onclick = () => {
+                card.portion_value = (card.portion_value+0.1); updateCard(card);
+            };
+            document.getElementById(`portion-${card.idx}`).onchange = (e) => {
+                let val = parseFloat(e.target.value);
+                if(isNaN(val) || val<0.1) val = 0.1;
+                card.portion_value = Math.round(val*10)/10;
+                updateCard(card);
+            };
+            // 營養素可手動編輯
+            ['cal','carb','pro','fat'].forEach(key => {
+                const el = document.getElementById(`edit-${key}-${card.idx}`);
+                if (el) {
+                    el.onclick = () => {
+                        const val = prompt(`請輸入新的${key==='cal'?'熱量(kcal)':key==='carb'?'碳水(g)':key==='pro'?'蛋白質(g)':'脂肪(g)'}`, card[key]);
+                        if (val!==null && val!=='' && !isNaN(val)) {
+                            card[key] = parseFloat(val);
+                            updateCard(card);
+                        }
+                    };
+                }
+            });
+        });
+
+        function updateCard(card) {
+            document.getElementById(`portion-${card.idx}`).value = card.portion_value.toFixed(1);
+            document.getElementById(`edit-cal-${card.idx}`).textContent = (card.cal*card.portion_value).toFixed(1);
+            document.getElementById(`edit-carb-${card.idx}`).textContent = (card.carb*card.portion_value).toFixed(1);
+            document.getElementById(`edit-pro-${card.idx}`).textContent = (card.pro*card.portion_value).toFixed(1);
+            document.getElementById(`edit-fat-${card.idx}`).textContent = (card.fat*card.portion_value).toFixed(1);
+        }
+
+        // 下一步
+        document.getElementById('nextStepBtn').onclick = () => {
+            // 只回傳勾選的卡片
+            const selectedCards = parsedCards.filter(card => document.getElementById(`food-check-${card.idx}`).checked).map(card => ({...card, portion_value: card.portion_value}));
+            handleNextStep(selectedCards);
+        };
+    }
+
+    // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
+    function handleNextStep(selectedCards) {
+        // 標準化欄位，確保送出 name/portion/portion_value/cal/carb/pro/fat/time
+        const foods = selectedCards.map(card => ({
+            name: card.name,
+            portion: card.portion,
+            portion_value: card.portion_value,
+            cal: card.cal,
+            carb: card.carb,
+            pro: card.pro,
+            fat: card.fat,
+            time: card.time
+        }));
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        const nextBtn = document.getElementById('nextStepBtn');
+        if (nextBtn) {
+            nextBtn.textContent = '上傳中...';
+            nextBtn.disabled = true;
+            nextBtn.style.opacity = 0.7;
+            nextBtn.style.cursor = 'not-allowed';
+        }
+        fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_upload_db', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                userId,
+                foods
+            })
+        })
+        .then(res => res.json())
+        .then(result => {
+            alert(result.message);
+        })
+        .catch(err => {
+            alert('上傳失敗: ' + err.message);
+        })
+        .finally(() => {
+            if (nextBtn) {
+                nextBtn.textContent = '下一步';
+                nextBtn.disabled = false;
+                nextBtn.style.opacity = 1;
+                nextBtn.style.cursor = 'pointer';
+            }
+        });
+    }
+
+    // 飲食日誌分頁邏輯
+    async function fetchFoodDiary() {
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_db_flask', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ userId })
+        });
+        const result = await res.json();
+        if (result.success) {
+            renderFoodDiary(result.data);
+        } else {
+            alert(result.message);
+        }
+    }
+
+    function renderFoodDiary(monthDict) {
+        const diaryDiv = document.getElementById('foodDiaryOutput');
+        if (!monthDict || Object.keys(monthDict).length === 0) {
+            diaryDiv.innerHTML = '<div style="color:#888;">查無飲食紀錄</div>';
+            return;
+        }
+        let html = '';
+        Object.keys(monthDict).sort().reverse().forEach(month => {
+            html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
+            monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
+                // 食物名稱換行，份量小字
+                let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
+                // 橢圓形營養素區塊（新版：指定新顏色）
+                let nutHtml = `<div style="display:flex;gap:18px;justify-content:flex-start;margin:16px 0 8px 0;">
+  <div style="border:3px solid #e57373;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#e57373;">${item.total_cal}</span>
+    <span style="font-size:0.95em;color:#e57373;">大卡</span>
+  </div>
+  <div style="border:3px solid #4fc3f7;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#4fc3f7;">${item.total_carb}</span>
+    <span style="font-size:0.95em;color:#4fc3f7;">公克</span>
+  </div>
+  <div style="border:3px solid #ffb74d;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#ffb74d;">${item.total_pro}</span>
+    <span style="font-size:0.95em;color:#ffb74d;">公克</span>
+  </div>
+  <div style="border:3px solid #ba68c8;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+    <span style="font-size:1.35em;font-weight:700;color:#ba68c8;">${item.total_fat}</span>
+    <span style="font-size:0.95em;color:#ba68c8;">公克</span>
+  </div>
+</div><div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;">
+  <span style="font-size:1em;color:#e57373;width:90px;text-align:center;">熱量</span>
+  <span style="font-size:1em;color:#4fc3f7;width:90px;text-align:center;">碳水</span>
+  <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">蛋白質</span>
+  <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
+</div>`;
+                html += `
+                <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;position:relative;">
+                    <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}" title="刪除" style="position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1em;color:#e57373;z-index:2;line-height:1;">刪除</button>
+                    <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
+                    <div style="margin:6px 0 2px 0;">${foodsHtml}</div>
+                    ${nutHtml}
+                    <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
+                    <div style="margin-top:8px;"></div>
+                </div>`;
+            });
+        });
+        diaryDiv.innerHTML = html;
+        // 重新綁定刪除事件
+        diaryDiv.querySelectorAll('.delete-diary-btn').forEach(btn => {
+            btn.onclick = async function() {
+                showCustomConfirm('確定要刪除此餐次所有食物紀錄？', async () => {
+                    const userId = window.globalUserId || 'FALLBACK_USER_ID';
+                    const date = btn.dataset.date;
+                    const time = btn.dataset.time;
+                    try {
+                        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_delete_db', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ userId, date, time })
+                        });
+                        const result = await res.json();
+                        if(result.success) {
+                            alert(result.message);
+                            fetchFoodDiary();
+                        } else {
+                            alert('刪除失敗: ' + (result.message || '未知錯誤'));
+                        }
+                    } catch (e) {
+                        alert('刪除失敗: ' + e.message);
+                    }
+                });
+            };
+        });
+    }
+
+    // 美觀自訂彈窗 confirm
+    function showCustomConfirm(message, onConfirm, onCancel) {
+        // 避免重複彈窗
+        if(document.getElementById('custom-confirm-mask')) return;
+        const mask = document.createElement('div');
+        mask.id = 'custom-confirm-mask';
+        mask.style = 'position:fixed;z-index:9999;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,0.25);display:flex;align-items:center;justify-content:center;';
+        const card = document.createElement('div');
+        card.style = 'background:#fff;border-radius:14px;box-shadow:0 8px 32px rgba(0,0,0,0.18);padding:32px 28px 22px 28px;max-width:90vw;min-width:240px;text-align:center;';
+        card.innerHTML = `<div style="font-size:1.15em;color:#333;margin-bottom:18px;">${message}</div>
+            <div style="display:flex;gap:18px;justify-content:center;">
+                <button id="custom-confirm-ok" style="padding:8px 24px;background:#e57373;color:#fff;border:none;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;">確定</button>
+                <button id="custom-confirm-cancel" style="padding:8px 24px;background:#eee;color:#666;border:none;border-radius:8px;font-size:1em;font-weight:700;cursor:pointer;">取消</button>
+            </div>`;
+        mask.appendChild(card);
+        document.body.appendChild(mask);
+        document.getElementById('custom-confirm-ok').onclick = () => {
+            document.body.removeChild(mask);
+            if(onConfirm) onConfirm();
+        };
+        document.getElementById('custom-confirm-cancel').onclick = () => {
+            document.body.removeChild(mask);
+            if(onCancel) onCancel();
+        };
+    }
+
+    // ----- CGM Analysis Functions -----
+    async function loadCgmPeriods() {
+        const container = document.getElementById('cgm-periods-container');
+        container.innerHTML = '<div class="loader">正在加載療程數據...</div>';
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id'); // Use globalUserId first
+
+        if (!lineUserId) {
+            container.innerHTML = '<div class="cgm-error-message">錯誤：找不到使用者ID，請先登入。</div>';
+            return;
+        }
+
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_periods'
+                })
+            });
+
+            if (!response.ok) {
+                const errData = await response.json().catch(() => ({}));
+                throw new Error(`伺服器錯誤: ${response.status} ${response.statusText}. ${errData.error || ''}`);
+            }
+
+            const data = await response.json();
+
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            renderCgmPeriods(data.therapy_periods);
+
+        } catch (error) {
+            container.innerHTML = `<div class="cgm-error-message">加載療程數據失敗: ${error.message}</div>`;
+            console.error('Error loading CGM periods:', error);
+        }
+    }
+
+    function renderCgmPeriods(periods) {
+        const container = document.getElementById('cgm-periods-container');
+        if (!periods || periods.length === 0) {
+            container.innerHTML = '<div class="loader">找不到任何療程數據。</div>';
+            return;
+        }
+
+        // 按期數分組
+        const groupedPeriods = periods.reduce((acc, p) => {
+            if (!acc[p.period_index]) {
+                acc[p.period_index] = [];
+            }
+            acc[p.period_index].push(p);
+            return acc;
+        }, {});
+
+        let html = '';
+        
+        // 為每個期數創建一個表格
+        Object.entries(groupedPeriods).sort(([a], [b]) => b - a).forEach(([periodIndex, periodData]) => {
+            html += `
+                <div style="margin-bottom: 30px;">
+                    <h3 style="color: #2c5282; margin-bottom: 15px;">第 ${periodIndex} 期</h3>
+                    <div style="overflow-x: auto; margin-bottom: 20px;">
+                        <table style="width: 100%; border-collapse: collapse; min-width: 800px;">
+                            <thead>
+                                <tr style="background: #2c5282; color: #fff;">
+                                    <th style="padding: 12px; text-align: left;">日期範圍</th>
+                                    <th style="padding: 12px; text-align: center;">CGM筆數</th>
+                                    <th style="padding: 12px; text-align: center;">TIR</th>
+                                    <th style="padding: 12px; text-align: center;">TAR</th>
+                                    <th style="padding: 12px; text-align: center;">TBR</th>
+                                    <th style="padding: 12px; text-align: center;">CV</th>
+                                    <th style="padding: 12px; text-align: center;">SD</th>
+                                    <th style="padding: 12px; text-align: center;">平均</th>
+                                    <th style="padding: 12px; text-align: center;">GMI</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${periodData.map(p => `
+                                    <tr style="border-bottom: 1px solid #e2e8f0;">
+                                        <td style="padding: 12px;">
+                                            <button style="background:#1976d2;color:#fff;border:none;border-radius:6px;padding:8px 16px;cursor:pointer;font-weight:700;" onclick="showBigCgmChart(${p.period_index}, '${p.start_date}', '${p.end_date}')">
+                                                ${p.start_date} ~ ${p.end_date}
+                                            </button>
+                                        </td>
+                                        <td style="padding: 12px; text-align: center;">${p.CGM_Count ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TIR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TAR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.TBR ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.CV ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.SD ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.Avg ?? '-'}</td>
+                                        <td style="padding: 12px; text-align: center;">${p.GMI ?? '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        });
+
+        // 新增大圖表顯示區
+        html += `
+            <div id="big-cgm-chart-area" style="width:100%;max-width:900px;margin:40px auto 0 auto;padding:24px 12px 32px 12px;background:#f8f9fa;border-radius:16px;box-shadow:0 4px 16px rgba(44,82,130,0.08);min-height:320px;display:none;">
+                <div id="big-cgm-chart-title" style="font-size:1.15em;font-weight:700;color:#1976d2;margin-bottom:18px;"></div>
+                <div id="big-cgm-chart-content"></div>
+            </div>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    // 新增大圖表顯示函數
+    async function showBigCgmChart(periodIndex, startDate, endDate) {
+        const chartArea = document.getElementById('big-cgm-chart-area');
+        const chartTitle = document.getElementById('big-cgm-chart-title');
+        const chartContent = document.getElementById('big-cgm-chart-content');
+        chartArea.style.display = 'block';
+        chartTitle.textContent = `監測 ${periodIndex}: ${startDate} ~ ${endDate}`;
+        chartContent.innerHTML = `
+            <button id="big-cgm-close-btn" title="關閉">×</button>
+            <div style="background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(44,82,130,0.08);padding:18px 12px 24px 12px;margin-bottom:28px;">
+                <div style="font-size:1.18em;font-weight:700;color:#1976d2;margin-bottom:10px;">AGP動態血糖曲線</div>
+                <div class="chart-scroll"><canvas id="big-cgm-chart-canvas"></canvas></div>
+            </div>
+            <div style="background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(44,82,130,0.08);padding:18px 12px 24px 12px;margin-bottom:28px;">
+                <div style="font-size:1.18em;font-weight:700;color:#1976d2;margin-bottom:10px;">血糖波動分析</div>
+                <div class="chart-scroll" style="display:flex;gap:24px;align-items:flex-start;">
+                    <canvas id="big-cgm-chart-canvas2"></canvas>
+                    <div id="mean-peak-table" style="min-width:260px;"></div>
+                </div>
+            </div>
+            <div id="big-cgm-days-list" style="margin-top:24px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(44,82,130,0.08);padding:18px 12px 18px 12px;">
+                <div style="font-size:1.08em;font-weight:700;color:#1976d2;margin-bottom:10px;">單日血糖摘要</div>
+                <div id="big-cgm-days-btns"></div>
+            </div>
+            <div id="big-cgm-day-detail" style="margin-top:18px;background:#fff;border-radius:14px;box-shadow:0 2px 12px rgba(44,82,130,0.08);padding:18px 12px 24px 12px;"></div>
+        `;
+        document.getElementById('big-cgm-close-btn').onclick = function() {
+            chartArea.style.display = 'none';
+        };
+
+        // 載入AGP資料
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
+        try {
+            // 1. 先載入AGP動態血糖曲線
+            const agpResponse = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_agp',
+                    period_index: periodIndex
+                })
+            });
+            if (!agpResponse.ok) {
+                const errData = await agpResponse.json().catch(() => ({}));
+                throw new Error(`伺服器錯誤: ${agpResponse.status}. ${errData.error || ''}`);
+            }
+            const agpData = await agpResponse.json();
+            if (agpData.error) throw new Error(agpData.error);
+            if (!agpData.agp || !agpData.agp.time_labels.length) {
+                chartContent.innerHTML += '<div class="loader">此區間沒有AGP數據可供顯示。</div>';
+                return;
+            }
+            renderAgpChart(agpData.agp);
+
+            // 2. 載入血糖波動分析
+            await renderMeanPeakChart(periodIndex);
+
+            // 3. 載入單日摘要
+            await renderBigCgmDaysList(periodIndex);
+        } catch (error) {
+            chartContent.innerHTML += `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
+        }
+        // 自動滾動到大圖表區
+        setTimeout(() => {
+            chartArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 200);
+    }
+
+    // 美化單日按鈕區
+    async function renderBigCgmDaysList(periodIndex) {
+        const daysDiv = document.getElementById('big-cgm-days-btns') || document.getElementById('big-cgm-days-list');
+        daysDiv.innerHTML = '<div class="loader">正在載入單日摘要...</div>';
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_period_days',
+                    period_index: periodIndex
+                })
+            });
+            const data = await response.json();
+            if (!data.days || !data.days.length) {
+                daysDiv.innerHTML = '<div class="loader">查無單日摘要</div>';
+                return;
+            }
+            let html = '<div style="display:flex;flex-wrap:wrap;gap:14px 22px;">';
+            data.days.forEach(day => {
+                html += `<button class="day-btn" style="padding:10px 18px;border-radius:10px;border:1.5px solid #1976d2;background:#f8faff;color:#1976d2;font-weight:700;cursor:pointer;margin-bottom:8px;box-shadow:0 2px 8px rgba(44,82,130,0.06);transition:background 0.2s;" onmouseover="this.style.background='#e3f0ff'" onmouseout="this.style.background='#f8faff'" onclick="showBigCgmDayDetail('${day.date}', ${periodIndex})">${day.date}<br><span style='font-size:0.97em;font-weight:400;'>Avg:${day.mean} SD:${day.sd} TIR:${day.tir}%</span></button>`;
+            });
+            html += '</div>';
+            daysDiv.innerHTML = html;
+        } catch (e) {
+            daysDiv.innerHTML = '<div class="cgm-error-message">單日摘要載入失敗</div>';
+        }
+    }
+
+    // 美化mean_peak表格
+    async function renderMeanPeakChart(periodIndex) {
+        const canvas = document.getElementById('big-cgm-chart-canvas2');
+        const tableDiv = document.getElementById('mean-peak-table');
+        tableDiv.innerHTML = '<div class="loader">載入中...</div>';
+        let screenW = Math.max(window.innerWidth, 500);
+        let width = Math.min(Math.max(screenW, 600), 900);
+        if(window.innerWidth < 700) width = screenW;
+        canvas.width = width;
+        canvas.height = window.innerWidth < 700 ? 320 : 500;
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: window.globalUserId || localStorage.getItem('line_user_id'),
+                    request_type: 'get_mean_peak',
+                    period_index: periodIndex
+                })
+            });
+            const data = await response.json();
+            if (!data.mean_peak || !data.mean_peak.length) {
+                tableDiv.innerHTML = '<div class="loader">查無波動分析資料</div>';
+                return;
+            }
+            // 畫散點圖
+            const ctx = canvas.getContext('2d');
+            if(window.meanPeakChartInstance) window.meanPeakChartInstance.destroy();
+            const colors = ['#1976d2','#8d5524','#6a1b9a','#bdb76b','#e57373','#4fc3f7'];
+            const mealMap = {'早餐':'B','午餐':'L','晚餐':'D','其他':'O'};
+            window.meanPeakChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: data.mean_peak.map((row, i) => ({
+                        label: `${mealMap[row.meal]||row.meal} ${row.meal}`,
+                        data: [{x: (row.mean_peak_duration/60).toFixed(2), y: row.mean_peak_rise}],
+                        backgroundColor: colors[i%colors.length],
+                        pointRadius: 10,
+                        pointHoverRadius: 14
+                    }))
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}：\n持續${context.parsed.x}小時，升幅${context.parsed.y}mg/dL`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '波動持續時間 (小時)' },
+                            min: 1.5, max: 4.5
+                        },
+                        y: {
+                            title: { display: true, text: '波動升幅 (mg/dL)' },
+                            min: 10, max: 90
+                        }
+                    }
+                }
+            });
+            // 美化表格
+            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
+            data.mean_peak.forEach(row => {
+                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
+            });
+            table += '</tbody></table>';
+            tableDiv.innerHTML = table;
+        } catch (e) {
+            tableDiv.innerHTML = '<div class="cgm-error-message">波動分析載入失敗</div>';
+        }
+    }
+
+    // AGP專用繪圖，canvas寬高自適應
+    function renderAgpChart(agpData) {
+        const canvas = document.getElementById('big-cgm-chart-canvas');
+        let screenW = Math.max(window.innerWidth, 500);
+        let width = Math.min(Math.max(screenW, 600), 1200);
+        if(window.innerWidth < 700) width = screenW;
+        canvas.width = width;
+        canvas.height = window.innerWidth < 700 ? 320 : 500;
+        const ctx = canvas.getContext('2d');
+        if(window.agpChartInstance) window.agpChartInstance.destroy();
+        window.agpChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: agpData.time_labels,
+                datasets: [
+                    {
+                        label: '平均',
+                        data: agpData.mean,
+                        borderColor: '#1976d2',
+                        backgroundColor: 'rgba(25,118,210,0.08)',
+                        borderWidth: 2,
+                        pointRadius: 0,
+                        fill: false,
+                        tension: 0.1
+                    },
+                    {
+                        label: '25-75%分位帶',
+                        data: agpData.p75,
+                        borderColor: 'rgba(76,175,80,0.0)',
+                        backgroundColor: 'rgba(76,175,80,0.18)',
+                        fill: '-1',
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '25-75%分位帶下',
+                        data: agpData.p25,
+                        borderColor: 'rgba(76,175,80,0.0)',
+                        backgroundColor: 'rgba(76,175,80,0.18)',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '5-95%分位帶',
+                        data: agpData.p95,
+                        borderColor: 'rgba(255,193,7,0.0)',
+                        backgroundColor: 'rgba(255,193,7,0.12)',
+                        fill: '-1',
+                        pointRadius: 0,
+                        borderWidth: 0
+                    },
+                    {
+                        label: '5-95%分位帶下',
+                        data: agpData.p5,
+                        borderColor: 'rgba(255,193,7,0.0)',
+                        backgroundColor: 'rgba(255,193,7,0.12)',
+                        fill: false,
+                        pointRadius: 0,
+                        borderWidth: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: false,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { title: { display: true, text: '時間' }, ticks: { maxTicksLimit: 24 } },
+                    y: { title: { display: true, text: 'CGM (mg/dL)' }, min: 40, max: 300 }
+                },
+                plugins: {
+                    legend: { display: true, position: 'top' }
+                }
+            }
+        });
+    }
+
+    async function togglePeriod(headerElement, periodIndex) {
+        const content = document.getElementById(`period-content-${periodIndex}`);
+        const isVisible = content.style.display === 'block';
+
+        // Close all other accordions
+        document.querySelectorAll('.accordion-content').forEach(el => {
+            if (el.id !== `period-content-${periodIndex}`) {
+                el.style.display = 'none';
+            }
+        });
+        document.querySelectorAll('.accordion-header').forEach(el => {
+            if (el !== headerElement) {
+                el.classList.remove('active');
+            }
+        });
+
+        if (isVisible) {
+            content.style.display = 'none';
+            headerElement.classList.remove('active');
+        } else {
+            content.style.display = 'block';
+            headerElement.classList.add('active');
+            // Only load data if it hasn't been loaded yet
+            if (!content.hasChildNodes() || content.querySelector('.loader')) {
+                loadCgmDataForPeriod(periodIndex);
+            }
+        }
+    }
+
+    async function loadCgmDataForPeriod(periodIndex) {
+        const content = document.getElementById(`period-content-${periodIndex}`);
+        content.innerHTML = '<div class="loader">正在加載CGM數據圖表...</div>';
+        
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
+
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_cgm_data',
+                    period_index: periodIndex
+                })
+            });
+
+            if (!response.ok) {
+                 const errData = await response.json().catch(() => ({}));
+                throw new Error(`伺服器錯誤: ${response.status}. ${errData.error || ''}`);
+            }
+            
+            const data = await response.json();
+            if (data.error) throw new Error(data.error);
+
+            if (data.cgm_data.labels.length === 0) {
+                 content.innerHTML = '<div class="loader">此區間沒有CGM數據可供顯示。</div>';
+                 return;
+            }
+            
+            const canvasId = `cgm-chart-${periodIndex}`;
+            content.innerHTML = `<canvas id="${canvasId}"></canvas>`;
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            renderCgmChart(ctx, data.cgm_data, periodIndex);
+
+        } catch (error) {
+            content.innerHTML = `<div class="cgm-error-message">加載圖表失敗: ${error.message}</div>`;
+            console.error(`Error loading CGM data for period ${periodIndex}:`, error);
+        }
+    }
+
+    const chartInstances = {}; // To keep track of charts
+    function renderCgmChart(ctx, cgmData, periodIndex) {
+        // Destroy existing chart for this canvas if it exists
+        if(chartInstances[periodIndex]) {
+            chartInstances[periodIndex].destroy();
+        }
+
+        chartInstances[periodIndex] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: cgmData.labels,
+                datasets: [{
+                    label: '血糖值 (mg/dL)',
+                    data: cgmData.values,
+                    borderColor: 'rgb(75, 192, 192)',
+                    backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                    borderWidth: 1.5,
+                    fill: false,
+                    tension: 0.1,
+                    pointRadius: 1.5,
+                    pointHoverRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'day',
+                            tooltipFormat: 'yyyy-MM-dd HH:mm',
+                            displayFormats: {
+                                day: 'yyyy-MM-dd'
+                            }
+                        },
+                        title: { display: true, text: '日期' },
+                        ticks: { source: 'auto', maxRotation: 45, minRotation: 45 }
+                    },
+                    y: {
+                        beginAtZero: false,
+                        title: { display: true, text: '血糖值 (mg/dL)' }
+                    }
+                },
+                plugins: {
+                    legend:{ position: 'top' },
+                    tooltip: { mode: 'index', intersect: false },
+                    zoom: {
+                        pan: { enabled: true, mode: 'x', threshold: 5 },
+                        zoom: { wheel: { enabled: true }, pinch: { enabled: true }, mode: 'x' }
+                    }
+                }
+            }
+        });
+    }
+
+    function showTab(tabName) {
+        ['foodAnalysis', 'foodDiary', 'cgmAnalysis'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+        const tab = document.getElementById(tabName);
+        if(tab) tab.style.display = 'block';
+
+        if (tabName === 'foodDiary') {
+            fetchFoodDiary();
+        } else if (tabName === 'cgmAnalysis') {
+            const container = document.getElementById('cgm-periods-container');
+            // Load data only if it's the first time
+            if (!container.hasChildNodes() || container.innerHTML.trim() === '') {
+                loadCgmPeriods();
+            }
+        }
+    }
+
+    // 渲染mean_peak散點圖與表格
+    async function renderMeanPeakChart(periodIndex) {
+        const canvas = document.getElementById('big-cgm-chart-canvas2');
+        const tableDiv = document.getElementById('mean-peak-table');
+        tableDiv.innerHTML = '<div class="loader">載入中...</div>';
+        let screenW = Math.max(window.innerWidth, 500);
+        let width = Math.min(Math.max(screenW, 600), 900);
+        if(window.innerWidth < 700) width = screenW;
+        canvas.width = width;
+        canvas.height = window.innerWidth < 700 ? 320 : 500;
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: window.globalUserId || localStorage.getItem('line_user_id'),
+                    request_type: 'get_mean_peak',
+                    period_index: periodIndex
+                })
+            });
+            const data = await response.json();
+            if (!data.mean_peak || !data.mean_peak.length) {
+                tableDiv.innerHTML = '<div class="loader">查無波動分析資料</div>';
+                return;
+            }
+            // 畫散點圖
+            const ctx = canvas.getContext('2d');
+            if(window.meanPeakChartInstance) window.meanPeakChartInstance.destroy();
+            const colors = ['#1976d2','#8d5524','#6a1b9a','#bdb76b','#e57373','#4fc3f7'];
+            const mealMap = {'早餐':'B','午餐':'L','晚餐':'D','其他':'O'};
+            window.meanPeakChartInstance = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: data.mean_peak.map((row, i) => ({
+                        label: `${mealMap[row.meal]||row.meal} ${row.meal}`,
+                        data: [{x: (row.mean_peak_duration/60).toFixed(2), y: row.mean_peak_rise}],
+                        backgroundColor: colors[i%colors.length],
+                        pointRadius: 10,
+                        pointHoverRadius: 14
+                    }))
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true, position: 'top' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `${context.dataset.label}：\n持續${context.parsed.x}小時，升幅${context.parsed.y}mg/dL`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: '波動持續時間 (小時)' },
+                            min: 1.5, max: 4.5
+                        },
+                        y: {
+                            title: { display: true, text: '波動升幅 (mg/dL)' },
+                            min: 10, max: 90
+                        }
+                    }
+                }
+            });
+            // 美化表格
+            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
+            data.mean_peak.forEach(row => {
+                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.mean_tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
+            });
+            table += '</tbody></table>';
+            tableDiv.innerHTML = table;
+        } catch (e) {
+            tableDiv.innerHTML = '<div class="cgm-error-message">波動分析載入失敗</div>';
+        }
+    }
+
+    // 顯示單日詳細圖表
+    window.showBigCgmDayDetail = async function(date, periodIndex) {
+        const detailDiv = document.getElementById('big-cgm-day-detail');
+        detailDiv.innerHTML = '<div class="loader">正在載入單日圖表...</div>';
+        const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
+        try {
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    line_user_id: lineUserId,
+                    request_type: 'get_cgm_data',
+                    period_index: periodIndex
+                })
+            });
+            const data = await response.json();
+            if (!data.cgm_data || !data.cgm_data.labels.length) {
+                detailDiv.innerHTML = '<div class="loader">查無單日CGM數據</div>';
+                return;
+            }
+            // 過濾出該日資料
+            const labels = data.cgm_data.labels;
+            const values = data.cgm_data.values;
+            const dayLabels = [];
+            const dayValues = [];
+            for(let i=0;i<labels.length;i++){
+                if(labels[i].startsWith(date)){
+                    dayLabels.push(labels[i]);
+                    dayValues.push(values[i]);
+                }
+            }
+            if(!dayLabels.length){
+                detailDiv.innerHTML = '<div class="loader">查無該日CGM數據</div>';
+                return;
+            }
+            detailDiv.innerHTML = `<div class='chart-scroll'><canvas id='big-cgm-day-canvas'></canvas></div>`;
+            const canvas = document.getElementById('big-cgm-day-canvas');
+            let screenW = Math.max(window.innerWidth, 500);
+            let width = Math.min(Math.max(screenW, 600), 1200);
+            if(window.innerWidth < 700) width = screenW;
+            canvas.width = width;
+            canvas.height = window.innerWidth < 700 ? 320 : 500;
+            const ctx = canvas.getContext('2d');
+            if(window.bigCgmDayChartInstance) window.bigCgmDayChartInstance.destroy();
+            window.bigCgmDayChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dayLabels,
+                    datasets: [{
+                        label: `${date} 血糖`,
+                        data: dayValues,
+                        borderColor: '#ff9800',
+                        backgroundColor: 'rgba(255,152,0,0.08)',
+                        borderWidth: 2,
+                        pointRadius: 1.5,
+                        fill: false,
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { title: { display: true, text: '時間' } },
+                        y: { title: { display: true, text: 'CGM (mg/dL)' }, min: 40, max: 300 }
+                    },
+                    plugins: {
+                        legend: { display: true, position: 'top' }
+                    }
+                }
+            });
+        } catch (e) {
+            detailDiv.innerHTML = '<div class="cgm-error-message">單日圖表載入失敗</div>';
+        }
+    }
+</script>
+<!-- Chart.js and dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
+</body>
+</html>
