@@ -1079,8 +1079,33 @@
                 document.getElementById('cgmPatientName').value = result.data.patient_name || '';
                 document.getElementById('cgmPatientId').value = result.data.custom_id || '';
                 
-                document.getElementById('user-info-status').innerHTML = 
-                    `<span style="color: green;"> 已自動填入用戶資料：${result.data.patient_name}</span>`;
+                // 顯示用戶資料狀態
+                let statusHtml = `<span style="color: green;"> 已自動填入用戶資料：${result.data.patient_name}</span>`;
+                
+                // 加入FHIR伺服器連線狀態
+                if (result.data.fhir_status) {
+                    let fhirColor = 'orange';
+                    let fhirMessage = result.data.fhir_status;
+                    
+                    // 根據不同的FHIR狀態設定顏色和訊息
+                    if (result.data.fhir_status === '已連線FHIR伺服器') {
+                        fhirColor = 'green';
+                        if (result.data.fhir_patient_id) {
+                            fhirMessage += ` (ID: ${result.data.fhir_patient_id})`;
+                        }
+                    } else if (result.data.fhir_status === 'FHIR伺服器連線異常') {
+                        fhirColor = 'red';
+                    } else if (result.data.fhir_status === '尚未建立在FHIR伺服器') {
+                        fhirColor = 'orange';
+                        fhirMessage += ' - 建議先完成使用者設定';
+                    } else if (result.data.fhir_status === 'FHIR查詢結果異常') {
+                        fhirColor = 'red';
+                    }
+                    
+                    statusHtml += `<br><span style="color: ${fhirColor};"> FHIR伺服器狀態：${fhirMessage}</span>`;
+                }
+                
+                document.getElementById('user-info-status').innerHTML = statusHtml;
                 
                 console.log('用戶資料查詢成功:', result.data);
             } else {
