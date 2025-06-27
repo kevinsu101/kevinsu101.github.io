@@ -574,7 +574,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台3</h1>
+    <h1>CGM飯後血糖管理平台4</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -1171,14 +1171,13 @@
                 // 處理成功回應
                 if (response.ok && result.status === 'success') {
                     let successDetails = `<div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">`;
-                    successDetails += `<strong>檔案名稱：</strong>${result.filename || '未知'}<br>`;
                     successDetails += `<strong>上傳者：</strong>${result.username || '未知'}<br>`;
                     if (result.upload_details) {
                         successDetails += `<strong>詳細資訊：</strong>${result.upload_details}`;
                     }
                     successDetails += `</div>`;
                     
-                    showUploadComplete(true, 'CGM 檔案上傳成功！', successDetails, '✅');
+                    showUploadComplete(true, 'CGM 檔案上傳成功！', successDetails);
                     
                     // 清空檔案選擇器
                     fileEl.value = '';
