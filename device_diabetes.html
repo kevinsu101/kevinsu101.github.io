@@ -1087,6 +1087,34 @@
     const uploadResultDetails = document.getElementById('uploadResultDetails');
     const closeModalBtn = document.getElementById('closeModalBtn');
 
+    // 自動發送LINE訊息函數
+    async function sendLineMessage(message) {
+        try {
+            // 檢查是否在 LINE 應用內
+            if (!liff.isInClient()) {
+                console.log('不在 LINE 客戶端內，無法發送訊息');
+                return { success: false, reason: '不在LINE應用內' };
+            }
+            
+            console.log('準備發送訊息到LINE:', message);
+            
+            // 發送訊息給機器人
+            await liff.sendMessages([
+                {
+                    type: 'text',
+                    text: message
+                }
+            ]);
+
+            console.log('LINE訊息發送成功');
+            return { success: true };
+            
+        } catch (err) {
+            console.error('發送LINE訊息失敗:', err);
+            return { success: false, reason: err.message };
+        }
+    }
+
     // 顯示上傳進度視窗
     function showUploadModal() {
         uploadProgressModal.style.display = 'block';
@@ -1179,6 +1207,23 @@
                         successDetails += `<strong>詳細資訊：</strong>${result.upload_details}`;
                     }
                     successDetails += `</div>`;
+                    
+                    // 自動發送LINE訊息
+                    updateUploadProgress('正在發送通知到LINE...');
+                    const lineResult = await sendLineMessage('最新CGM上傳成功');
+                    
+                    // // 根據LINE訊息發送結果更新顯示內容
+                    // if (lineResult.success) {
+                    //     successDetails += `<div style="background: #d1ecf1; padding: 10px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #17a2b8;">`;
+                    //     successDetails += `<strong>已自動發送通知到LINE</strong><br>`;
+                    //     successDetails += `<small style="color: #666;">訊息："最新CGM上傳成功" 已發送</small>`;
+                    //     successDetails += `</div>`;
+                    // } else {
+                    //     successDetails += `<div style="background: #fff3cd; padding: 10px; border-radius: 6px; margin-top: 10px; border-left: 3px solid #ffc107;">`;
+                    //     successDetails += `<strong>非手機無法傳送資訊</strong><br>`;
+                    //     successDetails += `<small style="color: #666;">原因：${lineResult.reason || '未知錯誤'}</small>`;
+                    //     successDetails += `</div>`;
+                    // }
                     
                     showUploadComplete(true, 'CGM 檔案上傳成功！', successDetails);
                     
