@@ -522,8 +522,8 @@
                     <input type="text" id="userNameInput" placeholder="請輸入您的姓名" required>
                 </div>
                 <div class="form-group">
-                    <label for="userIdInput">身分證字號</label>
-                    <input type="text" id="userIdInput" placeholder="請輸入您的身分證字號" required>
+                    <label for="userIdInput">使用者ID</label>
+                    <input type="text" id="userIdInput" placeholder="請輸入您的使用者ID" required>
                 </div>
                 <div class="form-group">
                     <label for="userBirthdayInput">生日</label>
@@ -794,7 +794,7 @@
         const userSettingForm = document.getElementById('user-setting-form');
         
         if (!window.globalUserId) {
-            userStatus.innerHTML = '<span style="color: red;">❌ 尚未取得用戶 ID，請重新整理頁面</span>';
+            userStatus.innerHTML = '<span style="color: red;">未取得用戶 ID，請重新整理頁面</span>';
             return;
         }
 
@@ -977,7 +977,7 @@
             const customId = document.getElementById('cgmPatientId').value.trim();
             const fileEl = document.getElementById('fileInput');
 
-            if (!name || !customId) return alert('請輸入姓名與身分證字號！');
+            if (!name || !customId) return alert('請輸入姓名與使用者ID');
             if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
             
           const file = fileEl.files[0];
@@ -1000,14 +1000,53 @@
                     body: formData,
                 });
                 const result = await response.json();
-                if (response.ok && result.status === 'ok') {
-                    alert(`CGM 檔案上傳成功！`);
+                
+                // 處理成功回應
+                if (response.ok && result.status === 'success') {
+                    let successMessage = `CGM 檔案上傳成功！\n\n`;
+                    successMessage += `檔案名稱：${result.filename}\n`;
+                    successMessage += `上傳者：${result.username}\n`;
+                    if (result.upload_details) {
+                        successMessage += `詳細資訊：${result.upload_details}`;
+                    }
+                    alert(successMessage);
+                    
+                    // 清空檔案選擇器
+                    fileEl.value = '';
+                    
                 } else {
-                    throw new Error(result.msg || '發生未知錯誤');
+                    // 處理錯誤回應
+                    let errorMessage = `${result.msg || 'CGM 檔案上傳失敗'}\n\n`;
+                    
+                    if (result.details) {
+                        errorMessage += `詳細說明：${result.details}\n\n`;
+                    }
+                    
+                    if (result.suggestion) {
+                        errorMessage += `建議解決方案：${result.suggestion}`;
+                    }
+                    
+                    // 針對特定錯誤提供額外提示
+                    if (result.msg && result.msg.includes('使用者資料尚未建立')) {
+                        errorMessage += `\n\n請先到首頁完成「使用者設定」，，設定過請稍等1分鐘後再嘗試，由於系統使用人數眾多，造成你的不便敬請見諒。`;
+                    }
+                    
+                    alert(errorMessage);
                 }
+                
             } catch (error) {
                 console.error('Error uploading CGM file:', error);
-                alert(`CGM 檔案上傳失敗：${error.message}`);
+                let errorMessage = ` CGM 檔案上傳發生網路錯誤：${error.message}\n\n`;
+                errorMessage += `可能原因：\n`;
+                errorMessage += `• 網路連線中斷\n`;
+                errorMessage += `• 伺服器暫時無法連接\n`;
+                errorMessage += `• 檔案過大或格式不正確\n\n`;
+                errorMessage += `建議解決方案：\n`;
+                errorMessage += `• 檢查網路連線狀態\n`;
+                errorMessage += `• 確認檔案為 CSV 格式且大小適中\n`;
+                errorMessage += `• 稍後重新嘗試上傳`;
+                
+                alert(errorMessage);
             }
         });
     }
