@@ -1208,9 +1208,9 @@
                     }
                     successDetails += `</div>`;
                     
-                    // 自動發送LINE訊息
-                    updateUploadProgress('正在發送通知到LINE...');
-                    const lineResult = await sendLineMessage('最新CGM上傳成功');
+                    // // 自動發送LINE訊息
+                    // updateUploadProgress('正在發送通知到LINE...');
+                    // const lineResult = await sendLineMessage('最新CGM上傳成功');
                     
                     // // 根據LINE訊息發送結果更新顯示內容
                     // if (lineResult.success) {
@@ -1778,7 +1778,8 @@
                 // 食物名稱換行，份量小字
                 let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
                 // 橢圓形營養素區塊（新版：指定新顏色）
-                let nutHtml = `<div style="display:flex;gap:18px;justify-content:flex-start;margin:16px 0 8px 0;">
+                let nutHtml = `<div style="overflow-x:auto;margin:16px 0 8px 0;">
+<div style="display:flex;gap:18px;justify-content:flex-start;min-width:400px;">
   <div style="border:3px solid #e57373;background:transparent;border-radius:40px/28px;width:90px;height:56px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
     <span style="font-size:1.35em;font-weight:700;color:#e57373;">${item.total_cal}</span>
     <span style="font-size:0.95em;color:#e57373;">大卡</span>
@@ -1795,11 +1796,13 @@
     <span style="font-size:1.35em;font-weight:700;color:#ba68c8;">${item.total_fat}</span>
     <span style="font-size:0.95em;color:#ba68c8;">公克</span>
   </div>
-</div><div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;">
+</div>
+<div style="display:flex;gap:18px;justify-content:flex-start;margin-bottom:2px;min-width:400px;">
   <span style="font-size:1em;color:#e57373;width:90px;text-align:center;">熱量</span>
   <span style="font-size:1em;color:#4fc3f7;width:90px;text-align:center;">碳水</span>
   <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">蛋白質</span>
   <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
+</div>
 </div>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;position:relative;">
