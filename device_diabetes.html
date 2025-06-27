@@ -141,6 +141,18 @@
             transition: border-color 0.3s, box-shadow 0.3s;
         }
 
+        input[type="date"] {
+            width: 100%;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid var(--input-border);
+            border-radius: 8px;
+            background-color: var(--input-bg);
+            color: var(--text-color);
+            box-sizing: border-box;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+
         input[type="file"] {
             width: 100%;
             padding: 8px;
@@ -483,7 +495,7 @@
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台</h1>
+    <h1>CGM飯後血糖管理平台1</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -495,6 +507,40 @@
     </div>
 
     <div id="section-home" class="content-section">
+        <!-- 使用者設定區域 -->
+        <div id="user-setting-area" style="margin-bottom: 25px;">
+            <!-- 使用者狀態顯示 -->
+            <div id="user-status" style="padding: 15px; border-radius: 10px; margin-bottom: 15px; text-align: center; background-color: #f8f9fa; border: 1px solid #e9ecef;">
+                正在載入使用者資訊...
+            </div>
+            
+            <!-- 使用者設定表單 (預設隱藏) -->
+            <div id="user-setting-form" style="display: none; background-color: #fff3cd; padding: 20px; border-radius: 10px; border: 1px solid #ffeaa7; margin-bottom: 15px;">
+                <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); text-align: center;">設定使用者資訊</h3>
+                <div class="form-group">
+                    <label for="userNameInput">姓名</label>
+                    <input type="text" id="userNameInput" placeholder="請輸入您的姓名" required>
+                </div>
+                <div class="form-group">
+                    <label for="userIdInput">身分證字號</label>
+                    <input type="text" id="userIdInput" placeholder="請輸入您的身分證字號" required>
+                </div>
+                <div class="form-group">
+                    <label for="userBirthdayInput">生日</label>
+                    <input type="date" id="userBirthdayInput" required>
+                </div>
+                <div class="form-group">
+                    <label for="userGenderInput">性別</label>
+                    <select id="userGenderInput" required>
+                        <option value="">請選擇性別</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <button id="saveUserBtn" class="submit-btn">儲存設定</button>
+            </div>
+        </div>
+        
         <h2>歡迎使用 CGM 飯後血糖管理平台</h2>
         <div style="text-align: center; padding: 40px 20px;">
             </p>
@@ -654,6 +700,12 @@
             if (targetSectionId === 'section-cgm-analysis') {
                 loadCgmPeriods();
             }
+            // 當切換到首頁時，檢查使用者設定狀態
+            if (targetSectionId === 'section-home') {
+                setTimeout(() => {
+                    checkUserSetting();
+                }, 500);
+            }
         });
     });
 
@@ -734,6 +786,137 @@
 
     // 頁面載入時自動執行登入
     autoLogin();
+
+    // ------------------------- 使用者設定功能 -------------------------
+    // 檢查使用者設定狀態
+    async function checkUserSetting() {
+        const userStatus = document.getElementById('user-status');
+        const userSettingForm = document.getElementById('user-setting-form');
+        
+        if (!window.globalUserId) {
+            userStatus.innerHTML = '<span style="color: red;">❌ 尚未取得用戶 ID，請重新整理頁面</span>';
+            return;
+        }
+
+        try {
+            userStatus.textContent = '正在檢查使用者設定...';
+            
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    userId: window.globalUserId
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                // 用戶已設定，顯示歡迎訊息
+                userStatus.innerHTML = `
+                    <div style="color: green; font-size: 1.1em; font-weight: 500;">
+                        🎉 歡迎，${result.data.patient_name}！
+                    </div>
+                    <div style="color: #666; font-size: 0.9em; margin-top: 5px;">
+                        您可以開始使用血糖管理功能
+                    </div>
+                `;
+                userSettingForm.style.display = 'none';
+                
+                console.log('用戶已設定:', result.data);
+            } else {
+                // 用戶尚未設定，顯示設定表單
+                userStatus.innerHTML = `
+                    <div style="color: orange; font-size: 1em;">
+                        📝 請先設定您的基本資訊
+                    </div>
+                `;
+                userSettingForm.style.display = 'block';
+            }
+            
+        } catch (error) {
+            console.error('檢查用戶設定失敗:', error);
+            userStatus.innerHTML = '<span style="color: red;">❌ 檢查用戶設定失敗，請重新整理頁面</span>';
+        }
+    }
+
+    // 儲存使用者設定
+    async function saveUserSetting() {
+        const userNameInput = document.getElementById('userNameInput');
+        const userIdInput = document.getElementById('userIdInput');
+        const userBirthdayInput = document.getElementById('userBirthdayInput');
+        const userGenderInput = document.getElementById('userGenderInput');
+        const saveUserBtn = document.getElementById('saveUserBtn');
+        
+        const userName = userNameInput.value.trim();
+        const userId = userIdInput.value.trim();
+        const userBirthday = userBirthdayInput.value;
+        const userGender = userGenderInput.value;
+        
+        if (!userName || !userId || !userBirthday || !userGender) {
+            alert('請填寫所有欄位');
+            return;
+        }
+        
+        if (!window.globalUserId) {
+            alert('尚未取得 LINE 用戶 ID，請重新整理頁面');
+            return;
+        }
+        
+        try {
+            saveUserBtn.textContent = '儲存中...';
+            saveUserBtn.disabled = true;
+            
+            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/user_setting', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    line_user_id: window.globalUserId,
+                    patient_name: userName,
+                    custom_id: userId,
+                    birthday: userBirthday,
+                    gender: userGender
+                })
+            });
+
+            const result = await response.json();
+            
+            if (response.ok && result.success) {
+                alert('✅ 使用者設定儲存成功！');
+                // 重新檢查使用者狀態
+                await checkUserSetting();
+                // 清空表單
+                userNameInput.value = '';
+                userIdInput.value = '';
+                userBirthdayInput.value = '';
+                userGenderInput.value = '';
+            } else {
+                throw new Error(result.message || '儲存失敗');
+            }
+            
+        } catch (error) {
+            console.error('儲存用戶設定失敗:', error);
+            alert(`❌ 儲存失敗：${error.message}`);
+        } finally {
+            saveUserBtn.textContent = '儲存設定';
+            saveUserBtn.disabled = false;
+        }
+    }
+
+    // 綁定儲存按鈕事件
+    const saveUserBtn = document.getElementById('saveUserBtn');
+    if (saveUserBtn) {
+        saveUserBtn.addEventListener('click', saveUserSetting);
+    }
+
+    // 延遲檢查使用者設定狀態 (等待 LIFF 初始化完成)
+    setTimeout(() => {
+        checkUserSetting();
+    }, 2000);
 
     // --- LIFF 測試 ---
     const liffTestBtn = document.getElementById('liffTestBtn');
