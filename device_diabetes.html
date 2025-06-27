@@ -198,14 +198,18 @@
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.25);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 6px rgba(0,0,0,0.2);
         }
 
         #liff-data-output {
@@ -490,12 +494,87 @@
           }
           #big-cgm-close-btn { top: 8px; right: 8px; width: 32px; height: 32px; font-size: 1.2em; }
         }
+
+        .content-section {
+            display: none;
+        }
+
+        .content-section.active {
+            display: block;
+        }
+
+        .input-btn {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: background-color 0.3s;
+        }
+
+        .input-btn:hover {
+            background-color: #218838;
+        }
+
+        /* Loading Spinner Animation */
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            backdrop-filter: blur(2px);
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 85%;
+            max-width: 450px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: relative;
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .loading-spinner {
+            margin: 20px auto;
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #007bff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>CGM飯後血糖管理平台2</h1>
+    <h1>CGM飯後血糖管理平台3</h1>
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
@@ -568,25 +647,52 @@
     </div>
 
     <div id="section-cgm-upload" class="content-section" style="display: none;">
-        <form id="cgm-upload-form">
-            <h2>上傳 CGM 資料</h2>
-            <div id="user-info-status" style="margin-bottom: 20px; padding: 10px; border-radius: 6px; background-color: #e9ecef; text-align: center;">
-                正在查詢用戶資料...
+        <h2>CGM 資料上傳</h2>
+        
+        <!-- 上傳進度模態視窗 -->
+        <div id="uploadProgressModal" class="modal" style="display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
+            <div class="modal-content" style="background-color: #fefefe; margin: 15% auto; padding: 30px; border-radius: 12px; width: 80%; max-width: 400px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <div id="uploadProgressContent">
+                    <!-- 上傳中的內容 -->
+                    <div id="uploadingContent">
+                        <div class="loading-spinner" style="margin: 20px auto; width: 50px; height: 50px; border: 4px solid #f3f3f3; border-top: 4px solid #007bff; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        <h3 style="color: #007bff; margin: 20px 0 10px 0;">上傳中，請稍後...</h3>
+                        <p style="color: #666; margin-bottom: 20px;">正在處理您的CGM檔案</p>
+                        <div id="uploadProgress" style="color: #888; font-size: 0.9em;">準備上傳...</div>
+                    </div>
+                    
+                    <!-- 上傳完成的內容 -->
+                    <div id="uploadCompleteContent" style="display: none;">
+                        <div id="uploadResultIcon" style="font-size: 3em; margin: 20px 0;">✅</div>
+                        <h3 id="uploadResultTitle" style="margin: 20px 0 10px 0;">上傳完成</h3>
+                        <div id="uploadResultDetails" style="margin: 20px 0; text-align: left;"></div>
+                        <button id="closeModalBtn" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-size: 1em; margin-top: 20px;">確定</button>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label for="cgmPatientName">姓名</label>
-                <input type="text" id="cgmPatientName" required readonly>
-            </div>
-            <div class="form-group">
-                <label for="cgmPatientId">使用者ID</label>
-                <input type="text" id="cgmPatientId" required readonly>
-            </div>
-            <div class="form-group">
-                <label for="fileInput">選擇 CSV 檔案</label>
-                <input type="file" id="fileInput" accept=".csv" required>
-            </div>
-            <button type="submit" id="cgmUploadBtn" class="submit-btn">上傳 CGM 檔案</button>
-        </form>
+        </div>
+        
+        <div class="upload-form-container">
+            <form id="cgm-upload-form">
+                <strong> CGM 資料上傳</strong><br>
+                <div id="user-info-status" style="margin-bottom: 20px; padding: 10px; border-radius: 6px; background-color: #e9ecef; text-align: center;">
+                    正在查詢用戶資料...
+                </div>
+                <div class="form-group">
+                    <label for="cgmPatientName">姓名</label>
+                    <input type="text" id="cgmPatientName" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="cgmPatientId">使用者ID</label>
+                    <input type="text" id="cgmPatientId" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="fileInput">選擇 CSV 檔案</label>
+                    <input type="file" id="fileInput" accept=".csv" required>
+                </div>
+                <button type="submit" id="cgmUploadBtn" class="submit-btn">上傳 CGM 檔案</button>
+            </form>
+        </div>
     </div>
 
     <div id="section-cgm-analysis" class="content-section" style="display: none;">
@@ -969,6 +1075,55 @@
 
     // ------------------------- CGM 檔案上傳表單處理 -------------------------
     const cgmUploadForm = document.getElementById('cgm-upload-form');
+    const uploadProgressModal = document.getElementById('uploadProgressModal');
+    const uploadingContent = document.getElementById('uploadingContent');
+    const uploadCompleteContent = document.getElementById('uploadCompleteContent');
+    const uploadProgress = document.getElementById('uploadProgress');
+    const uploadResultIcon = document.getElementById('uploadResultIcon');
+    const uploadResultTitle = document.getElementById('uploadResultTitle');
+    const uploadResultDetails = document.getElementById('uploadResultDetails');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    // 顯示上傳進度視窗
+    function showUploadModal() {
+        uploadProgressModal.style.display = 'block';
+        uploadingContent.style.display = 'block';
+        uploadCompleteContent.style.display = 'none';
+        uploadProgress.textContent = '準備上傳...';
+    }
+
+    // 更新上傳進度訊息
+    function updateUploadProgress(message) {
+        uploadProgress.textContent = message;
+    }
+
+    // 顯示上傳完成結果
+    function showUploadComplete(isSuccess, title, details, icon = '✅') {
+        uploadingContent.style.display = 'none';
+        uploadCompleteContent.style.display = 'block';
+        uploadResultIcon.textContent = icon;
+        uploadResultTitle.textContent = title;
+        uploadResultTitle.style.color = isSuccess ? '#28a745' : '#dc3545';
+        uploadResultDetails.innerHTML = details;
+    }
+
+    // 隱藏上傳進度視窗
+    function hideUploadModal() {
+        uploadProgressModal.style.display = 'none';
+    }
+
+    // 關閉按鈕事件
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener('click', hideUploadModal);
+    }
+
+    // 點擊背景關閉視窗
+    uploadProgressModal.addEventListener('click', (event) => {
+        if (event.target === uploadProgressModal) {
+            hideUploadModal();
+        }
+    });
+
     if (cgmUploadForm) {
         cgmUploadForm.addEventListener('submit', async (event) => {
             event.preventDefault();
@@ -977,14 +1132,22 @@
             const customId = document.getElementById('cgmPatientId').value.trim();
             const fileEl = document.getElementById('fileInput');
 
-            if (!name || !customId) return alert('請輸入姓名與使用者ID');
-            if (!fileEl.files.length) return alert('請先選擇 CGM 的 CSV 檔案');
+            if (!name || !customId) {
+                alert('請輸入姓名與使用者ID');
+                return;
+            }
+            if (!fileEl.files.length) {
+                alert('請先選擇 CGM 的 CSV 檔案');
+                return;
+            }
             
-          const file = fileEl.files[0];
-
-            // 直接使用全域的 userId
+            const file = fileEl.files[0];
             const userId = window.globalUserId || 'FALLBACK_USER_ID';
             console.log('上傳檔案使用的 User ID:', userId);
+
+            // 顯示上傳進度視窗
+            showUploadModal();
+            updateUploadProgress('正在驗證檔案...');
 
             const formData = new FormData();
             formData.append('userId', userId);
@@ -995,58 +1158,70 @@
             const endpoint = 'https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/uploadcsv';
 
             try {
+                updateUploadProgress('正在上傳到伺服器...');
+                
                 const response = await fetch(endpoint, {
                     method: 'POST',
                     body: formData,
                 });
+                
+                updateUploadProgress('正在處理回應...');
                 const result = await response.json();
                 
                 // 處理成功回應
                 if (response.ok && result.status === 'success') {
-                    let successMessage = `CGM 檔案上傳成功！\n\n`;
-                    successMessage += `檔案名稱：${result.filename}\n`;
-                    successMessage += `上傳者：${result.username}\n`;
+                    let successDetails = `<div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">`;
+                    successDetails += `<strong>檔案名稱：</strong>${result.filename || '未知'}<br>`;
+                    successDetails += `<strong>上傳者：</strong>${result.username || '未知'}<br>`;
                     if (result.upload_details) {
-                        successMessage += `詳細資訊：${result.upload_details}`;
+                        successDetails += `<strong>詳細資訊：</strong>${result.upload_details}`;
                     }
-                    alert(successMessage);
+                    successDetails += `</div>`;
+                    
+                    showUploadComplete(true, 'CGM 檔案上傳成功！', successDetails, '✅');
                     
                     // 清空檔案選擇器
                     fileEl.value = '';
                     
                 } else {
                     // 處理錯誤回應
-                    let errorMessage = `${result.msg || 'CGM 檔案上傳失敗'}\n\n`;
+                    let errorDetails = `<div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">`;
+                    errorDetails += `<strong>錯誤訊息：</strong>${result.msg || 'CGM 檔案上傳失敗'}<br><br>`;
                     
                     if (result.details) {
-                        errorMessage += `詳細說明：${result.details}\n\n`;
+                        errorDetails += `<strong>詳細說明：</strong><br>${result.details}<br><br>`;
                     }
                     
                     if (result.suggestion) {
-                        errorMessage += `建議解決方案：${result.suggestion}`;
+                        errorDetails += `<strong>建議解決方案：</strong><br>${result.suggestion}`;
                     }
                     
                     // 針對特定錯誤提供額外提示
                     if (result.msg && result.msg.includes('使用者資料尚未建立')) {
-                        errorMessage += `\n\n請先到首頁完成「使用者設定」，，設定過請稍等1分鐘後再嘗試，由於系統使用人數眾多，造成你的不便敬請見諒。`;
+                        errorDetails += `<br><br><strong>額外提示：</strong><br>請先到首頁完成「使用者設定」，設定過請稍等1分鐘後再嘗試，由於系統使用人數眾多，造成您的不便敬請見諒。`;
                     }
                     
-                    alert(errorMessage);
+                    errorDetails += `</div>`;
+                    
+                    showUploadComplete(false, '上傳失敗', errorDetails, '❌');
                 }
                 
             } catch (error) {
                 console.error('Error uploading CGM file:', error);
-                let errorMessage = ` CGM 檔案上傳發生網路錯誤：${error.message}\n\n`;
-                errorMessage += `可能原因：\n`;
-                errorMessage += `• 網路連線中斷\n`;
-                errorMessage += `• 伺服器暫時無法連接\n`;
-                errorMessage += `• 檔案過大或格式不正確\n\n`;
-                errorMessage += `建議解決方案：\n`;
-                errorMessage += `• 檢查網路連線狀態\n`;
-                errorMessage += `• 確認檔案為 CSV 格式且大小適中\n`;
-                errorMessage += `• 稍後重新嘗試上傳`;
                 
-                alert(errorMessage);
+                let networkErrorDetails = `<div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">`;
+                networkErrorDetails += `<strong>網路錯誤：</strong>${error.message}<br><br>`;
+                networkErrorDetails += `<strong>可能原因：</strong><br>`;
+                networkErrorDetails += `• 網路連線中斷<br>`;
+                networkErrorDetails += `• 伺服器暫時無法連接<br>`;
+                networkErrorDetails += `• 檔案過大或格式不正確<br><br>`;
+                networkErrorDetails += `<strong>建議解決方案：</strong><br>`;
+                networkErrorDetails += `• 檢查網路連線狀態<br>`;
+                networkErrorDetails += `• 確認檔案為 CSV 格式且大小適中<br>`;
+                networkErrorDetails += `• 稍後重新嘗試上傳`;
+                networkErrorDetails += `</div>`;
+                
+                showUploadComplete(false, '網路連線失敗', networkErrorDetails, '🌐');
             }
         });
     }
