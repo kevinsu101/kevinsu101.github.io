@@ -910,7 +910,7 @@
         try {
             userStatus.textContent = '正在檢查使用者設定...';
             
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/ask_user_name_and_id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -978,7 +978,7 @@
             saveUserBtn.textContent = '儲存中...';
             saveUserBtn.disabled = true;
             
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/user_setting', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/user_setting', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1186,7 +1186,7 @@
             formData.append('customId', customId);
             formData.append('file', file);
 
-            const endpoint = 'https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/uploadcsv';
+            const endpoint = 'https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/uploadcsv';
 
             try {
                 updateUploadProgress('正在上傳到伺服器...');
@@ -1284,7 +1284,7 @@
         try {
             document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
             
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ask_user_name_and_id', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/ask_user_name_and_id', {
             method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1407,7 +1407,7 @@
                     formData.append('userId', window.globalUserId || 'test_user');
 
                     try {
-                        const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
+                        const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/ai_food_analysis', {
                             method: 'POST',
                             body: formData
                         });
@@ -1520,7 +1520,7 @@
                     formData.append('imageFile', imageUpload.files[0]);
                 }
 
-                const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_analysis', {
+                const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/ai_food_analysis', {
                     method: 'POST',
                     body: formData
                 });
@@ -1724,7 +1724,7 @@
             nextBtn.style.opacity = 0.7;
             nextBtn.style.cursor = 'not-allowed';
         }
-        fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/ai_food_upload_db', {
+        fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/ai_food_upload_db', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -1752,7 +1752,7 @@
     // 飲食日誌分頁邏輯
     async function fetchFoodDiary() {
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
-        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_db_flask', {
+        const res = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/food_db_flask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId })
@@ -1824,7 +1824,7 @@
                     const date = btn.dataset.date;
                     const time = btn.dataset.time;
                     try {
-                        const res = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/food_delete_db', {
+                        const res = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/food_delete_db', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ userId, date, time })
@@ -1882,7 +1882,7 @@
         }
 
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2018,7 +2018,7 @@
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
             // 1. 先載入AGP動態血糖曲線
-            const agpResponse = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const agpResponse = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2059,7 +2059,7 @@
         daysDiv.innerHTML = '<div class="loader">正在載入單日摘要...</div>';
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2095,7 +2095,7 @@
         canvas.width = width;
         canvas.height = window.innerWidth < 700 ? 320 : 500;
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2275,7 +2275,7 @@
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
 
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2396,7 +2396,7 @@
         canvas.width = width;
         canvas.height = window.innerWidth < 700 ? 320 : 500;
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2469,7 +2469,7 @@
         detailDiv.innerHTML = '<div class="loader">正在載入單日圖表...</div>';
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
-            const response = await fetch('https://d1cf-2001-288-7001-10d7-28b2-77e3-5ca1-b011.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
