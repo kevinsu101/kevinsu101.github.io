@@ -602,29 +602,41 @@
         }
         #section-feedback .score-options {
             display: flex;
-            gap: 18px;
-            margin: 8px 0 2px 0;
+            justify-content: space-between;
+            gap: 0;
+            margin: 8px 0 0 0;
+            align-items: flex-start;
+            width: 100%;
+        }
+        #section-feedback .score-radio-group {
+            display: flex;
+            flex-direction: column;
             align-items: center;
+            width: 20%;
+            min-width: 40px;
         }
-        #section-feedback .score-options input[type="radio"] {
+        #section-feedback .score-radio-group input[type="radio"] {
             accent-color: #ff9900;
-            width: 20px;
-            height: 20px;
+            width: 22px;
+            height: 22px;
+            margin-bottom: 2px;
         }
-        #section-feedback .score-options label {
-            font-weight: 400;
-            color: #444;
+        #section-feedback .score-radio-group label {
+            display: none;
+        }
+        #section-feedback .score-num {
             font-size: 1em;
-            margin: 0 2px 0 0;
-            display: inline;
+            color: #444;
+            margin-top: 2px;
         }
         #section-feedback .score-labels {
             display: flex;
             justify-content: space-between;
             font-size: 0.95em;
             color: #888;
+            margin-top: 6px;
             margin-bottom: 2px;
-            margin-top: -6px;
+            width: 100%;
         }
         #section-feedback textarea {
             width: 100%;
@@ -665,6 +677,20 @@
         }
         #feedbackResult.error {
             color: #dc3545;
+        }
+        @media (max-width: 714px) {
+            #section-feedback .score-options {
+                gap: 0;
+            }
+            #section-feedback .score-radio-group {
+                min-width: 32px;
+            }
+            #section-feedback .score-num {
+                font-size: 0.95em;
+            }
+            #section-feedback .score-labels {
+                font-size: 0.92em;
+            }
         }
     </style>
 </head>
@@ -871,80 +897,186 @@
     <div id="section-feedback" class="content-section" style="display: none;">
         <h2>意見回饋</h2>
         <form id="feedbackForm" style="margin-top:20px;">
+            <label>1(60分以下), 2(60-70分), 3(70-80分), 4(80-90分), 5(90-100分)</label>
             <div class="form-group">
                 <label>AGP圖表滿意度(未使用CGM不答)</label>
                 <div class="score-options">
-                    <input type="radio" name="agp_score" value="1"><label>1</label>
-                    <input type="radio" name="agp_score" value="2"><label>2</label>
-                    <input type="radio" name="agp_score" value="3"><label>3</label>
-                    <input type="radio" name="agp_score" value="4"><label>4</label>
-                    <input type="radio" name="agp_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="agp_score" value="1" id="agp_score_1"><label for="agp_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="agp_score" value="2" id="agp_score_2"><label for="agp_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="agp_score" value="3" id="agp_score_3"><label for="agp_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="agp_score" value="4" id="agp_score_4"><label for="agp_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="agp_score" value="5" id="agp_score_5"><label for="agp_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
                 <label>CGM圖表滿意度(未使用CGM不答)</label>
                 <div class="score-options">
-                    <input type="radio" name="cgm_score" value="1"><label>1</label>
-                    <input type="radio" name="cgm_score" value="2"><label>2</label>
-                    <input type="radio" name="cgm_score" value="3"><label>3</label>
-                    <input type="radio" name="cgm_score" value="4"><label>4</label>
-                    <input type="radio" name="cgm_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="cgm_score" value="1" id="cgm_score_1"><label for="cgm_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="cgm_score" value="2" id="cgm_score_2"><label for="cgm_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="cgm_score" value="3" id="cgm_score_3"><label for="cgm_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="cgm_score" value="4" id="cgm_score_4"><label for="cgm_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="cgm_score" value="5" id="cgm_score_5"><label for="cgm_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
                 <label>食物辨識準確率</label>
                 <div class="score-options">
-                    <input type="radio" name="food_detect_score" value="1"><label>1</label>
-                    <input type="radio" name="food_detect_score" value="2"><label>2</label>
-                    <input type="radio" name="food_detect_score" value="3"><label>3</label>
-                    <input type="radio" name="food_detect_score" value="4"><label>4</label>
-                    <input type="radio" name="food_detect_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_detect_score" value="1" id="food_detect_score_1"><label for="food_detect_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_detect_score" value="2" id="food_detect_score_2"><label for="food_detect_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_detect_score" value="3" id="food_detect_score_3"><label for="food_detect_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_detect_score" value="4" id="food_detect_score_4"><label for="food_detect_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_detect_score" value="5" id="food_detect_score_5"><label for="food_detect_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不準確</span><span>非常準確</span></div>
             </div>
             <div class="form-group">
                 <label>食物營養素準確率</label>
                 <div class="score-options">
-                    <input type="radio" name="food_nutrition_score" value="1"><label>1</label>
-                    <input type="radio" name="food_nutrition_score" value="2"><label>2</label>
-                    <input type="radio" name="food_nutrition_score" value="3"><label>3</label>
-                    <input type="radio" name="food_nutrition_score" value="4"><label>4</label>
-                    <input type="radio" name="food_nutrition_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_nutrition_score" value="1" id="food_nutrition_score_1"><label for="food_nutrition_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_nutrition_score" value="2" id="food_nutrition_score_2"><label for="food_nutrition_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_nutrition_score" value="3" id="food_nutrition_score_3"><label for="food_nutrition_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_nutrition_score" value="4" id="food_nutrition_score_4"><label for="food_nutrition_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_nutrition_score" value="5" id="food_nutrition_score_5"><label for="food_nutrition_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不準確</span><span>非常準確</span></div>
             </div>
             <div class="form-group">
                 <label>食物日誌滿意度</label>
                 <div class="score-options">
-                    <input type="radio" name="food_diary_score" value="1"><label>1</label>
-                    <input type="radio" name="food_diary_score" value="2"><label>2</label>
-                    <input type="radio" name="food_diary_score" value="3"><label>3</label>
-                    <input type="radio" name="food_diary_score" value="4"><label>4</label>
-                    <input type="radio" name="food_diary_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_diary_score" value="1" id="food_diary_score_1"><label for="food_diary_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_diary_score" value="2" id="food_diary_score_2"><label for="food_diary_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_diary_score" value="3" id="food_diary_score_3"><label for="food_diary_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_diary_score" value="4" id="food_diary_score_4"><label for="food_diary_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="food_diary_score" value="5" id="food_diary_score_5"><label for="food_diary_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
                 <label>個人飲食建議滿意度</label>
                 <div class="score-options">
-                    <input type="radio" name="advice_score" value="1"><label>1</label>
-                    <input type="radio" name="advice_score" value="2"><label>2</label>
-                    <input type="radio" name="advice_score" value="3"><label>3</label>
-                    <input type="radio" name="advice_score" value="4"><label>4</label>
-                    <input type="radio" name="advice_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="advice_score" value="1" id="advice_score_1"><label for="advice_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="advice_score" value="2" id="advice_score_2"><label for="advice_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="advice_score" value="3" id="advice_score_3"><label for="advice_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="advice_score" value="4" id="advice_score_4"><label for="advice_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="advice_score" value="5" id="advice_score_5"><label for="advice_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
                 <label>整體介面使用便利性</label>
                 <div class="score-options">
-                    <input type="radio" name="ui_score" value="1"><label>1</label>
-                    <input type="radio" name="ui_score" value="2"><label>2</label>
-                    <input type="radio" name="ui_score" value="3"><label>3</label>
-                    <input type="radio" name="ui_score" value="4"><label>4</label>
-                    <input type="radio" name="ui_score" value="5"><label>5</label>
+                    <div class="score-radio-group">
+                        <input type="radio" name="ui_score" value="1" id="ui_score_1"><label for="ui_score_1"></label>
+                        <span class="score-num">1</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="ui_score" value="2" id="ui_score_2"><label for="ui_score_2"></label>
+                        <span class="score-num">2</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="ui_score" value="3" id="ui_score_3"><label for="ui_score_3"></label>
+                        <span class="score-num">3</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="ui_score" value="4" id="ui_score_4"><label for="ui_score_4"></label>
+                        <span class="score-num">4</span>
+                    </div>
+                    <div class="score-radio-group">
+                        <input type="radio" name="ui_score" value="5" id="ui_score_5"><label for="ui_score_5"></label>
+                        <span class="score-num">5</span>
+                    </div>
                 </div>
                 <div class="score-labels"><span>非常不方便</span><span>非常方便</span></div>
             </div>
