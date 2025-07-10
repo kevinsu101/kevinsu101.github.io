@@ -775,8 +775,88 @@
         <h2>意見回饋</h2>
         <form id="feedbackForm" style="margin-top:20px;">
             <div class="form-group">
-                <label for="feedbackText">請留下您的寶貴意見：</label>
-                <textarea id="feedbackText" rows="5" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;"></textarea>
+                <label>AGP圖表滿意度(未使用CGM不答)</label><br>
+                <span>
+                    <input type="radio" name="agp_score" value="1">1
+                    <input type="radio" name="agp_score" value="2">2
+                    <input type="radio" name="agp_score" value="3">3
+                    <input type="radio" name="agp_score" value="4">4
+                    <input type="radio" name="agp_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>CGM圖表滿意度(未使用CGM不答)</label><br>
+                <span>
+                    <input type="radio" name="cgm_score" value="1">1
+                    <input type="radio" name="cgm_score" value="2">2
+                    <input type="radio" name="cgm_score" value="3">3
+                    <input type="radio" name="cgm_score" value="4">4
+                    <input type="radio" name="cgm_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>食物辨識準確率</label><br>
+                <span>
+                    <input type="radio" name="food_detect_score" value="1">1
+                    <input type="radio" name="food_detect_score" value="2">2
+                    <input type="radio" name="food_detect_score" value="3">3
+                    <input type="radio" name="food_detect_score" value="4">4
+                    <input type="radio" name="food_detect_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>食物營養素準確率</label><br>
+                <span>
+                    <input type="radio" name="food_nutrition_score" value="1">1
+                    <input type="radio" name="food_nutrition_score" value="2">2
+                    <input type="radio" name="food_nutrition_score" value="3">3
+                    <input type="radio" name="food_nutrition_score" value="4">4
+                    <input type="radio" name="food_nutrition_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>食物日誌滿意度</label><br>
+                <span>
+                    <input type="radio" name="food_diary_score" value="1">1
+                    <input type="radio" name="food_diary_score" value="2">2
+                    <input type="radio" name="food_diary_score" value="3">3
+                    <input type="radio" name="food_diary_score" value="4">4
+                    <input type="radio" name="food_diary_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>個人飲食建議滿意度</label><br>
+                <span>
+                    <input type="radio" name="advice_score" value="1">1
+                    <input type="radio" name="advice_score" value="2">2
+                    <input type="radio" name="advice_score" value="3">3
+                    <input type="radio" name="advice_score" value="4">4
+                    <input type="radio" name="advice_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>整體介面使用便利性</label><br>
+                <span>
+                    <input type="radio" name="ui_score" value="1">1
+                    <input type="radio" name="ui_score" value="2">2
+                    <input type="radio" name="ui_score" value="3">3
+                    <input type="radio" name="ui_score" value="4">4
+                    <input type="radio" name="ui_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label>其他系統回饋</label><br>
+                <span>
+                    <input type="radio" name="other_score" value="1">1
+                    <input type="radio" name="other_score" value="2">2
+                    <input type="radio" name="other_score" value="3">3
+                    <input type="radio" name="other_score" value="4">4
+                    <input type="radio" name="other_score" value="5">5
+                </span>
+            </div>
+            <div class="form-group">
+                <label for="feedbackText">文字回饋</label>
+                <textarea id="feedbackText" name="feedbackText" rows="5" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;"></textarea>
             </div>
             <button type="submit" class="submit-btn">送出意見</button>
         </form>
@@ -1556,29 +1636,35 @@
 
     // 意見回饋送出
     const feedbackForm = document.getElementById('feedbackForm');
-    const feedbackText = document.getElementById('feedbackText');
     const feedbackResult = document.getElementById('feedbackResult');
     if (feedbackForm) {
         feedbackForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const text = feedbackText.value.trim();
-            if (!text) {
-                feedbackResult.style.color = '#dc3545';
-                feedbackResult.textContent = '請輸入意見內容';
-                return;
-            }
-            // 這裡可改成你自己的API
+            // 收集所有欄位
+            const data = {
+                agp_score: feedbackForm.agp_score ? feedbackForm.agp_score.value : '',
+                cgm_score: feedbackForm.cgm_score ? feedbackForm.cgm_score.value : '',
+                food_detect_score: feedbackForm.food_detect_score ? feedbackForm.food_detect_score.value : '',
+                food_nutrition_score: feedbackForm.food_nutrition_score ? feedbackForm.food_nutrition_score.value : '',
+                food_diary_score: feedbackForm.food_diary_score ? feedbackForm.food_diary_score.value : '',
+                advice_score: feedbackForm.advice_score ? feedbackForm.advice_score.value : '',
+                ui_score: feedbackForm.ui_score ? feedbackForm.ui_score.value : '',
+                other_score: feedbackForm.other_score ? feedbackForm.other_score.value : '',
+                feedback_text: feedbackForm.feedbackText ? feedbackForm.feedbackText.value.trim() : '',
+                userId: window.globalUserId || 'anonymous'
+            };
+            // 送出API
             try {
                 const res = await fetch('https://1545-2001-288-7001-10d7-3444-3d8b-8e99-7e31.ngrok-free.app/feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ feedback: text, userId: window.globalUserId || 'anonymous' })
+                    body: JSON.stringify(data)
                 });
                 const result = await res.json();
                 if (result.success) {
                     feedbackResult.style.color = '#28a745';
                     feedbackResult.textContent = '感謝您的意見回饋！';
-                    feedbackText.value = '';
+                    feedbackForm.reset();
                 } else {
                     feedbackResult.style.color = '#dc3545';
                     feedbackResult.textContent = '送出失敗，請稍後再試。';
