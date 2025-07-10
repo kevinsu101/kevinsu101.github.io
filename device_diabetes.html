@@ -569,6 +569,103 @@
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
+
+        /* 意見回饋區塊美化 */
+        #section-feedback {
+            background: #f8f9fa;
+            border-radius: 14px;
+            border: 2px solid #ffd700;
+            box-shadow: 0 4px 16px rgba(44,82,130,0.08);
+            padding: 28px 18px 24px 18px;
+            margin-top: 18px;
+            max-width: 520px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        #section-feedback h2 {
+            color: #ff9900;
+            font-size: 1.35em;
+            text-align: center;
+            margin-bottom: 18px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+        #section-feedback .form-group {
+            margin-bottom: 22px;
+        }
+        #section-feedback label {
+            font-weight: 600;
+            color: #2c5282;
+            font-size: 1.08em;
+            margin-bottom: 6px;
+            display: block;
+        }
+        #section-feedback .score-options {
+            display: flex;
+            gap: 18px;
+            margin: 8px 0 2px 0;
+            align-items: center;
+        }
+        #section-feedback .score-options input[type="radio"] {
+            accent-color: #ff9900;
+            width: 20px;
+            height: 20px;
+        }
+        #section-feedback .score-options label {
+            font-weight: 400;
+            color: #444;
+            font-size: 1em;
+            margin: 0 2px 0 0;
+            display: inline;
+        }
+        #section-feedback .score-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.95em;
+            color: #888;
+            margin-bottom: 2px;
+            margin-top: -6px;
+        }
+        #section-feedback textarea {
+            width: 100%;
+            min-height: 80px;
+            border-radius: 8px;
+            border: 1.5px solid #ccc;
+            padding: 12px;
+            font-size: 1.05em;
+            background: #fff;
+            resize: vertical;
+        }
+        #section-feedback .submit-btn {
+            width: 100%;
+            padding: 14px;
+            font-size: 1.15em;
+            font-weight: 700;
+            color: #fff;
+            background: linear-gradient(90deg, #ffb74d, #ff9900);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 2px 8px rgba(255,193,7,0.08);
+            transition: background 0.2s;
+        }
+        #section-feedback .submit-btn:hover {
+            background: linear-gradient(90deg, #ff9900, #ffb74d);
+        }
+        #feedbackResult {
+            margin-top: 22px;
+            font-size: 1.15em;
+            font-weight: 700;
+            text-align: center;
+            letter-spacing: 1px;
+        }
+        #feedbackResult.success {
+            color: #28a745;
+        }
+        #feedbackResult.error {
+            color: #dc3545;
+        }
     </style>
 </head>
 <body>
@@ -775,92 +872,89 @@
         <h2>意見回饋</h2>
         <form id="feedbackForm" style="margin-top:20px;">
             <div class="form-group">
-                <label>AGP圖表滿意度(未使用CGM不答)</label><br>
-                <span>
-                    <input type="radio" name="agp_score" value="1">1
-                    <input type="radio" name="agp_score" value="2">2
-                    <input type="radio" name="agp_score" value="3">3
-                    <input type="radio" name="agp_score" value="4">4
-                    <input type="radio" name="agp_score" value="5">5
-                </span>
+                <label>AGP圖表滿意度(未使用CGM不答)</label>
+                <div class="score-options">
+                    <input type="radio" name="agp_score" value="1"><label>1</label>
+                    <input type="radio" name="agp_score" value="2"><label>2</label>
+                    <input type="radio" name="agp_score" value="3"><label>3</label>
+                    <input type="radio" name="agp_score" value="4"><label>4</label>
+                    <input type="radio" name="agp_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
-                <label>CGM圖表滿意度(未使用CGM不答)</label><br>
-                <span>
-                    <input type="radio" name="cgm_score" value="1">1
-                    <input type="radio" name="cgm_score" value="2">2
-                    <input type="radio" name="cgm_score" value="3">3
-                    <input type="radio" name="cgm_score" value="4">4
-                    <input type="radio" name="cgm_score" value="5">5
-                </span>
+                <label>CGM圖表滿意度(未使用CGM不答)</label>
+                <div class="score-options">
+                    <input type="radio" name="cgm_score" value="1"><label>1</label>
+                    <input type="radio" name="cgm_score" value="2"><label>2</label>
+                    <input type="radio" name="cgm_score" value="3"><label>3</label>
+                    <input type="radio" name="cgm_score" value="4"><label>4</label>
+                    <input type="radio" name="cgm_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
-                <label>食物辨識準確率</label><br>
-                <span>
-                    <input type="radio" name="food_detect_score" value="1">1
-                    <input type="radio" name="food_detect_score" value="2">2
-                    <input type="radio" name="food_detect_score" value="3">3
-                    <input type="radio" name="food_detect_score" value="4">4
-                    <input type="radio" name="food_detect_score" value="5">5
-                </span>
+                <label>食物辨識準確率</label>
+                <div class="score-options">
+                    <input type="radio" name="food_detect_score" value="1"><label>1</label>
+                    <input type="radio" name="food_detect_score" value="2"><label>2</label>
+                    <input type="radio" name="food_detect_score" value="3"><label>3</label>
+                    <input type="radio" name="food_detect_score" value="4"><label>4</label>
+                    <input type="radio" name="food_detect_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不準確</span><span>非常準確</span></div>
             </div>
             <div class="form-group">
-                <label>食物營養素準確率</label><br>
-                <span>
-                    <input type="radio" name="food_nutrition_score" value="1">1
-                    <input type="radio" name="food_nutrition_score" value="2">2
-                    <input type="radio" name="food_nutrition_score" value="3">3
-                    <input type="radio" name="food_nutrition_score" value="4">4
-                    <input type="radio" name="food_nutrition_score" value="5">5
-                </span>
+                <label>食物營養素準確率</label>
+                <div class="score-options">
+                    <input type="radio" name="food_nutrition_score" value="1"><label>1</label>
+                    <input type="radio" name="food_nutrition_score" value="2"><label>2</label>
+                    <input type="radio" name="food_nutrition_score" value="3"><label>3</label>
+                    <input type="radio" name="food_nutrition_score" value="4"><label>4</label>
+                    <input type="radio" name="food_nutrition_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不準確</span><span>非常準確</span></div>
             </div>
             <div class="form-group">
-                <label>食物日誌滿意度</label><br>
-                <span>
-                    <input type="radio" name="food_diary_score" value="1">1
-                    <input type="radio" name="food_diary_score" value="2">2
-                    <input type="radio" name="food_diary_score" value="3">3
-                    <input type="radio" name="food_diary_score" value="4">4
-                    <input type="radio" name="food_diary_score" value="5">5
-                </span>
+                <label>食物日誌滿意度</label>
+                <div class="score-options">
+                    <input type="radio" name="food_diary_score" value="1"><label>1</label>
+                    <input type="radio" name="food_diary_score" value="2"><label>2</label>
+                    <input type="radio" name="food_diary_score" value="3"><label>3</label>
+                    <input type="radio" name="food_diary_score" value="4"><label>4</label>
+                    <input type="radio" name="food_diary_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
-                <label>個人飲食建議滿意度</label><br>
-                <span>
-                    <input type="radio" name="advice_score" value="1">1
-                    <input type="radio" name="advice_score" value="2">2
-                    <input type="radio" name="advice_score" value="3">3
-                    <input type="radio" name="advice_score" value="4">4
-                    <input type="radio" name="advice_score" value="5">5
-                </span>
+                <label>個人飲食建議滿意度</label>
+                <div class="score-options">
+                    <input type="radio" name="advice_score" value="1"><label>1</label>
+                    <input type="radio" name="advice_score" value="2"><label>2</label>
+                    <input type="radio" name="advice_score" value="3"><label>3</label>
+                    <input type="radio" name="advice_score" value="4"><label>4</label>
+                    <input type="radio" name="advice_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不滿意</span><span>非常滿意</span></div>
             </div>
             <div class="form-group">
-                <label>整體介面使用便利性</label><br>
-                <span>
-                    <input type="radio" name="ui_score" value="1">1
-                    <input type="radio" name="ui_score" value="2">2
-                    <input type="radio" name="ui_score" value="3">3
-                    <input type="radio" name="ui_score" value="4">4
-                    <input type="radio" name="ui_score" value="5">5
-                </span>
+                <label>整體介面使用便利性</label>
+                <div class="score-options">
+                    <input type="radio" name="ui_score" value="1"><label>1</label>
+                    <input type="radio" name="ui_score" value="2"><label>2</label>
+                    <input type="radio" name="ui_score" value="3"><label>3</label>
+                    <input type="radio" name="ui_score" value="4"><label>4</label>
+                    <input type="radio" name="ui_score" value="5"><label>5</label>
+                </div>
+                <div class="score-labels"><span>非常不方便</span><span>非常方便</span></div>
             </div>
             <div class="form-group">
-                <label>其他系統回饋</label><br>
-                <span>
-                    <input type="radio" name="other_score" value="1">1
-                    <input type="radio" name="other_score" value="2">2
-                    <input type="radio" name="other_score" value="3">3
-                    <input type="radio" name="other_score" value="4">4
-                    <input type="radio" name="other_score" value="5">5
-                </span>
-            </div>
-            <div class="form-group">
-                <label for="feedbackText">文字回饋</label>
+                <label for="feedbackText">其他系統回饋</label>
                 <textarea id="feedbackText" name="feedbackText" rows="5" style="width:100%;padding:10px;border-radius:8px;border:1px solid #ccc;"></textarea>
             </div>
             <button type="submit" class="submit-btn">送出意見</button>
         </form>
-        <div id="feedbackResult" style="margin-top:18px;color:#28a745;font-weight:500;"></div>
+        <div id="feedbackResult"></div>
     </div>
 </div>
 
@@ -1649,7 +1743,7 @@
                 food_diary_score: feedbackForm.food_diary_score ? feedbackForm.food_diary_score.value : '',
                 advice_score: feedbackForm.advice_score ? feedbackForm.advice_score.value : '',
                 ui_score: feedbackForm.ui_score ? feedbackForm.ui_score.value : '',
-                other_score: feedbackForm.other_score ? feedbackForm.other_score.value : '',
+                other_score: '', // 已移除分數，保留空字串
                 feedback_text: feedbackForm.feedbackText ? feedbackForm.feedbackText.value.trim() : '',
                 userId: window.globalUserId || 'anonymous'
             };
@@ -1662,16 +1756,16 @@
                 });
                 const result = await res.json();
                 if (result.success) {
-                    feedbackResult.style.color = '#28a745';
-                    feedbackResult.textContent = '感謝您的意見回饋！';
+                    feedbackResult.className = 'success';
+                    feedbackResult.innerHTML = '✅ 感謝您的意見回饋！';
                     feedbackForm.reset();
                 } else {
-                    feedbackResult.style.color = '#dc3545';
-                    feedbackResult.textContent = '送出失敗，請稍後再試。';
+                    feedbackResult.className = 'error';
+                    feedbackResult.innerHTML = '❌ 送出失敗，請稍後再試。';
                 }
             } catch (err) {
-                feedbackResult.style.color = '#dc3545';
-                feedbackResult.textContent = '送出失敗，請檢查網路或稍後再試。';
+                feedbackResult.className = 'error';
+                feedbackResult.innerHTML = '❌ 送出失敗，請檢查網路或稍後再試。';
             }
         });
     }
