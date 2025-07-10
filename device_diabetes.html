@@ -1956,7 +1956,7 @@
                 <input type="checkbox" class="food-checkbox" id="food-check-${card.idx}" checked style="margin-top: 6px; width: 18px; height: 18px; accent-color: #28a745;">
                 <div style="flex:1;">
                     <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
-                        <span style="font-weight:700;font-size:1.15em;cursor:pointer;" onclick="editFoodName(${card.idx})">${card.name}</span>
+                        <span id="food-name-${card.idx}" style="font-weight:700;font-size:1.15em;cursor:pointer;" onclick="editFoodName(${card.idx})">${card.name}</span>
                         <span style="color:#888;font-size:0.85em;">${card.portion}</span>
                     </div>
                     <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
@@ -2002,7 +2002,8 @@
             const newName = prompt('請輸入新的食物名稱', card.name);
             if (newName !== null && newName.trim() !== '') {
                 card.name = newName.trim();
-                const nameElement = document.querySelector(`.nutrition-card:nth-child(${idx + 1}) span[style*="font-weight:700"]`);
+                // 直接更新畫面
+                const nameElement = document.getElementById(`food-name-${idx}`);
                 if (nameElement) {
                     nameElement.textContent = card.name;
                 }
