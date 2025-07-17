@@ -1955,6 +1955,7 @@
         if (cards.length > 0 && cards[cards.length-1].includes('提醒您')) {
             reminder = cards.pop();
         }
+        window.reminder = reminder; // 設為全域
         // 解析每筆卡片內容
         let parsedCards = cards.map((card, idx) => {
             const nameMatch = card.match(/食物名稱[:：]\s*(.*)/);
@@ -2110,7 +2111,7 @@
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
     function handleNextStep(selectedCards) {
         // 取得 reminder 作為 advice
-        const advice = typeof reminder !== 'undefined' ? reminder : '';
+        const advice = typeof window.reminder !== 'undefined' ? window.reminder : '';
         // 標準化欄位，確保送出 name/portion/portion_value/cal/carb/pro/fat/time/advice
         const foods = selectedCards.map(card => ({
             name: card.name,
