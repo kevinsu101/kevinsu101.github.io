@@ -2109,7 +2109,9 @@
 
     // 在下一步按鈕 click 時，將勾選的卡片內容組成陣列，POST 回 /ai_food_analysis (或其他API)，並顯示回應
     function handleNextStep(selectedCards) {
-        // 標準化欄位，確保送出 name/portion/portion_value/cal/carb/pro/fat/time
+        // 取得 reminder 作為 advice
+        const advice = typeof reminder !== 'undefined' ? reminder : '';
+        // 標準化欄位，確保送出 name/portion/portion_value/cal/carb/pro/fat/time/advice
         const foods = selectedCards.map(card => ({
             name: card.name,
             portion: card.portion,
@@ -2118,7 +2120,8 @@
             carb: card.carb,
             pro: card.pro,
             fat: card.fat,
-            time: card.time
+            time: card.time,
+            advice: advice // 每一筆都帶 reminder
         }));
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
         const nextBtn = document.getElementById('nextStepBtn');
