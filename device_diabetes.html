@@ -2212,6 +2212,14 @@
   <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
 </div>
 </div>`;
+                // 計算本餐 SGR（倒數相加再取倒數）
+                let sgrs = (item.foods || []).map(f => parseFloat(f.sgr)).filter(sgr => !isNaN(sgr) && sgr > 0);
+                let mealSGR = '';
+                if (sgrs.length > 0) {
+                    let sumInv = sgrs.reduce((acc, v) => acc + 1/v, 0);
+                    mealSGR = sumInv > 0 ? (1/sumInv).toFixed(2) : '';
+                }
+                let sgrHtml = mealSGR ? `<div style='color:#1976d2;font-size:1.05em;font-weight:700;margin:6px 0 2px 0;'>碳水血糖反應（SGR）：${mealSGR}</div>` : '';
                 // 一定顯示營養建議按鈕
                 let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示營養建議</button>`;
                 html += `
@@ -2220,6 +2228,7 @@
                     <div style="color:#888;font-size:0.98em;">${item.date} ${item.time}｜${item.meal_type}</div>
                     <div style="margin:6px 0 2px 0;">${foodsHtml}</div>
                     ${nutHtml}
+                    ${sgrHtml}
                     <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
                     ${adviceBtnHtml}
                     <div style="margin-top:8px;"></div>
