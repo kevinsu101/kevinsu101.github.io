@@ -755,6 +755,25 @@
                         <option value="女">女</option>
                     </select>
                 </div>
+                <div class="form-group">
+                    <label for="userDiabetesTypeInput">糖尿病類型</label>
+                    <select id="userDiabetesTypeInput" required>
+                        <option value="">請選擇糖尿病類型</option>
+                        <option value="第一型糖尿病">第一型糖尿病</option>
+                        <option value="第二型糖尿病">第二型糖尿病</option>
+                        <option value="妊娠糖尿病">妊娠糖尿病</option>
+                        <option value="其他類型">其他類型</option>
+                        <option value="尚未確診">尚未確診</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="userPregnancyInput">是否懷孕</label>
+                    <select id="userPregnancyInput" required>
+                        <option value="">請選擇</option>
+                        <option value="否">否</option>
+                        <option value="是">是</option>
+                    </select>
+                </div>
                 <button id="saveUserBtn" class="submit-btn">儲存設定</button>
             </div>
         </div>
@@ -1291,14 +1310,18 @@
         const userIdInput = document.getElementById('userIdInput');
         const userBirthdayInput = document.getElementById('userBirthdayInput');
         const userGenderInput = document.getElementById('userGenderInput');
+        const userDiabetesTypeInput = document.getElementById('userDiabetesTypeInput');
+        const userPregnancyInput = document.getElementById('userPregnancyInput');
         const saveUserBtn = document.getElementById('saveUserBtn');
         
         const userName = userNameInput.value.trim();
         const userId = userIdInput.value.trim();
         const userBirthday = userBirthdayInput.value;
         const userGender = userGenderInput.value;
+        const userDiabetesType = userDiabetesTypeInput.value;
+        const userPregnancy = userPregnancyInput.value;
         
-        if (!userName || !userId || !userBirthday || !userGender) {
+        if (!userName || !userId || !userBirthday || !userGender || !userDiabetesType || !userPregnancy) {
             alert('請填寫所有欄位');
             return;
         }
@@ -1322,7 +1345,9 @@
                     patient_name: userName,
                     custom_id: userId,
                     birthday: userBirthday,
-                    gender: userGender
+                    gender: userGender,
+                    diabetes_type: userDiabetesType,
+                    pregnancy: userPregnancy
                 })
             });
 
@@ -1344,6 +1369,8 @@
                 userIdInput.value = '';
                 userBirthdayInput.value = '';
                 userGenderInput.value = '';
+                userDiabetesTypeInput.value = '';
+                userPregnancyInput.value = '';
             } else {
                 throw new Error(result.message || '儲存失敗');
             }
