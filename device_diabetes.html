@@ -2326,7 +2326,7 @@
     // ----- CGM Analysis Functions -----
     async function loadCgmPeriods() {
         const container = document.getElementById('cgm-periods-container');
-        container.innerHTML = '<div class="loader">正在加載療程數據...</div>';
+        container.innerHTML = '<div class="loader"></div>'
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id'); // Use globalUserId first
 
         if (!lineUserId) {
