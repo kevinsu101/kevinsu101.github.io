@@ -3033,16 +3033,25 @@
 
     // 建議渲染函數
     function renderPersonalAdvice(adviceText) {
+        const adviceTitles = [
+            "個人化資訊回饋",
+            "飲食行為或食物成分分析",
+            "臨床依據或對照目標",
+            "個人化飲食建議",
+            "教育與自我管理提醒"
+        ];
         const parts = adviceText.split(/\n\s*\d+\.\s*/).filter(Boolean);
         let html = '';
         if (parts.length > 0) {
             html += `<div style="background:#e3f0ff;padding:18px 20px;border-radius:12px;margin-bottom:18px;font-weight:600;font-size:1.1em;color:#1976d2;">${parts[0]}</div>`;
         }
         for (let i = 1; i < parts.length; i++) {
+            // 去掉開頭的 **標題** 或「標題」字串
+            let content = parts[i].replace(/^\*\*[^\*\n]+\*\*\s*/,'').replace(/^(.{2,10})\n/,'');
             html += `
             <div style="background:#fffbe6;border-left:6px solid #ffb74d;padding:18px 20px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 8px rgba(255,183,77,0.08);">
-                <div style="font-weight:700;font-size:1.08em;color:#ff9900;margin-bottom:8px;">${i}. </div>
-                <div style="font-size:1.05em;color:#444;white-space:pre-line;">${parts[i]}</div>
+                <div style="font-weight:700;font-size:1.08em;color:#ff9900;margin-bottom:8px;">${i}. ${adviceTitles[i-1]||''}</div>
+                <div style="font-size:1.05em;color:#444;white-space:pre-line;">${content}</div>
             </div>`;
         }
         document.getElementById('personal-advice-area').innerHTML = html;
