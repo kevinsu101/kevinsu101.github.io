@@ -1273,7 +1273,7 @@
         try {
             userStatus.textContent = '正在檢查使用者設定...';
             
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/ask_user_name_and_id', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ask_user_name_and_id', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1345,7 +1345,7 @@
             saveUserBtn.textContent = '儲存中...';
             saveUserBtn.disabled = true;
             
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/user_setting', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/user_setting', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1557,7 +1557,7 @@
             formData.append('customId', customId);
             formData.append('file', file);
 
-            const endpoint = 'https://16a651e07b53.ngrok-free.app/uploadcsv';
+            const endpoint = 'https://7a859e20cfb8.ngrok-free.app/uploadcsv';
 
             try {
                 updateUploadProgress('正在上傳到伺服器...');
@@ -1655,7 +1655,7 @@
         try {
             document.getElementById('user-info-status').textContent = '正在查詢用戶資料...';
             
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/ask_user_name_and_id', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ask_user_name_and_id', {
             method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -1778,7 +1778,7 @@
                     formData.append('userId', window.globalUserId || 'test_user');
 
                     try {
-                        const response = await fetch('https://16a651e07b53.ngrok-free.app/ai_food_analysis', {
+                        const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ai_food_analysis', {
                             method: 'POST',
                             body: formData
                         });
@@ -1891,7 +1891,7 @@
                     formData.append('imageFile', imageUpload.files[0]);
                 }
 
-                const response = await fetch('https://16a651e07b53.ngrok-free.app/ai_food_analysis', {
+                const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ai_food_analysis', {
                     method: 'POST',
                     body: formData
                 });
@@ -1934,7 +1934,7 @@
             };
             // 送出API
             try {
-                const res = await fetch('https://16a651e07b53.ngrok-free.app/feedback', {
+                const res = await fetch('https://7a859e20cfb8.ngrok-free.app/feedback', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(data)
@@ -2142,7 +2142,7 @@
             nextBtn.style.opacity = 0.7;
             nextBtn.style.cursor = 'not-allowed';
         }
-        fetch('https://16a651e07b53.ngrok-free.app/ai_food_upload_db', {
+        fetch('https://7a859e20cfb8.ngrok-free.app/ai_food_upload_db', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -2170,7 +2170,7 @@
     // 飲食日誌分頁邏輯
     async function fetchFoodDiary() {
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
-        const res = await fetch('https://16a651e07b53.ngrok-free.app/food_db_flask', {
+        const res = await fetch('https://7a859e20cfb8.ngrok-free.app/food_db_flask', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ userId })
@@ -2254,7 +2254,7 @@
                     const date = btn.dataset.date;
                     const time = btn.dataset.time;
                     try {
-                        const res = await fetch('https://16a651e07b53.ngrok-free.app/food_delete_db', {
+                        const res = await fetch('https://7a859e20cfb8.ngrok-free.app/food_delete_db', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ userId, date, time })
@@ -2335,7 +2335,7 @@
         }
 
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2471,7 +2471,7 @@
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
             // 1. 先載入AGP動態血糖曲線
-            const agpResponse = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const agpResponse = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2509,10 +2509,10 @@
     // 美化單日按鈕區
     async function renderBigCgmDaysList(periodIndex) {
         const daysDiv = document.getElementById('big-cgm-days-btns') || document.getElementById('big-cgm-days-list');
-        daysDiv.innerHTML = '<div class="loader">正在載入單日摘要...</div>';
+        daysDiv.innerHTML = '<div class="loader"></div>';
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2548,7 +2548,7 @@
         canvas.width = width;
         canvas.height = window.innerWidth < 700 ? 320 : 500;
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2747,7 +2747,7 @@
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
 
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2868,7 +2868,7 @@
         canvas.width = width;
         canvas.height = window.innerWidth < 700 ? 320 : 500;
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -2938,10 +2938,10 @@
     // 顯示單日詳細圖表
     window.showBigCgmDayDetail = async function(date, periodIndex) {
         const detailDiv = document.getElementById('big-cgm-day-detail');
-        detailDiv.innerHTML = '<div class="loader">正在載入單日圖表...</div>';
+        detailDiv.innerHTML = '<div class="loader"></div>';
         const lineUserId = window.globalUserId || localStorage.getItem('line_user_id');
         try {
-            const response = await fetch('https://16a651e07b53.ngrok-free.app/cgm_analysis', {
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/cgm_analysis', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
@@ -3072,7 +3072,7 @@
         }
         showAdviceLoading();
         try {
-            const res = await fetch('https://16a651e07b53.ngrok-free.app/advice_flask', {
+            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/advice_flask', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId })
