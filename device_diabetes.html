@@ -1920,26 +1920,35 @@
 
     // 處理食物辨識結果（第一階段）
     function handleFoodIdentificationResult(foodInfo) {
-        if (foodInfo === "圖片中沒有食物") {
+        if (foodInfo === "圖片中沒有食物" || foodInfo === "沒有食物") {
             analysisOutput.innerHTML = '<div style="color: #dc3545; padding: 20px;">圖片中沒有食物</div>';
             return;
         }
 
-        // 解析食物資訊
-        const foodPairs = foodInfo.split(',').filter(pair => pair.trim() !== '');
+        // 解析食物資訊 - 使用正則表達式匹配所有 (食物名稱,份量) 的格式
+        const foodPairs = [];
+        const regex = /\(([^,]+),([^)]+)\)/g;
+        let match;
+        
+        while ((match = regex.exec(foodInfo)) !== null) {
+            const foodName = match[1].trim();
+            const portion = match[2].trim();
+            foodPairs.push({ name: foodName, portion: portion });
+        }
+
+        if (foodPairs.length === 0) {
+            analysisOutput.innerHTML = '<div style="color: #dc3545; padding: 20px;">無法解析食物資訊</div>';
+            return;
+        }
+
         let html = '<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">';
         html += '<h4 style="color: #2c5282; margin-bottom: 15px;">辨識到的食物：</h4>';
         
-        foodPairs.forEach((pair, index) => {
-            const match = pair.match(/\((.*?),(.*?)\)/);
-            if (match) {
-                const foodName = match[1].trim();
-                const portion = match[2].trim();
-                html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #28a745;">`;
-                html += `<strong>${index + 1}. ${foodName}</strong><br>`;
-                html += `<span style="color: #666;">份量：${portion}</span>`;
-                html += `</div>`;
-            }
+        foodPairs.forEach((food, index) => {
+            html += `<div style="margin-bottom: 10px; padding: 10px; background: white; border-radius: 8px; border-left: 4px solid #28a745;">`;
+            html += `<strong>${index + 1}. ${food.name}</strong><br>`;
+            html += `<span style="color: #666;">份量：${food.portion}</span>`;
+            html += `</div>`;
         });
         
         html += '</div>';
