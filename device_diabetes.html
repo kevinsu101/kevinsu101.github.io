@@ -2006,24 +2006,18 @@
             html += `<span style="font-weight: 600; color: #2c5282; font-size: 1.1em;">${index + 1}. 食物項目</span>`;
             html += `</div>`;
             
-            // 食物名稱編輯
+            // 食物名稱（點擊藍字可編輯）
             html += `<div style="margin-bottom: 10px;">`;
-            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">🍽️ 食物名稱：</label>`;
-            html += `<input type="text" id="food-name-${index}" value="${food.name}" 
-                    style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1em; 
-                    background: #fafafa; color: #333; transition: all 0.3s ease; box-sizing: border-box;"
-                    onfocus="this.style.borderColor='#2196f3'; this.style.background='white'; this.style.boxShadow='0 0 0 3px rgba(33,150,243,0.1)'"
-                    onblur="this.style.borderColor='#e0e0e0'; this.style.background='#fafafa'; this.style.boxShadow='none'">`;
+            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</label>`;
+            html += `<span id="food-name-${index}" 
+                        style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${food.name}</span>`;
             html += `</div>`;
             
-            // 份量編輯
+            // 份量（點擊藍字可編輯）
             html += `<div style="margin-bottom: 8px;">`;
-            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">⚖️ 份量：</label>`;
-            html += `<input type="text" id="food-portion-${index}" value="${food.portion}" 
-                    style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1em; 
-                    background: #fafafa; color: #333; transition: all 0.3s ease; box-sizing: border-box;"
-                    onfocus="this.style.borderColor='#ff9800'; this.style.background='white'; this.style.boxShadow='0 0 0 3px rgba(255,152,0,0.1)'"
-                    onblur="this.style.borderColor='#e0e0e0'; this.style.background='#fafafa'; this.style.boxShadow='none'">`;
+            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">份量：</label>`;
+            html += `<span id="food-portion-${index}" 
+                        style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${food.portion}</span>`;
             html += `</div>`;
             
             html += `</div>`;
@@ -2033,11 +2027,33 @@
         
         // 按鈕區域
         html += '<div style="text-align: center; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">';
-        html += '<button id="confirmFoodBtn" style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(76,175,80,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(76,175,80,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(76,175,80,0.3)\'">✅ 確認並分析營養</button>';
-        html += '<button id="cancelFoodBtn" style="background: linear-gradient(135deg, #6c757d, #5a6268); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(108,117,125,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(108,117,125,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(108,117,125,0.3)\'">🔄 重新辨識</button>';
+        html += '<button id="confirmFoodBtn" style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(76,175,80,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(76,175,80,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(76,175,80,0.3)\'">確認並分析營養</button>';
+        html += '<button id="cancelFoodBtn" style="background: linear-gradient(135deg, #6c757d, #5a6268); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(108,117,125,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(108,117,125,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(108,117,125,0.3)\'">重新辨識</button>';
         html += '</div>';
         
         analysisOutput.innerHTML = html;
+
+        // 名稱/份量 點擊後彈出編輯
+        for (let i = 0; i < foodPairs.length; i++) {
+            const nameEl = document.getElementById(`food-name-${i}`);
+            const portionEl = document.getElementById(`food-portion-${i}`);
+            if (nameEl) {
+                nameEl.addEventListener('click', () => {
+                    const newName = prompt('請輸入新的食物名稱', nameEl.textContent.trim());
+                    if (newName !== null && newName.trim() !== '') {
+                        nameEl.textContent = newName.trim();
+                    }
+                });
+            }
+            if (portionEl) {
+                portionEl.addEventListener('click', () => {
+                    const newPortion = prompt('請輸入新的份量', portionEl.textContent.trim());
+                    if (newPortion !== null && newPortion.trim() !== '') {
+                        portionEl.textContent = newPortion.trim();
+                    }
+                });
+            }
+        }
 
         // 綁定確認按鈕事件
         document.getElementById('confirmFoodBtn').addEventListener('click', () => {
@@ -2061,12 +2077,12 @@
         for (let i = 0; i < foodCount; i++) {
             const checkbox = document.getElementById(`food-check-${i}`);
             if (checkbox && checkbox.checked) {
-                const nameInput = document.getElementById(`food-name-${i}`);
-                const portionInput = document.getElementById(`food-portion-${i}`);
+                const nameEl = document.getElementById(`food-name-${i}`);
+                const portionEl = document.getElementById(`food-portion-${i}`);
                 
-                if (nameInput && portionInput) {
-                    const name = nameInput.value.trim();
-                    const portion = portionInput.value.trim();
+                if (nameEl && portionEl) {
+                    const name = (nameEl.value !== undefined ? nameEl.value : nameEl.textContent).trim();
+                    const portion = (portionEl.value !== undefined ? portionEl.value : portionEl.textContent).trim();
                     
                     if (name && portion) {
                         selectedFoods.push(`(${name},${portion})`);
