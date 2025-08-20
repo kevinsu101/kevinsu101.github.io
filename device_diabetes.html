@@ -1925,15 +1925,40 @@
             return;
         }
 
-        // 解析食物資訊 - 使用正則表達式匹配所有 (食物名稱,份量) 的格式
-        const foodPairs = [];
-        const regex = /\(([^,]+),([^)]+)\)/g;
-        let match;
+        // 解析食物資訊和時間
+        let foodPairs = [];
+        let extractedTime = '';
         
-        while ((match = regex.exec(foodInfo)) !== null) {
-            const foodName = match[1].trim();
-            const portion = match[2].trim();
-            foodPairs.push({ name: foodName, portion: portion });
+        // 檢查是否包含時間資訊
+        if (foodInfo.includes('飲食時間:')) {
+            // 分離食物資訊和時間資訊
+            const timeIndex = foodInfo.indexOf('飲食時間:');
+            const foodPart = foodInfo.substring(0, timeIndex).trim();
+            const timePart = foodInfo.substring(timeIndex);
+            
+            // 提取時間
+            const timeMatch = timePart.match(/飲食時間:([^,]+)/);
+            if (timeMatch) {
+                extractedTime = timeMatch[1].trim();
+            }
+            
+            // 解析食物對
+            const regex = /\(([^,]+),([^)]+)\)/g;
+            let match;
+            while ((match = regex.exec(foodPart)) !== null) {
+                const foodName = match[1].trim();
+                const portion = match[2].trim();
+                foodPairs.push({ name: foodName, portion: portion });
+            }
+        } else {
+            // 如果沒有時間資訊，只解析食物
+            const regex = /\(([^,]+),([^)]+)\)/g;
+            let match;
+            while ((match = regex.exec(foodInfo)) !== null) {
+                const foodName = match[1].trim();
+                const portion = match[2].trim();
+                foodPairs.push({ name: foodName, portion: portion });
+            }
         }
 
         if (foodPairs.length === 0) {
@@ -1941,46 +1966,75 @@
             return;
         }
 
-        // 設定預設時間為現在
-        const now = new Date();
-        const defaultTime = now.toISOString().slice(0, 16); // YYYY-MM-DDTHH:MM 格式
+        // 設定時間：優先使用提取的時間，否則使用現在時間
+        let displayTime = '';
+        if (extractedTime) {
+            // 將 "2025-08-20 11:48:14" 轉換為 datetime-local 格式
+            const date = new Date(extractedTime.replace(' ', 'T'));
+            displayTime = date.toISOString().slice(0, 16);
+        } else {
+            // 使用現在時間
+            const now = new Date();
+            displayTime = now.toISOString().slice(0, 16);
+        }
 
         let html = '<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">';
         html += '<h4 style="color: #2c5282; margin-bottom: 15px;">辨識到的食物：</h4>';
         
-        // 時間選擇器
-        html += '<div style="margin-bottom: 20px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e9ecef;">';
-        html += '<label style="display: block; margin-bottom: 8px; font-weight: 600; color: #2c5282;">飲食時間：</label>';
-        html += `<input type="datetime-local" id="foodTimeInput" value="${defaultTime}" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95em;">`;
+        // 美觀的時間選擇器
+        html += '<div style="margin-bottom: 20px; padding: 15px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-radius: 10px; border: 2px solid #e1bee7; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">';
+        html += '<div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">';
+        html += '<span style="font-size: 1.2em;">🕒</span>';
+        html += '<label style="font-weight: 600; color: #2c5282; font-size: 1.05em;">飲食時間</label>';
+        html += '</div>';
+        html += `<input type="datetime-local" id="foodTimeInput" value="${displayTime}" 
+                style="width: 100%; padding: 12px; border: 2px solid #ce93d8; border-radius: 8px; font-size: 1em; 
+                background: white; color: #333; transition: all 0.3s ease; box-sizing: border-box;"
+                onfocus="this.style.borderColor='#9c27b0'; this.style.boxShadow='0 0 0 3px rgba(156,39,176,0.2)'"
+                onblur="this.style.borderColor='#ce93d8'; this.style.boxShadow='none'">`;
+        html += '<div style="margin-top: 6px; font-size: 0.9em; color: #666;">點擊上方時間可進行修改</div>';
         html += '</div>';
         
         // 食物列表
         foodPairs.forEach((food, index) => {
-            html += `<div style="margin-bottom: 15px; padding: 15px; background: white; border-radius: 8px; border: 1px solid #e9ecef;">`;
-            html += `<div style="display: flex; align-items: center; margin-bottom: 10px;">`;
-            html += `<input type="checkbox" id="food-check-${index}" checked style="margin-right: 10px; width: 18px; height: 18px; accent-color: #28a745;">`;
-            html += `<span style="font-weight: 600; color: #2c5282;">${index + 1}. 食物項目</span>`;
+            html += `<div style="margin-bottom: 15px; padding: 18px; background: white; border-radius: 10px; border: 2px solid #e8f5e8; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4caf50'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e8f5e8'; this.style.transform='translateY(0)'">`;
+            
+            // 勾選框和標題
+            html += `<div style="display: flex; align-items: center; margin-bottom: 12px;">`;
+            html += `<input type="checkbox" id="food-check-${index}" checked 
+                    style="margin-right: 12px; width: 20px; height: 20px; accent-color: #4caf50; cursor: pointer;">`;
+            html += `<span style="font-weight: 600; color: #2c5282; font-size: 1.1em;">${index + 1}. 食物項目</span>`;
             html += `</div>`;
             
             // 食物名稱編輯
-            html += `<div style="margin-bottom: 8px;">`;
-            html += `<label style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #666;">食物名稱：</label>`;
-            html += `<input type="text" id="food-name-${index}" value="${food.name}" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95em;">`;
+            html += `<div style="margin-bottom: 10px;">`;
+            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">🍽️ 食物名稱：</label>`;
+            html += `<input type="text" id="food-name-${index}" value="${food.name}" 
+                    style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1em; 
+                    background: #fafafa; color: #333; transition: all 0.3s ease; box-sizing: border-box;"
+                    onfocus="this.style.borderColor='#2196f3'; this.style.background='white'; this.style.boxShadow='0 0 0 3px rgba(33,150,243,0.1)'"
+                    onblur="this.style.borderColor='#e0e0e0'; this.style.background='#fafafa'; this.style.boxShadow='none'">`;
             html += `</div>`;
             
             // 份量編輯
             html += `<div style="margin-bottom: 8px;">`;
-            html += `<label style="display: block; margin-bottom: 4px; font-size: 0.9em; color: #666;">份量：</label>`;
-            html += `<input type="text" id="food-portion-${index}" value="${food.portion}" style="width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.95em;">`;
+            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">⚖️ 份量：</label>`;
+            html += `<input type="text" id="food-portion-${index}" value="${food.portion}" 
+                    style="width: 100%; padding: 10px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 1em; 
+                    background: #fafafa; color: #333; transition: all 0.3s ease; box-sizing: border-box;"
+                    onfocus="this.style.borderColor='#ff9800'; this.style.background='white'; this.style.boxShadow='0 0 0 3px rgba(255,152,0,0.1)'"
+                    onblur="this.style.borderColor='#e0e0e0'; this.style.background='#fafafa'; this.style.boxShadow='none'">`;
             html += `</div>`;
             
             html += `</div>`;
         });
         
         html += '</div>';
-        html += '<div style="text-align: center;">';
-        html += '<button id="confirmFoodBtn" style="background: #28a745; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1em; margin-right: 10px;">確認並分析營養</button>';
-        html += '<button id="cancelFoodBtn" style="background: #6c757d; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 1.1em;">重新辨識</button>';
+        
+        // 按鈕區域
+        html += '<div style="text-align: center; display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">';
+        html += '<button id="confirmFoodBtn" style="background: linear-gradient(135deg, #4caf50, #45a049); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(76,175,80,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(76,175,80,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(76,175,80,0.3)\'">✅ 確認並分析營養</button>';
+        html += '<button id="cancelFoodBtn" style="background: linear-gradient(135deg, #6c757d, #5a6268); color: white; border: none; padding: 14px 28px; border-radius: 10px; cursor: pointer; font-size: 1.1em; font-weight: 600; box-shadow: 0 4px 12px rgba(108,117,125,0.3); transition: all 0.3s ease;" onmouseover="this.style.transform=\'translateY(-2px)\'; this.style.boxShadow=\'0 6px 16px rgba(108,117,125,0.4)\'" onmouseout="this.style.transform=\'translateY(0)\'; this.style.boxShadow=\'0 4px 12px rgba(108,117,125,0.3)\'">🔄 重新辨識</button>';
         html += '</div>';
         
         analysisOutput.innerHTML = html;
