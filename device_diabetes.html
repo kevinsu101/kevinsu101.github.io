@@ -2109,19 +2109,20 @@
 
     // 執行營養分析（第二階段）
     async function performNutritionAnalysis(foodInfo) {
+        // 先讀取用戶設定的時間，避免等下切換畫面把 input 移除
+        const timeInputEl = document.getElementById('foodTimeInput');
+        let userTime = '';
+        if (timeInputEl && timeInputEl.value) {
+            // datetime-local 直接轉成 "YYYY-MM-DD HH:MM:SS"（避免時區偏移）
+            const t = timeInputEl.value.trim(); // "YYYY-MM-DDTHH:MM"
+            const normalized = t.replace('T', ' ');
+            userTime = normalized.length === 16 ? `${normalized}:00` : normalized; // 若無秒補 :00
+        }
+
+        // 再顯示分析中狀態
         analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在分析營養成分...</div>';
 
         try {
-            // 獲取用戶設定的時間
-            const timeInput = document.getElementById('foodTimeInput');
-            let userTime = '';
-            if (timeInput && timeInput.value) {
-                // datetime-local 直接轉成 "YYYY-MM-DD HH:MM:SS"（避免時區偏移）
-                const t = timeInput.value.trim(); // "YYYY-MM-DDTHH:MM"
-                const normalized = t.replace('T', ' ');
-                userTime = normalized.length === 16 ? `${normalized}:00` : normalized; // 若無秒補 :00
-            }
-
             const formData = new FormData();
             formData.append('userId', window.globalUserId);
             formData.append('stage', 'nutrition'); // 第二階段：營養分析
