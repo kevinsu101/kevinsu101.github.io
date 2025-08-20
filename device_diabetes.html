@@ -1969,13 +1969,18 @@
         // 設定時間：優先使用提取的時間，否則使用現在時間
         let displayTime = '';
         if (extractedTime) {
-            // 將 "2025-08-20 11:48:14" 轉換為 datetime-local 格式
-            const date = new Date(extractedTime.replace(' ', 'T'));
-            displayTime = date.toISOString().slice(0, 16);
+            // 後端格式為 "YYYY-MM-DD HH:MM:SS"，直接轉為 datetime-local 需要的 "YYYY-MM-DDTHH:MM"
+            const t = extractedTime.trim();
+            displayTime = (t.length >= 16 ? t.slice(0, 16) : t).replace(' ', 'T');
         } else {
-            // 使用現在時間
+            // 使用現在時間（以本地時間組合，避免 toISOString 造成時區偏移）
             const now = new Date();
-            displayTime = now.toISOString().slice(0, 16);
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            const hh = String(now.getHours()).padStart(2, '0');
+            const mm = String(now.getMinutes()).padStart(2, '0');
+            displayTime = `${y}-${m}-${d}T${hh}:${mm}`;
         }
 
         let html = '<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">';
@@ -2007,15 +2012,15 @@
             html += `</div>`;
             
             // 食物名稱（點擊藍字可編輯）
-            html += `<div style="margin-bottom: 10px;">`;
-            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</label>`;
+            html += `<div style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">`;
+            html += `<span style="font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</span>`;
             html += `<span id="food-name-${index}" 
                         style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${food.name}</span>`;
             html += `</div>`;
             
             // 份量（點擊藍字可編輯）
-            html += `<div style="margin-bottom: 8px;">`;
-            html += `<label style="display: block; margin-bottom: 6px; font-size: 0.95em; color: #555; font-weight: 500;">份量：</label>`;
+            html += `<div style="margin-bottom: 4px; display:flex; align-items:center; gap:6px;">`;
+            html += `<span style="font-size: 0.95em; color: #555; font-weight: 500;">份量：</span>`;
             html += `<span id="food-portion-${index}" 
                         style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${food.portion}</span>`;
             html += `</div>`;
@@ -2111,9 +2116,10 @@
             const timeInput = document.getElementById('foodTimeInput');
             let userTime = '';
             if (timeInput && timeInput.value) {
-                // 將 datetime-local 格式轉換為 YYYY-MM-DD HH:MM:SS 格式
-                const date = new Date(timeInput.value);
-                userTime = date.toISOString().slice(0, 19).replace('T', ' ');
+                // datetime-local 直接轉成 "YYYY-MM-DD HH:MM:SS"（避免時區偏移）
+                const t = timeInput.value.trim(); // "YYYY-MM-DDTHH:MM"
+                const normalized = t.replace('T', ' ');
+                userTime = normalized.length === 16 ? `${normalized}:00` : normalized; // 若無秒補 :00
             }
 
             const formData = new FormData();
