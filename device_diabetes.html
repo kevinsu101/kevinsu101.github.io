@@ -2132,6 +2132,9 @@
                 formData.append('userTime', userTime);
             }
 
+            console.log('[第二階段] 送出食物資訊:', foodInfo);
+            console.log('[第二階段] 送出 userTime:', userTime || '(空，後端將用現在時間)');
+
             const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ai_food_analysis', {
                 method: 'POST',
                 body: formData
