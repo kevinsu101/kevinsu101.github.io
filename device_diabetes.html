@@ -708,6 +708,22 @@
           flex-direction: column;
           gap: 14px 0;
         }
+        
+        /* 營養素比例動畫 */
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .nutrition-ratio-content {
+            transition: all 0.3s ease;
+        }
     </style>
 </head>
 <body>
@@ -2511,43 +2527,44 @@
                     const fatPath = createArc(currentAngle, currentAngle + fatAngle);
                     
                     nutritionRatioHtml = `
-                    <div style="margin: 16px 0 8px 0; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">
-                        <div style="text-align: center; margin-bottom: 12px; font-weight: 600; color: #2c5282; font-size: 1.05em;">三大營養素比例</div>
-                        <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
-                            <!-- 圓餅圖 -->
-                            <div style="position: relative; width: 100px; height: 100px;">
-                                <svg width="100" height="100" viewBox="0 0 100 100">
-                                    ${item.carb_percent > 0 ? `<path d="${carbPath}" fill="#4fc3f7" stroke="#fff" stroke-width="2"/>` : ''}
-                                    ${item.pro_percent > 0 ? `<path d="${proPath}" fill="#ffb74d" stroke="#fff" stroke-width="2"/>` : ''}
-                                    ${item.fat_percent > 0 ? `<path d="${fatPath}" fill="#ba68c8" stroke="#fff" stroke-width="2"/>` : ''}
-                                    <!-- 中心文字 -->
-                                    <circle cx="50" cy="50" r="15" fill="#fff" stroke="#e9ecef" stroke-width="1"/>
-                                    <text x="50" y="55" text-anchor="middle" font-size="8" font-weight="bold" fill="#2c5282">比例</text>
-                                </svg>
-                            </div>
-                            <!-- 圖例 -->
-                            <div style="display: flex; flex-direction: column; gap: 8px; min-width: 120px;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 16px; height: 16px; background: #4fc3f7; border-radius: 3px;"></div>
-                                    <span style="font-size: 0.9em; color: #4fc3f7; font-weight: 600;">碳水 ${item.carb_percent}%</span>
+                    <div style="margin: 16px 0 8px 0;">
+                        <!-- 點擊按鈕 -->
+                        <button class="nutrition-ratio-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border: 2px solid #e1bee7; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="toggleNutritionRatio(this, '${item.date}', '${item.time}')">
+                            <span style="font-size: 1.2em;">📊</span>
+                            <span style="font-weight: 600; color: #2c5282; font-size: 1.05em;">查看營養素比例</span>
+                            <span style="font-size: 1.1em; transition: transform 0.3s ease;">▼</span>
+                        </button>
+                        
+                        <!-- 圓餅圖內容（預設隱藏） -->
+                        <div id="nutrition-ratio-${item.date}-${item.time}" class="nutrition-ratio-content" style="display: none; margin-top: 12px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; animation: slideDown 0.3s ease;">
+                            <div style="text-align: center; margin-bottom: 12px; font-weight: 600; color: #2c5282; font-size: 1.05em;">三大營養素比例</div>
+                            <div style="display: flex; align-items: center; gap: 20px; justify-content: center;">
+                                <!-- 圓餅圖 -->
+                                <div style="position: relative; width: 100px; height: 100px;">
+                                    <svg width="100" height="100" viewBox="0 0 100 100">
+                                        ${item.carb_percent > 0 ? `<path d="${carbPath}" fill="#4fc3f7" stroke="#fff" stroke-width="2"/>` : ''}
+                                        ${item.pro_percent > 0 ? `<path d="${proPath}" fill="#ffb74d" stroke="#fff" stroke-width="2"/>` : ''}
+                                        ${item.fat_percent > 0 ? `<path d="${fatPath}" fill="#ba68c8" stroke="#fff" stroke-width="2"/>` : ''}
+                                        <!-- 中心文字 -->
+                                        <circle cx="50" cy="50" r="15" fill="#fff" stroke="#e9ecef" stroke-width="1"/>
+                                        <text x="50" y="55" text-anchor="middle" font-size="8" font-weight="bold" fill="#2c5282">比例</text>
+                                    </svg>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 16px; height: 16px; background: #ffb74d; border-radius: 3px;"></div>
-                                    <span style="font-size: 0.9em; color: #ffb74d; font-weight: 600;">蛋白質 ${item.pro_percent}%</span>
+                                <!-- 圖例 -->
+                                <div style="display: flex; flex-direction: column; gap: 8px; min-width: 120px;">
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 16px; height: 16px; background: #4fc3f7; border-radius: 3px;"></div>
+                                        <span style="font-size: 0.9em; color: #4fc3f7; font-weight: 600;">碳水 ${item.carb_percent}%</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 16px; height: 16px; background: #ffb74d; border-radius: 3px;"></div>
+                                        <span style="font-size: 0.9em; color: #ffb74d; font-weight: 600;">蛋白質 ${item.pro_percent}%</span>
+                                    </div>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <div style="width: 16px; height: 16px; background: #ba68c8; border-radius: 3px;"></div>
+                                        <span style="font-size: 0.9em; color: #ba68c8; font-weight: 600;">脂肪 ${item.fat_percent}%</span>
+                                    </div>
                                 </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <div style="width: 16px; height: 16px; background: #ba68c8; border-radius: 3px;"></div>
-                                    <span style="font-size: 0.9em; color: #ba68c8; font-weight: 600;">脂肪 ${item.fat_percent}%</span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 詳細熱量資訊 -->
-                        <div style="margin-top: 12px; padding: 8px; background: white; border-radius: 8px; border: 1px solid #e9ecef;">
-                            <div style="font-size: 0.85em; color: #666; text-align: center; margin-bottom: 4px;">熱量分布</div>
-                            <div style="display: flex; justify-content: space-around; font-size: 0.8em;">
-                                <span style="color: #4fc3f7;">碳水: ${item.carb_cal}大卡</span>
-                                <span style="color: #ffb74d;">蛋白質: ${item.pro_cal}大卡</span>
-                                <span style="color: #ba68c8;">脂肪: ${item.fat_cal}大卡</span>
                             </div>
                         </div>
                     </div>`;
@@ -2603,6 +2620,26 @@
                 });
             };
         });
+        
+        // 營養素比例切換函數
+        window.toggleNutritionRatio = function(btn, date, time) {
+            const contentId = `nutrition-ratio-${date}-${time}`;
+            const content = document.getElementById(contentId);
+            const arrow = btn.querySelector('span:last-child');
+            
+            if (content.style.display === 'none') {
+                // 展開
+                content.style.display = 'block';
+                arrow.style.transform = 'rotate(180deg)';
+                btn.querySelector('span:nth-child(2)').textContent = '隱藏營養素比例';
+            } else {
+                // 收合
+                content.style.display = 'none';
+                arrow.style.transform = 'rotate(0deg)';
+                btn.querySelector('span:nth-child(2)').textContent = '查看營養素比例';
+            }
+        };
+        
         // 顯示營養建議彈窗（美化）
         window.showAdvice = function(btn) {
             const advice = decodeURIComponent(btn.getAttribute('data-advice'));
