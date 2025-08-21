@@ -2624,7 +2624,7 @@
         window.toggleNutritionRatio = function(btn, date, time) {
             const contentId = `nutrition-ratio-${date}-${time}`;
             const content = document.getElementById(contentId);
-            const arrow = btn.querySelector('span');
+            const arrow = btn.querySelector('span:last-child');
             
             if (content.style.display === 'none') {
                 // 展開
