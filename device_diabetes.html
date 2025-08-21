@@ -2530,7 +2530,6 @@
                     <div style="margin: 16px 0 8px 0;">
                         <!-- 點擊按鈕 -->
                         <button class="nutrition-ratio-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border: 2px solid #e1bee7; border-radius: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.15)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'" onclick="toggleNutritionRatio(this, '${item.date}', '${item.time}')">
-                            <span style="font-weight: 600; color: #2c5282; font-size: 1.05em;">查看營養素比例</span>
                             <span style="font-size: 1.1em; transition: transform 0.3s ease;">▼</span>
                         </button>
                         
@@ -2624,18 +2623,16 @@
         window.toggleNutritionRatio = function(btn, date, time) {
             const contentId = `nutrition-ratio-${date}-${time}`;
             const content = document.getElementById(contentId);
-            const arrow = btn.querySelector('span:last-child');
+            const arrow = btn.querySelector('span');
             
             if (content.style.display === 'none') {
                 // 展開
                 content.style.display = 'block';
                 arrow.style.transform = 'rotate(180deg)';
-                btn.querySelector('span:nth-child(2)').textContent = '隱藏營養素比例';
             } else {
                 // 收合
                 content.style.display = 'none';
                 arrow.style.transform = 'rotate(0deg)';
-                btn.querySelector('span:nth-child(2)').textContent = '查看營養素比例';
             }
         };
         
