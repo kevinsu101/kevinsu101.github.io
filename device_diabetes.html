@@ -2044,6 +2044,36 @@
             html += `</div>`;
         });
         
+        // 新增食物項目欄位
+        html += `<div style="margin-bottom: 15px; padding: 18px; background: linear-gradient(135deg, #fff3e0, #fff8e1); border-radius: 10px; border: 2px dashed #ffb74d; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#ff9800'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#ffb74d'; this.style.transform='translateY(0)'">`;
+        
+        // 新增食物標題
+        html += `<div style="display: flex; align-items: center; margin-bottom: 12px;">`;
+        html += `<span style="font-size: 1.2em; margin-right: 8px;">➕</span>`;
+        html += `<span style="font-weight: 600; color: #ff9800; font-size: 1.1em;">新增食物項目</span>`;
+        html += `</div>`;
+        
+        // 新增食物名稱輸入
+        html += `<div style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">`;
+        html += `<span style="font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</span>`;
+        html += `<input type="text" id="new-food-name" placeholder="請輸入食物名稱" 
+                style="flex:1; padding: 6px 10px; border: 1px solid #ffb74d; border-radius: 6px; font-size: 0.95em; background: white;">`;
+        html += `</div>`;
+        
+        // 新增食物份量輸入
+        html += `<div style="margin-bottom: 4px; display:flex; align-items:center; gap:6px;">`;
+        html += `<span style="font-size: 0.95em; color: #555; font-weight: 500;">份量：</span>`;
+        html += `<input type="text" id="new-food-portion" placeholder="請輸入份量，如：一碗、200g" 
+                style="flex:1; padding: 6px 10px; border: 1px solid #ffb74d; border-radius: 6px; font-size: 0.95em; background: white;">`;
+        html += `</div>`;
+        
+        // 新增按鈕
+        html += `<div style="margin-top: 10px; text-align: center;">`;
+        html += `<button id="addFoodBtn" style="background: linear-gradient(135deg, #ffb74d, #ff9800); color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 600; transition: all 0.3s ease;" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='translateY(0)'">新增食物</button>`;
+        html += `</div>`;
+        
+        html += `</div>`;
+        
         html += '</div>';
         
         // 按鈕區域
@@ -2088,6 +2118,23 @@
         // 綁定取消按鈕事件
         document.getElementById('cancelFoodBtn').addEventListener('click', () => {
             analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
+        });
+
+        // 綁定新增食物按鈕事件
+        document.getElementById('addFoodBtn').addEventListener('click', () => {
+            addNewFood(foodPairs.length);
+        });
+
+        // 綁定 Enter 鍵事件到新增食物輸入框
+        document.getElementById('new-food-name').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('new-food-portion').focus();
+            }
+        });
+        document.getElementById('new-food-portion').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                addNewFood(foodPairs.length);
+            }
         });
     }
 
@@ -3456,6 +3503,76 @@
     const style = document.createElement('style');
     style.innerHTML = `.loader {border: 4px solid #f3f3f3;border-top: 4px solid #1976d2;border-radius: 50%;width: 36px;height: 36px;animation: spin 1s linear infinite;display:inline-block;}@keyframes spin {0% { transform: rotate(0deg);}100% { transform: rotate(360deg);}}`;
     document.head.appendChild(style);
+
+    // 新增食物項目函數
+    function addNewFood(currentCount) {
+        const newFoodName = document.getElementById('new-food-name').value.trim();
+        const newFoodPortion = document.getElementById('new-food-portion').value.trim();
+        
+        if (!newFoodName || !newFoodPortion) {
+            alert('請填寫食物名稱和份量');
+            return;
+        }
+        
+        // 清空輸入框
+        document.getElementById('new-food-name').value = '';
+        document.getElementById('new-food-portion').value = '';
+        
+        // 新增食物項目到 DOM
+        const newIndex = currentCount;
+        const newFoodHtml = `
+            <div style="margin-bottom: 15px; padding: 18px; background: white; border-radius: 10px; border: 2px solid #e8f5e8; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4caf50'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e8f5e8'; this.style.transform='translateY(0)'">
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <input type="checkbox" id="food-check-${newIndex}" checked 
+                            style="margin-right: 12px; width: 20px; height: 20px; accent-color: #4caf50; cursor: pointer;">
+                    <span style="font-weight: 600; color: #2c5282; font-size: 1.1em;">${newIndex + 1}. 食物項目</span>
+                </div>
+                <div style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">
+                    <span style="font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</span>
+                    <span id="food-name-${newIndex}" 
+                            style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodName}</span>
+                </div>
+                <div style="margin-bottom: 4px; display:flex; align-items:center; gap:6px;">
+                    <span style="font-size: 0.95em; color: #555; font-weight: 500;">份量：</span>
+                    <span id="food-portion-${newIndex}" 
+                            style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodPortion}</span>
+                </div>
+            </div>`;
+        
+        // 插入到新增食物欄位之前
+        const addFoodSection = document.querySelector('.nutrition-ratio-btn').closest('div').previousElementSibling;
+        addFoodSection.insertAdjacentHTML('beforebegin', newFoodHtml);
+        
+        // 綁定新食物項目的編輯事件
+        const nameEl = document.getElementById(`food-name-${newIndex}`);
+        const portionEl = document.getElementById(`food-portion-${newIndex}`);
+        
+        nameEl.addEventListener('click', () => {
+            const newName = prompt('請輸入新的食物名稱', nameEl.textContent.trim());
+            if (newName !== null && newName.trim() !== '') {
+                nameEl.textContent = newName.trim();
+            }
+        });
+        
+        portionEl.addEventListener('click', () => {
+            const newPortion = prompt('請輸入新的份量', portionEl.textContent.trim());
+            if (newPortion !== null && newPortion.trim() !== '') {
+                portionEl.textContent = newPortion.trim();
+            }
+        });
+        
+        // 更新確認按鈕的事件處理，包含新增的食物
+        document.getElementById('confirmFoodBtn').onclick = () => {
+            const totalFoodCount = document.querySelectorAll('[id^="food-check-"]').length;
+            const editedFoodInfo = collectEditedFoodInfo(totalFoodCount);
+            if (editedFoodInfo) {
+                performNutritionAnalysis(editedFoodInfo);
+            }
+        };
+        
+        // 聚焦到食物名稱輸入框
+        document.getElementById('new-food-name').focus();
+    }
 </script>
 <!-- Chart.js and dependencies -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
