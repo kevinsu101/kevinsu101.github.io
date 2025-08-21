@@ -2045,7 +2045,7 @@
         });
         
         // 新增食物項目欄位
-        html += `<div style="margin-bottom: 15px; padding: 18px; background: linear-gradient(135deg, #fff3e0, #fff8e1); border-radius: 10px; border: 2px dashed #ffb74d; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#ff9800'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#ffb74d'; this.style.transform='translateY(0)'">`;
+        html += `<div id="add-food-section" style="margin-bottom: 15px; padding: 18px; background: linear-gradient(135deg, #fff3e0, #fff8e1); border-radius: 10px; border: 2px dashed #ffb74d; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#ff9800'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#ffb74d'; this.style.transform='translateY(0)'">`;
         
         // 新增食物標題
         html += `<div style="display: flex; align-items: center; margin-bottom: 12px;">`;
@@ -2106,14 +2106,17 @@
             }
         }
 
-        // 綁定確認按鈕事件
-        document.getElementById('confirmFoodBtn').addEventListener('click', () => {
-            // 收集編輯後的食物資訊
-            const editedFoodInfo = collectEditedFoodInfo(foodPairs.length);
-            if (editedFoodInfo) {
-                performNutritionAnalysis(editedFoodInfo);
-            }
-        });
+        // 綁定確認按鈕事件（動態取得目前項目數）
+        const confirmBtn = document.getElementById('confirmFoodBtn');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                const totalFoodCount = document.querySelectorAll('[id^="food-check-"]').length;
+                const editedFoodInfo = collectEditedFoodInfo(totalFoodCount);
+                if (editedFoodInfo) {
+                    performNutritionAnalysis(editedFoodInfo);
+                }
+            };
+        }
 
         // 綁定取消按鈕事件
         document.getElementById('cancelFoodBtn').addEventListener('click', () => {
@@ -3505,73 +3508,46 @@
     document.head.appendChild(style);
 
     // 新增食物項目函數
-    function addNewFood(currentCount) {
+    function addNewFood() {
         const newFoodName = document.getElementById('new-food-name').value.trim();
         const newFoodPortion = document.getElementById('new-food-portion').value.trim();
-        
         if (!newFoodName || !newFoodPortion) {
             alert('請填寫食物名稱和份量');
             return;
         }
-        
+        // 取得新的索引（現有項目數）
+        const newIndex = document.querySelectorAll('[id^="food-check-"]').length;
         // 清空輸入框
         document.getElementById('new-food-name').value = '';
         document.getElementById('new-food-portion').value = '';
-        
-        // 新增食物項目到 DOM
-        const newIndex = currentCount;
+        // 生成新卡片 HTML
         const newFoodHtml = `
-            <div style="margin-bottom: 15px; padding: 18px; background: white; border-radius: 10px; border: 2px solid #e8f5e8; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4caf50'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e8f5e8'; this.style.transform='translateY(0)'">
-                <div style="display: flex; align-items: center; margin-bottom: 12px;">
-                    <input type="checkbox" id="food-check-${newIndex}" checked 
-                            style="margin-right: 12px; width: 20px; height: 20px; accent-color: #4caf50; cursor: pointer;">
-                    <span style="font-weight: 600; color: #2c5282; font-size: 1.1em;">${newIndex + 1}. 食物項目</span>
-                </div>
-                <div style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;">
-                    <span style="font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</span>
-                    <span id="food-name-${newIndex}" 
-                            style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodName}</span>
-                </div>
-                <div style="margin-bottom: 4px; display:flex; align-items:center; gap:6px;">
-                    <span style="font-size: 0.95em; color: #555; font-weight: 500;">份量：</span>
-                    <span id="food-portion-${newIndex}" 
-                            style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodPortion}</span>
-                </div>
-            </div>`;
-        
-        // 插入到新增食物欄位之前
-        const addFoodSection = document.querySelector('.nutrition-ratio-btn').closest('div').previousElementSibling;
-        addFoodSection.insertAdjacentHTML('beforebegin', newFoodHtml);
-        
-        // 綁定新食物項目的編輯事件
+            <div style="margin-bottom: 15px; padding: 18px; background: white; border-radius: 10px; border: 2px solid #e8f5e8; box-shadow: 0 2px 6px rgba(0,0,0,0.05); transition: all 0.3s ease;" onmouseover="this.style.borderColor='#4caf50'; this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e8f5e8'; this.style.transform='translateY(0)'"><div style="display: flex; align-items: center; margin-bottom: 12px;"><input type="checkbox" id="food-check-${newIndex}" checked style="margin-right: 12px; width: 20px; height: 20px; accent-color: #4caf50; cursor: pointer;"><span style="font-weight: 600; color: #2c5282; font-size: 1.1em;">${newIndex + 1}. 食物項目</span></div><div style="margin-bottom: 8px; display:flex; align-items:center; gap:6px;"><span style="font-size: 0.95em; color: #555; font-weight: 500;">食物名稱：</span><span id="food-name-${newIndex}" style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodName}</span></div><div style="margin-bottom: 4px; display:flex; align-items:center; gap:6px;"><span style="font-size: 0.95em; color: #555; font-weight: 500;">份量：</span><span id="food-portion-${newIndex}" style="color:#007bff;font-weight:700;cursor:pointer;text-decoration:none;">${newFoodPortion}</span></div></div>`;
+        // 插入到新增區塊之前
+        const container = document.getElementById('add-food-section');
+        container.insertAdjacentHTML('beforebegin', newFoodHtml);
+        // 綁定新卡片的編輯事件
         const nameEl = document.getElementById(`food-name-${newIndex}`);
         const portionEl = document.getElementById(`food-portion-${newIndex}`);
-        
-        nameEl.addEventListener('click', () => {
-            const newName = prompt('請輸入新的食物名稱', nameEl.textContent.trim());
-            if (newName !== null && newName.trim() !== '') {
-                nameEl.textContent = newName.trim();
-            }
-        });
-        
-        portionEl.addEventListener('click', () => {
-            const newPortion = prompt('請輸入新的份量', portionEl.textContent.trim());
-            if (newPortion !== null && newPortion.trim() !== '') {
-                portionEl.textContent = newPortion.trim();
-            }
-        });
-        
-        // 更新確認按鈕的事件處理，包含新增的食物
-        document.getElementById('confirmFoodBtn').onclick = () => {
-            const totalFoodCount = document.querySelectorAll('[id^="food-check-"]').length;
-            const editedFoodInfo = collectEditedFoodInfo(totalFoodCount);
-            if (editedFoodInfo) {
-                performNutritionAnalysis(editedFoodInfo);
-            }
-        };
-        
-        // 聚焦到食物名稱輸入框
+        if (nameEl) {
+            nameEl.addEventListener('click', () => {
+                const newName = prompt('請輸入新的食物名稱', nameEl.textContent.trim());
+                if (newName !== null && newName.trim() !== '') nameEl.textContent = newName.trim();
+            });
+        }
+        if (portionEl) {
+            portionEl.addEventListener('click', () => {
+                const newPortion = prompt('請輸入新的份量', portionEl.textContent.trim());
+                if (newPortion !== null && newPortion.trim() !== '') portionEl.textContent = newPortion.trim();
+            });
+        }
+        // 聚焦回名稱輸入框
         document.getElementById('new-food-name').focus();
+    }
+
+    // 重新編號與補事件（保留函式以相容，但目前不使用）
+    function reindexFoodItems() {
+        // no-op
     }
 </script>
 <!-- Chart.js and dependencies -->
