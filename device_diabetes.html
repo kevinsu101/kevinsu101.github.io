@@ -3619,6 +3619,9 @@
             return;
         }
         
+        console.log(`原始數據: ${monthData.length} 筆`);
+        console.log(`原始數據範例:`, monthData.slice(0, 3));
+        
         // 計算日期範圍
         const endDate = new Date();
         const startDate = new Date();
@@ -3633,23 +3636,44 @@
         // 過濾指定日期範圍的數據
         const filteredData = monthData.filter(item => {
             const itemDate = item.date; // item.date 已經是 YYYY-MM-DD 格式
-            console.log(`檢查項目: ${itemDate}, 是否在範圍內: ${itemDate >= startDateStr && itemDate <= endDateStr}`);
-            return itemDate >= startDateStr && itemDate <= endDateStr;
+            const isInRange = itemDate >= startDateStr && itemDate <= endDateStr;
+            if (isInRange) {
+                console.log(`包含項目: ${itemDate} ${item.time} - ${item.total_cal}kcal`);
+            }
+            return isInRange;
         });
         
-        console.log(`過濾前數據量: ${monthData.length}, 過濾後數據量: ${filteredData.length}`);
+        console.log(`過濾後數據量: ${filteredData.length}`);
         
         if (filteredData.length === 0) {
             statsDiv.innerHTML = `<div style="text-align: center; color: #666;">過去${days}天內無飲食記錄</div>`;
             return;
         }
         
-        // 按日期排序
-        filteredData.sort((a, b) => a.date.localeCompare(b.date));
+        // 按日期和時間排序
+        filteredData.sort((a, b) => {
+            const dateCompare = a.date.localeCompare(b.date);
+            if (dateCompare !== 0) return dateCompare;
+            return a.time.localeCompare(b.time);
+        });
         
-        // 準備圖表數據
-        const labels = filteredData.map(item => item.date);
-        const calorieData = filteredData.map(item => item.total_cal);
+        // 準備圖表數據 - 根據時間範圍決定顯示格式
+        let labels, calorieData;
+        
+        if (days === 1) {
+            // 單日：顯示時間（0-24小時）
+            labels = filteredData.map(item => {
+                const time = item.time;
+                const hour = parseInt(time.split(':')[0]);
+                const minute = parseInt(time.split(':')[1]);
+                return `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
+            });
+            calorieData = filteredData.map(item => item.total_cal);
+        } else {
+            // 多日：顯示日期
+            labels = filteredData.map(item => item.date);
+            calorieData = filteredData.map(item => item.total_cal);
+        }
         
         // 計算統計數據
         const totalCalories = filteredData.reduce((sum, item) => sum + item.total_cal, 0);
@@ -3660,6 +3684,8 @@
         
         // 生成圖表HTML
         const timeLabel = getTimeRangeLabel(rangeKey, days);
+        const xAxisLabel = days === 1 ? '時間' : '日期';
+        
         statsDiv.innerHTML = `
             <div style="margin-bottom: 20px;">
                 <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}熱量走勢圖</div>
@@ -3752,7 +3778,11 @@
                         displayColors: false,
                         callbacks: {
                             title: function(context) {
-                                return `日期: ${context[0].label}`;
+                                if (days === 1) {
+                                    return `時間: ${context[0].label}`;
+                                } else {
+                                    return `日期: ${context[0].label}`;
+                                }
                             },
                             label: function(context) {
                                 return `熱量: ${context.parsed.y} kcal`;
@@ -3764,7 +3794,7 @@
                     x: {
                         title: {
                             display: true,
-                            text: '日期',
+                            text: xAxisLabel,
                             color: '#666',
                             font: {
                                 size: 12,
@@ -3777,8 +3807,21 @@
                         },
                         ticks: {
                             color: '#666',
-                            maxRotation: 45,
-                            minRotation: 45
+                            maxRotation: days === 1 ? 0 : 45,
+                            minRotation: days === 1 ? 0 : 45,
+                            callback: function(value, index, ticks) {
+                                const label = this.getLabelForValue(value);
+                                if (days === 1) {
+                                    // 單日：只顯示整點時間
+                                    if (label.endsWith(':00')) {
+                                        return label;
+                                    }
+                                    return '';
+                                } else {
+                                    // 多日：顯示日期
+                                    return label;
+                                }
+                            }
                         }
                     },
                     y: {
