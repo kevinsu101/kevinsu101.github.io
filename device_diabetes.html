@@ -2513,6 +2513,39 @@
         let html = '';
         Object.keys(monthDict).sort().reverse().forEach(month => {
             html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
+            
+            // 新增統計按鈕區域
+            html += `<div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">`;
+            html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 熱量攝取統計</div>`;
+            
+            // 時間範圍選擇按鈕（類似股票介面）
+            html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
+            const timeRanges = [
+                { key: '1d', label: '1天', days: 1 },
+                { key: '1w', label: '1週', days: 7 },
+                { key: '1m', label: '1個月', days: 30 },
+                { key: '3m', label: '3個月', days: 90 },
+                { key: '6m', label: '6個月', days: 180 },
+                { key: '1y', label: '1年', days: 365 }
+            ];
+            
+            timeRanges.forEach((range, index) => {
+                const isActive = index === 2; // 預設選中1個月
+                html += `<button class="time-range-btn" data-range="${range.key}" data-days="${range.days}" data-month="${month}" 
+                        style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
+                        onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
+                        onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
+                        onclick="showCalorieStats('${range.key}', ${range.days}, '${month}')">${range.label}</button>`;
+            });
+            html += `</div>`;
+            
+            // 統計顯示區域
+            html += `<div id="stats-${month}" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">`;
+            html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
+            html += `</div>`;
+            
+            html += `</div>`;
+            
             monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
                 // 食物名稱換行，份量小字
                 let foodsHtml = item.foods.map(f=>`<div style='margin-bottom:2px;'><span style='font-weight:700;'>${f.food_name}</span> <span style='font-size:0.9em;color:#888;'>${f.food_portion}</span></div>`).join('');
@@ -3548,6 +3581,133 @@
     // 重新編號與補事件（保留函式以相容，但目前不使用）
     function reindexFoodItems() {
         // no-op
+    }
+
+    // 熱量統計功能
+    window.showCalorieStats = function(rangeKey, days, month) {
+        // 更新按鈕狀態
+        const buttons = document.querySelectorAll(`[data-month="${month}"]`);
+        buttons.forEach(btn => {
+            btn.style.background = '#e9ecef';
+            btn.style.color = '#666';
+        });
+        event.target.style.background = '#1976d2';
+        event.target.style.color = 'white';
+        
+        // 顯示統計區域
+        const statsDiv = document.getElementById(`stats-${month}`);
+        statsDiv.style.display = 'block';
+        statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">計算統計中...</div>';
+        
+        // 計算統計數據
+        setTimeout(() => {
+            calculateCalorieStats(rangeKey, days, month);
+        }, 100);
+    };
+    
+    // 計算熱量統計
+    function calculateCalorieStats(rangeKey, days, month) {
+        const statsDiv = document.getElementById(`stats-${month}`);
+        const monthData = monthDict[month];
+        
+        if (!monthData || monthData.length === 0) {
+            statsDiv.innerHTML = '<div style="text-align: center; color: #666;">該月份無飲食記錄</div>';
+            return;
+        }
+        
+        // 計算日期範圍
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - days);
+        
+        // 過濾指定日期範圍的數據
+        const filteredData = monthData.filter(item => {
+            const itemDate = new Date(item.date);
+            return itemDate >= startDate && itemDate <= endDate;
+        });
+        
+        if (filteredData.length === 0) {
+            statsDiv.innerHTML = `<div style="text-align: center; color: #666;">過去${days}天內無飲食記錄</div>`;
+            return;
+        }
+        
+        // 計算統計數據
+        const totalCalories = filteredData.reduce((sum, item) => sum + item.total_cal, 0);
+        const avgCalories = Math.round(totalCalories / filteredData.length);
+        const maxCalories = Math.max(...filteredData.map(item => item.total_cal));
+        const minCalories = Math.min(...filteredData.map(item => item.total_cal));
+        
+        // 計算營養素總量
+        const totalCarb = filteredData.reduce((sum, item) => sum + item.total_carb, 0);
+        const totalPro = filteredData.reduce((sum, item) => sum + item.total_pro, 0);
+        const totalFat = filteredData.reduce((sum, item) => sum + item.total_fat, 0);
+        
+        // 生成統計顯示
+        const timeLabel = getTimeRangeLabel(rangeKey, days);
+        statsDiv.innerHTML = `
+            <div style="margin-bottom: 15px;">
+                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.05em; margin-bottom: 10px;">${timeLabel}熱量統計</div>
+                <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 15px;">
+                    <div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #e57373;">${totalCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">總熱量 (kcal)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${avgCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">平均/餐 (kcal)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${filteredData.length}</div>
+                        <div style="font-size: 0.85em; color: #666;">餐次數</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1em; margin-bottom: 10px;">熱量範圍</div>
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: #4caf50;">${maxCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">最高 (kcal)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: #ff9800;">${minCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">最低 (kcal)</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div>
+                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1em; margin-bottom: 10px;">營養素總量</div>
+                <div style="display: flex; justify-content: space-around; text-align: center;">
+                    <div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: #4fc3f7;">${Math.round(totalCarb)}</div>
+                        <div style="font-size: 0.85em; color: #666;">碳水 (g)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: #ffb74d;">${Math.round(totalPro)}</div>
+                        <div style="font-size: 0.85em; color: #666;">蛋白質 (g)</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 1.1em; font-weight: 700; color: #ba68c8;">${Math.round(totalFat)}</div>
+                        <div style="font-size: 0.85em; color: #666;">脂肪 (g)</div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
+    // 取得時間範圍標籤
+    function getTimeRangeLabel(rangeKey, days) {
+        switch(rangeKey) {
+            case '1d': return '過去1天';
+            case '1w': return '過去1週';
+            case '1m': return '過去1個月';
+            case '3m': return '過去3個月';
+            case '6m': return '過去6個月';
+            case '1y': return '過去1年';
+            default: return `過去${days}天`;
+        }
     }
 </script>
 <!-- Chart.js and dependencies -->
