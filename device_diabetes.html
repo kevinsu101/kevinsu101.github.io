@@ -2515,40 +2515,41 @@
         window.globalMonthDict = monthDict;
         
         let html = '';
+        
+        // 新增統一的統計按鈕區域（放在最上方）
+        html += `<div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">`;
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 熱量攝取統計</div>`;
+        
+        // 時間範圍選擇按鈕（類似股票介面）
+        html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
+        const timeRanges = [
+            { key: '1d', label: '1天', days: 1 },
+            { key: '1w', label: '1週', days: 7 },
+            { key: '1m', label: '1個月', days: 30 },
+            { key: '3m', label: '3個月', days: 90 },
+            { key: '6m', label: '6個月', days: 180 },
+            { key: '1y', label: '1年', days: 365 }
+        ];
+        
+        timeRanges.forEach((range, index) => {
+            const isActive = index === 2; // 預設選中1個月
+            html += `<button class="time-range-btn" data-range="${range.key}" data-days="${range.days}" 
+                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
+                    onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
+                    onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
+                    onclick="showCalorieStats('${range.key}', ${range.days})">${range.label}</button>`;
+        });
+        html += `</div>`;
+        
+        // 統計顯示區域
+        html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">`;
+        html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
+        html += `</div>`;
+        
+        html += `</div>`;
+        
         Object.keys(monthDict).sort().reverse().forEach(month => {
             html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
-            
-            // 新增統計按鈕區域
-            html += `<div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">`;
-            html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 熱量攝取統計</div>`;
-            
-            // 時間範圍選擇按鈕（類似股票介面）
-            html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
-            const timeRanges = [
-                { key: '1d', label: '1天', days: 1 },
-                { key: '1w', label: '1週', days: 7 },
-                { key: '1m', label: '1個月', days: 30 },
-                { key: '3m', label: '3個月', days: 90 },
-                { key: '6m', label: '6個月', days: 180 },
-                { key: '1y', label: '1年', days: 365 }
-            ];
-            
-            timeRanges.forEach((range, index) => {
-                const isActive = index === 2; // 預設選中1個月
-                html += `<button class="time-range-btn" data-range="${range.key}" data-days="${range.days}" data-month="${month}" 
-                        style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
-                        onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
-                        onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
-                        onclick="showCalorieStats('${range.key}', ${range.days}, '${month}')">${range.label}</button>`;
-            });
-            html += `</div>`;
-            
-            // 統計顯示區域
-            html += `<div id="stats-${month}" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">`;
-            html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
-            html += `</div>`;
-            
-            html += `</div>`;
             
             monthDict[month].sort((a,b)=>b.date.localeCompare(a.date)||b.time.localeCompare(a.time)).forEach(item => {
                 // 食物名稱換行，份量小字
@@ -3588,9 +3589,9 @@
     }
 
     // 熱量統計功能
-    window.showCalorieStats = function(rangeKey, days, month) {
+    window.showCalorieStats = function(rangeKey, days) {
         // 更新按鈕狀態
-        const buttons = document.querySelectorAll(`[data-month="${month}"]`);
+        const buttons = document.querySelectorAll('.time-range-btn');
         buttons.forEach(btn => {
             btn.style.background = '#e9ecef';
             btn.style.color = '#666';
@@ -3599,28 +3600,33 @@
         event.target.style.color = 'white';
         
         // 顯示統計區域
-        const statsDiv = document.getElementById(`stats-${month}`);
+        const statsDiv = document.getElementById('global-stats');
         statsDiv.style.display = 'block';
         statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
         
         // 生成圖表
         setTimeout(() => {
-            renderCalorieChart(rangeKey, days, month);
+            renderCalorieChart(rangeKey, days);
         }, 100);
     };
     
     // 渲染熱量圖表
-    function renderCalorieChart(rangeKey, days, month) {
-        const statsDiv = document.getElementById(`stats-${month}`);
-        const monthData = window.globalMonthDict[month];
+    function renderCalorieChart(rangeKey, days) {
+        const statsDiv = document.getElementById('global-stats');
+        const monthDict = window.globalMonthDict;
         
-        if (!monthData || monthData.length === 0) {
-            statsDiv.innerHTML = '<div style="text-align: center; color: #666;">該月份無飲食記錄</div>';
+        if (!monthDict || Object.keys(monthDict).length === 0) {
+            statsDiv.innerHTML = '<div style="text-align: center; color: #666;">無飲食記錄</div>';
             return;
         }
         
-        console.log(`原始數據: ${monthData.length} 筆`);
-        console.log(`原始數據範例:`, monthData.slice(0, 3));
+        // 合併所有月份的數據
+        let allData = [];
+        Object.values(monthDict).forEach(monthData => {
+            allData = allData.concat(monthData);
+        });
+        
+        console.log(`合併後總數據: ${allData.length} 筆`);
         
         // 計算日期範圍
         const endDate = new Date();
@@ -3634,7 +3640,7 @@
         console.log(`過濾條件: ${startDateStr} 到 ${endDateStr}, 天數: ${days}`);
         
         // 過濾指定日期範圍的數據
-        const filteredData = monthData.filter(item => {
+        const filteredData = allData.filter(item => {
             const itemDate = item.date; // item.date 已經是 YYYY-MM-DD 格式
             const isInRange = itemDate >= startDateStr && itemDate <= endDateStr;
             if (isInRange) {
@@ -3712,7 +3718,7 @@
                 
                 <!-- 圖表容器 -->
                 <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <canvas id="calorie-chart-${month}" width="400" height="200"></canvas>
+                    <canvas id="global-calorie-chart" width="400" height="200"></canvas>
                 </div>
                 
                 <!-- 圖例 -->
@@ -3726,23 +3732,18 @@
         `;
         
         // 渲染Chart.js圖表
-        const ctx = document.getElementById(`calorie-chart-${month}`).getContext('2d');
+        const ctx = document.getElementById('global-calorie-chart').getContext('2d');
         
         // 銷毀舊圖表實例（如果存在）
-        if (window.calorieChartInstances && window.calorieChartInstances[month]) {
-            window.calorieChartInstances[month].destroy();
-        }
-        
-        // 初始化圖表實例陣列
-        if (!window.calorieChartInstances) {
-            window.calorieChartInstances = {};
+        if (window.globalCalorieChartInstance) {
+            window.globalCalorieChartInstance.destroy();
         }
         
         // 計算Y軸範圍
         const yMin = Math.max(0, Math.floor(minCalories * 0.8));
         const yMax = Math.ceil(maxCalories * 1.2);
         
-        window.calorieChartInstances[month] = new Chart(ctx, {
+        window.globalCalorieChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
