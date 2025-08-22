@@ -2510,6 +2510,10 @@
             diaryDiv.innerHTML = '<div style="color:#888;">查無飲食紀錄</div>';
             return;
         }
+        
+        // 將 monthDict 設為全域變數，供統計函數使用
+        window.globalMonthDict = monthDict;
+        
         let html = '';
         Object.keys(monthDict).sort().reverse().forEach(month => {
             html += `<h3 style="color:#2c5282;margin-top:18px;">${month.replace('-', '年')}月</h3>`;
@@ -3608,7 +3612,7 @@
     // 計算熱量統計
     function calculateCalorieStats(rangeKey, days, month) {
         const statsDiv = document.getElementById(`stats-${month}`);
-        const monthData = monthDict[month];
+        const monthData = window.globalMonthDict[month];
         
         if (!monthData || monthData.length === 0) {
             statsDiv.innerHTML = '<div style="text-align: center; color: #666;">該月份無飲食記錄</div>';
