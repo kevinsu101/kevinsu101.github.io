@@ -3601,16 +3601,16 @@
         // 顯示統計區域
         const statsDiv = document.getElementById(`stats-${month}`);
         statsDiv.style.display = 'block';
-        statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">計算統計中...</div>';
+        statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
         
-        // 計算統計數據
+        // 生成圖表
         setTimeout(() => {
-            calculateCalorieStats(rangeKey, days, month);
+            renderCalorieChart(rangeKey, days, month);
         }, 100);
     };
     
-    // 計算熱量統計
-    function calculateCalorieStats(rangeKey, days, month) {
+    // 渲染熱量圖表
+    function renderCalorieChart(rangeKey, days, month) {
         const statsDiv = document.getElementById(`stats-${month}`);
         const monthData = window.globalMonthDict[month];
         
@@ -3635,23 +3635,28 @@
             return;
         }
         
+        // 按日期排序
+        filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        // 準備圖表數據
+        const labels = filteredData.map(item => item.date);
+        const calorieData = filteredData.map(item => item.total_cal);
+        
         // 計算統計數據
         const totalCalories = filteredData.reduce((sum, item) => sum + item.total_cal, 0);
         const avgCalories = Math.round(totalCalories / filteredData.length);
-        const maxCalories = Math.max(...filteredData.map(item => item.total_cal));
-        const minCalories = Math.min(...filteredData.map(item => item.total_cal));
+        const maxCalories = Math.max(...calorieData);
+        const minCalories = Math.min(...calorieData);
+        const lastCalories = calorieData[calorieData.length - 1];
         
-        // 計算營養素總量
-        const totalCarb = filteredData.reduce((sum, item) => sum + item.total_carb, 0);
-        const totalPro = filteredData.reduce((sum, item) => sum + item.total_pro, 0);
-        const totalFat = filteredData.reduce((sum, item) => sum + item.total_fat, 0);
-        
-        // 生成統計顯示
+        // 生成圖表HTML
         const timeLabel = getTimeRangeLabel(rangeKey, days);
         statsDiv.innerHTML = `
-            <div style="margin-bottom: 15px;">
-                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.05em; margin-bottom: 10px;">${timeLabel}熱量統計</div>
-                <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 15px;">
+            <div style="margin-bottom: 20px;">
+                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}熱量走勢圖</div>
+                
+                <!-- 統計摘要 -->
+                <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                     <div>
                         <div style="font-size: 1.2em; font-weight: 700; color: #e57373;">${totalCalories}</div>
                         <div style="font-size: 0.85em; color: #666;">總熱量 (kcal)</div>
@@ -3664,41 +3669,145 @@
                         <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${filteredData.length}</div>
                         <div style="font-size: 0.85em; color: #666;">餐次數</div>
                     </div>
-                </div>
-            </div>
-            
-            <div style="margin-bottom: 15px;">
-                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1em; margin-bottom: 10px;">熱量範圍</div>
-                <div style="display: flex; justify-content: space-around; text-align: center;">
                     <div>
-                        <div style="font-size: 1.1em; font-weight: 700; color: #4caf50;">${maxCalories}</div>
-                        <div style="font-size: 0.85em; color: #666;">最高 (kcal)</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.1em; font-weight: 700; color: #ff9800;">${minCalories}</div>
-                        <div style="font-size: 0.85em; color: #666;">最低 (kcal)</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">最新 (kcal)</div>
                     </div>
                 </div>
-            </div>
-            
-            <div>
-                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1em; margin-bottom: 10px;">營養素總量</div>
-                <div style="display: flex; justify-content: space-around; text-align: center;">
-                    <div>
-                        <div style="font-size: 1.1em; font-weight: 700; color: #4fc3f7;">${Math.round(totalCarb)}</div>
-                        <div style="font-size: 0.85em; color: #666;">碳水 (g)</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.1em; font-weight: 700; color: #ffb74d;">${Math.round(totalPro)}</div>
-                        <div style="font-size: 0.85em; color: #666;">蛋白質 (g)</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.1em; font-weight: 700; color: #ba68c8;">${Math.round(totalFat)}</div>
-                        <div style="font-size: 0.85em; color: #666;">脂肪 (g)</div>
+                
+                <!-- 圖表容器 -->
+                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                    <canvas id="calorie-chart-${month}" width="400" height="200"></canvas>
+                </div>
+                
+                <!-- 圖例 -->
+                <div style="margin-top: 15px; text-align: center;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 8px;">
+                        <div style="width: 16px; height: 3px; background: #e57373;"></div>
+                        <span style="font-size: 0.9em; color: #666;">熱量變化趨勢</span>
                     </div>
                 </div>
             </div>
         `;
+        
+        // 渲染Chart.js圖表
+        const ctx = document.getElementById(`calorie-chart-${month}`).getContext('2d');
+        
+        // 銷毀舊圖表實例（如果存在）
+        if (window.calorieChartInstances && window.calorieChartInstances[month]) {
+            window.calorieChartInstances[month].destroy();
+        }
+        
+        // 初始化圖表實例陣列
+        if (!window.calorieChartInstances) {
+            window.calorieChartInstances = {};
+        }
+        
+        // 計算Y軸範圍
+        const yMin = Math.max(0, Math.floor(minCalories * 0.8));
+        const yMax = Math.ceil(maxCalories * 1.2);
+        
+        window.calorieChartInstances[month] = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: '熱量 (kcal)',
+                    data: calorieData,
+                    borderColor: '#e57373',
+                    backgroundColor: 'rgba(229, 115, 115, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointHoverRadius: 6,
+                    pointBackgroundColor: '#e57373',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        titleColor: '#fff',
+                        bodyColor: '#fff',
+                        borderColor: '#e57373',
+                        borderWidth: 1,
+                        cornerRadius: 8,
+                        displayColors: false,
+                        callbacks: {
+                            title: function(context) {
+                                return `日期: ${context[0].label}`;
+                            },
+                            label: function(context) {
+                                return `熱量: ${context.parsed.y} kcal`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        title: {
+                            display: true,
+                            text: '日期',
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            maxRotation: 45,
+                            minRotation: 45
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: '熱量 (kcal)',
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: 'bold'
+                            }
+                        },
+                        min: yMin,
+                        max: yMax,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            callback: function(value) {
+                                return value.toLocaleString();
+                            }
+                        }
+                    }
+                },
+                interaction: {
+                    intersect: false,
+                    mode: 'index'
+                },
+                elements: {
+                    point: {
+                        hoverBackgroundColor: '#e57373',
+                        hoverBorderColor: '#fff'
+                    }
+                }
+            }
+        });
     }
     
     // 取得時間範圍標籤
