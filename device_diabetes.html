@@ -3720,9 +3720,23 @@
             });
             calorieData = filteredData.map(item => item.total_cal);
         } else {
-            // 多日：顯示日期
-            labels = filteredData.map(item => item.date);
-            calorieData = filteredData.map(item => item.total_cal);
+            // 多日：按日期分組，計算每天總熱量
+            const dailyCalories = {};
+            
+            filteredData.forEach(item => {
+                const date = item.date;
+                if (!dailyCalories[date]) {
+                    dailyCalories[date] = 0;
+                }
+                dailyCalories[date] += item.total_cal;
+            });
+            
+            // 按日期排序
+            const sortedDates = Object.keys(dailyCalories).sort();
+            labels = sortedDates;
+            calorieData = sortedDates.map(date => dailyCalories[date]);
+            
+            console.log('每日熱量統計:', dailyCalories);
         }
         
         // 計算統計數據
@@ -3731,6 +3745,9 @@
         const maxCalories = Math.max(...calorieData);
         const minCalories = Math.min(...calorieData);
         const lastCalories = calorieData[calorieData.length - 1];
+        
+        // 計算每日平均熱量（多日統計）
+        const dailyAvgCalories = days > 1 ? Math.round(totalCalories / labels.length) : avgCalories;
         
         // 生成圖表HTML
         const timeLabel = getTimeRangeLabel(rangeKey, days);
@@ -3744,19 +3761,19 @@
                 <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                     <div>
                         <div style="font-size: 1.2em; font-weight: 700; color: #e57373;">${totalCalories}</div>
-                        <div style="font-size: 0.85em; color: #666;">總熱量 (kcal)</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '總熱量' : '期間總熱量'} (kcal)</div>
                     </div>
                     <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${avgCalories}</div>
-                        <div style="font-size: 0.85em; color: #666;">平均/餐 (kcal)</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${days === 1 ? avgCalories : dailyAvgCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '平均/餐' : '平均/天'} (kcal)</div>
                     </div>
                     <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${filteredData.length}</div>
-                        <div style="font-size: 0.85em; color: #666;">餐次數</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? filteredData.length : labels.length}</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '餐次數' : '天數'}</div>
                     </div>
                     <div>
                         <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastCalories}</div>
-                        <div style="font-size: 0.85em; color: #666;">最新 (kcal)</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '最新' : '最新日'} (kcal)</div>
                     </div>
                 </div>
                 
@@ -3834,7 +3851,11 @@
                                 }
                             },
                             label: function(context) {
-                                return `熱量: ${context.parsed.y} kcal`;
+                                if (days === 1) {
+                                    return `熱量: ${context.parsed.y} kcal`;
+                                } else {
+                                    return `當日總熱量: ${context.parsed.y} kcal`;
+                                }
                             }
                         }
                     }
