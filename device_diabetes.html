@@ -3624,11 +3624,20 @@
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - days);
         
+        // 格式化日期為 YYYY-MM-DD 格式用於比較
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        console.log(`過濾條件: ${startDateStr} 到 ${endDateStr}, 天數: ${days}`);
+        
         // 過濾指定日期範圍的數據
         const filteredData = monthData.filter(item => {
-            const itemDate = new Date(item.date);
-            return itemDate >= startDate && itemDate <= endDate;
+            const itemDate = item.date; // item.date 已經是 YYYY-MM-DD 格式
+            console.log(`檢查項目: ${itemDate}, 是否在範圍內: ${itemDate >= startDateStr && itemDate <= endDateStr}`);
+            return itemDate >= startDateStr && itemDate <= endDateStr;
         });
+        
+        console.log(`過濾前數據量: ${monthData.length}, 過濾後數據量: ${filteredData.length}`);
         
         if (filteredData.length === 0) {
             statsDiv.innerHTML = `<div style="text-align: center; color: #666;">過去${days}天內無飲食記錄</div>`;
@@ -3636,7 +3645,7 @@
         }
         
         // 按日期排序
-        filteredData.sort((a, b) => new Date(a.date) - new Date(b.date));
+        filteredData.sort((a, b) => a.date.localeCompare(b.date));
         
         // 準備圖表數據
         const labels = filteredData.map(item => item.date);
