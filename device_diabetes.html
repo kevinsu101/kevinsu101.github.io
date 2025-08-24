@@ -3772,12 +3772,12 @@
         statsDiv.style.display = 'block';
         if (statsContent) {
             statsContent.style.display = 'block';
+            statsContent.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
         }
         if (toggleBtn) {
             toggleBtn.textContent = '▼';
             toggleBtn.style.transform = 'rotate(0deg)';
         }
-        statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
         
         // 生成圖表
         setTimeout(() => {
