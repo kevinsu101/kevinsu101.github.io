@@ -970,6 +970,24 @@
         <!-- 輸出區塊 -->
         <div class="output-section">
             <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;"> 分析結果</h3>
+            
+            <!-- 動態說明區塊 -->
+            <div id="analysisDescription" style="margin-bottom: 15px; padding: 12px 15px; border-radius: 8px; background: linear-gradient(135deg, #e3f2fd, #f3e5f5); border-left: 4px solid #2196f3; font-size: 0.95em; color: #1976d2;">
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 1.1em;">🔍</span>
+                    <span style="font-weight: 600;">食物辨識階段</span>
+                </div>
+                <div style="color: #424242; line-height: 1.4;">
+                    系統將自動識別您輸入的食物種類和份量，您可以：
+                    <ul style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>修改識別出的食物名稱和份量</li>
+                        <li>調整飲食時間</li>
+                        <li>選擇要分析的項目</li>
+                        <li>手動新增其他食物</li>
+                    </ul>
+                </div>
+            </div>
+            
             <div id="analysisOutput" style="color: #666; text-align: center; padding: 40px 20px;">
                 請先輸入食物資訊或圖片確認食物總類與份量
             </div>
@@ -1943,6 +1961,9 @@
                 return;
             }
 
+            // 更新說明為食物辨識階段
+            updateAnalysisDescription('identify');
+            
             // 顯示分析中狀態
             analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在辨識食物...</div>';
 
@@ -1976,6 +1997,50 @@
                 analysisOutput.innerHTML = `<div style="color: #dc3545; text-align: center; padding: 40px 20px;">❌ 傳送失敗：${error.message}</div>`;
             }
         });
+    }
+
+    // 更新分析說明
+    function updateAnalysisDescription(stage) {
+        const descriptionDiv = document.getElementById('analysisDescription');
+        if (!descriptionDiv) return;
+        
+        if (stage === 'identify') {
+            descriptionDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 1.1em;">🔍</span>
+                    <span style="font-weight: 600;">食物辨識階段</span>
+                </div>
+                <div style="color: #424242; line-height: 1.4;">
+                    系統將自動識別您輸入的食物種類和份量，您可以：
+                    <ul style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>修改識別出的食物名稱和份量</li>
+                        <li>調整飲食時間</li>
+                        <li>選擇要分析的項目</li>
+                        <li>手動新增其他食物</li>
+                    </ul>
+                </div>
+            `;
+            descriptionDiv.style.background = 'linear-gradient(135deg, #e3f2fd, #f3e5f5)';
+            descriptionDiv.style.borderLeftColor = '#2196f3';
+        } else if (stage === 'nutrition') {
+            descriptionDiv.innerHTML = `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+                    <span style="font-size: 1.1em;">📊</span>
+                    <span style="font-weight: 600;">營養素分析階段</span>
+                </div>
+                <div style="color: #424242; line-height: 1.4;">
+                    系統正在分析您選擇食物的營養成分，您可以：
+                    <ul style="margin: 8px 0 0 20px; padding: 0;">
+                        <li>調整食物份數來重新計算營養素</li>
+                        <li>手動修改營養素數值</li>
+                        <li>選擇要上傳到飲食日誌的項目</li>
+                        <li>查看營養建議</li>
+                    </ul>
+                </div>
+            `;
+            descriptionDiv.style.background = 'linear-gradient(135deg, #fff3e0, #fff8e1)';
+            descriptionDiv.style.borderLeftColor = '#ff9800';
+        }
     }
 
     // 處理食物辨識結果（第一階段）
@@ -2164,6 +2229,8 @@
 
         // 綁定取消按鈕事件
         document.getElementById('cancelFoodBtn').addEventListener('click', () => {
+            // 重置說明為初始狀態
+            updateAnalysisDescription('identify');
             analysisOutput.innerHTML = '<div style="color: #666; text-align: center; padding: 40px 20px;">等待輸入食物資訊進行分析...</div>';
         });
 
@@ -2229,6 +2296,9 @@
             userTime = normalized.length === 16 ? `${normalized}:00` : normalized; // 若無秒補 :00
         }
 
+        // 更新說明為營養素分析階段
+        updateAnalysisDescription('nutrition');
+        
         // 再顯示分析中狀態
         analysisOutput.innerHTML = '<div style="color: #007bff; text-align: center; padding: 40px 20px;">🔍 正在分析營養成分...</div>';
 
