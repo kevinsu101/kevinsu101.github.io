@@ -2626,17 +2626,17 @@
         ];
         
         nutritionTypes.forEach((nutrition, index) => {
-            const isActive = index === 0; // 預設選中熱量
             html += `<button class="nutrition-type-btn" data-type="${nutrition.key}" data-unit="${nutrition.unit}" 
-                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: ' + nutrition.color + '; color: white;' : 'background: #e9ecef; color: #666;'}" 
-                    onmouseover="this.style.background='${isActive ? nutrition.color : '#dee2e6'}'" 
-                    onmouseout="this.style.background='${isActive ? nutrition.color : '#e9ecef'}'"
-                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}', '1m', 30)">${nutrition.label}</button>`;
+                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; background: #e9ecef; color: #666;" 
+                    onmouseover="this.style.background='#dee2e6'" 
+                    onmouseout="this.style.background='#e9ecef'"
+                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}')">${nutrition.label}</button>`;
         });
         html += `</div>`;
         
         // 時間範圍選擇按鈕（類似股票介面）
-        html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
+        html += `<div id="time-range-container" style="display: none; margin-bottom: 15px;">`;
+        html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap;">`;
         const timeRanges = [
             { key: '1d', label: '1天', days: 1 },
             { key: '1w', label: '1週', days: 7 },
@@ -2647,17 +2647,18 @@
         ];
         
         timeRanges.forEach((range, index) => {
-            const isActive = index === 2; // 預設選中1個月
             html += `<button class="time-range-btn" data-range="${range.key}" data-days="${range.days}" 
-                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
-                    onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
-                    onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
+                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; background: #e9ecef; color: #666;" 
+                    onmouseover="this.style.background='#dee2e6'" 
+                    onmouseout="this.style.background='#e9ecef'"
                     onclick="updateTimeRange('${range.key}', ${range.days})">${range.label}</button>`;
         });
         html += `</div>`;
+        html += `</div>`;
         
         // 統計顯示區域
-        html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">`;
+        html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6; position: relative;">`;
+        html += `<button id="hide-stats-btn" onclick="hideNutritionStats()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">×</button>`;
         html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
         html += `</div>`;
         
@@ -3734,6 +3735,19 @@
             btn.style.color = '#666';
         });
         
+        // 找到對應的營養素按鈕並更新狀態
+        const nutritionBtn = document.querySelector(`[data-type="${nutritionType}"]`);
+        if (nutritionBtn) {
+            nutritionBtn.style.background = color;
+            nutritionBtn.style.color = 'white';
+        }
+        
+        // 顯示時間範圍選擇器
+        const timeRangeContainer = document.getElementById('time-range-container');
+        if (timeRangeContainer) {
+            timeRangeContainer.style.display = 'block';
+        }
+        
         // 更新時間範圍按鈕狀態
         const timeButtons = document.querySelectorAll('.time-range-btn');
         timeButtons.forEach(btn => {
@@ -3741,14 +3755,8 @@
             btn.style.color = '#666';
         });
         
-        // 找到對應的按鈕並更新狀態
-        const nutritionBtn = document.querySelector(`[data-type="${nutritionType}"]`);
+        // 找到對應的時間範圍按鈕並更新狀態
         const timeBtn = document.querySelector(`[data-range="${rangeKey}"]`);
-        
-        if (nutritionBtn) {
-            nutritionBtn.style.background = color;
-            nutritionBtn.style.color = 'white';
-        }
         if (timeBtn) {
             timeBtn.style.background = '#1976d2';
             timeBtn.style.color = 'white';
@@ -3769,6 +3777,44 @@
     window.updateTimeRange = function(rangeKey, days) {
         const current = window.currentNutritionStats;
         showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
+    };
+    
+    // 隱藏營養素統計函數
+    window.hideNutritionStats = function() {
+        // 隱藏統計區域
+        const statsDiv = document.getElementById('global-stats');
+        if (statsDiv) {
+            statsDiv.style.display = 'none';
+        }
+        
+        // 隱藏時間範圍選擇器
+        const timeRangeContainer = document.getElementById('time-range-container');
+        if (timeRangeContainer) {
+            timeRangeContainer.style.display = 'none';
+        }
+        
+        // 重置營養素按鈕狀態
+        const nutritionButtons = document.querySelectorAll('.nutrition-type-btn');
+        nutritionButtons.forEach(btn => {
+            btn.style.background = '#e9ecef';
+            btn.style.color = '#666';
+        });
+        
+        // 重置時間範圍按鈕狀態
+        const timeButtons = document.querySelectorAll('.time-range-btn');
+        timeButtons.forEach(btn => {
+            btn.style.background = '#e9ecef';
+            btn.style.color = '#666';
+        });
+        
+        // 重置全域變數
+        window.currentNutritionStats = {
+            type: 'cal',
+            unit: 'kcal',
+            color: '#e57373',
+            rangeKey: '1m',
+            days: 30
+        };
     };
     
     // 保持向後兼容
