@@ -2631,7 +2631,7 @@
                     style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: ' + nutrition.color + '; color: white;' : 'background: #e9ecef; color: #666;'}" 
                     onmouseover="this.style.background='${isActive ? nutrition.color : '#dee2e6'}'" 
                     onmouseout="this.style.background='${isActive ? nutrition.color : '#e9ecef'}'"
-                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}')">${nutrition.label}</button>`;
+                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}', '1m', 30)">${nutrition.label}</button>`;
         });
         html += `</div>`;
         
@@ -3705,6 +3705,10 @@
 
     // 營養素統計功能
     window.showNutritionStats = function(nutritionType, unit, color, rangeKey, days) {
+        // 設置預設值
+        rangeKey = rangeKey || '1m';
+        days = days || 30;
+        
         // 更新營養素按鈕狀態
         const nutritionButtons = document.querySelectorAll('.nutrition-type-btn');
         nutritionButtons.forEach(btn => {
@@ -3769,7 +3773,10 @@
         // 計算日期範圍
         const endDate = new Date();
         const startDate = new Date();
-        startDate.setDate(endDate.getDate() - days);
+        
+        // 確保 days 是有效數字
+        const validDays = parseInt(days) || 30;
+        startDate.setDate(endDate.getDate() - validDays);
         
         // 格式化日期為 YYYY-MM-DD 格式用於比較
         const startDateStr = startDate.getFullYear() + '-' + 
