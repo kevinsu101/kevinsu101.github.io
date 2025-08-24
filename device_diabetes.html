@@ -2614,26 +2614,7 @@
         
         // 新增統一的統計按鈕區域（放在最上方）
         html += `<div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">`;
-        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 營養素攝取統計</div>`;
-        
-        // 營養素選擇按鈕
-        html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
-        const nutritionTypes = [
-            { key: 'cal', label: '熱量', color: '#e57373', unit: 'kcal' },
-            { key: 'carb', label: '碳水化合物', color: '#4fc3f7', unit: 'g' },
-            { key: 'pro', label: '蛋白質', color: '#ffb74d', unit: 'g' },
-            { key: 'fat', label: '脂肪', color: '#ba68c8', unit: 'g' }
-        ];
-        
-        nutritionTypes.forEach((nutrition, index) => {
-            const isActive = index === 0; // 預設選中熱量
-            html += `<button class="nutrition-type-btn" data-type="${nutrition.key}" data-unit="${nutrition.unit}" 
-                    style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: ' + nutrition.color + '; color: white;' : 'background: #e9ecef; color: #666;'}" 
-                    onmouseover="this.style.background='${isActive ? nutrition.color : '#dee2e6'}'" 
-                    onmouseout="this.style.background='${isActive ? nutrition.color : '#e9ecef'}'"
-                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}', '1m', 30)">${nutrition.label}</button>`;
-        });
-        html += `</div>`;
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 熱量攝取統計</div>`;
         
         // 時間範圍選擇按鈕（類似股票介面）
         html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
@@ -2652,7 +2633,7 @@
                     style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
                     onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
                     onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
-                    onclick="showNutritionStats('cal', 'kcal', '#e57373', '${range.key}', ${range.days})">${range.label}</button>`;
+                    onclick="showCalorieStats('${range.key}', ${range.days})">${range.label}</button>`;
         });
         html += `</div>`;
         
@@ -3703,38 +3684,16 @@
         // no-op
     }
 
-    // 營養素統計功能
-    window.showNutritionStats = function(nutritionType, unit, color, rangeKey, days) {
-        // 設置預設值
-        rangeKey = rangeKey || '1m';
-        days = days || 30;
-        
-        // 更新營養素按鈕狀態
-        const nutritionButtons = document.querySelectorAll('.nutrition-type-btn');
-        nutritionButtons.forEach(btn => {
+    // 熱量統計功能
+    window.showCalorieStats = function(rangeKey, days) {
+        // 更新按鈕狀態
+        const buttons = document.querySelectorAll('.time-range-btn');
+        buttons.forEach(btn => {
             btn.style.background = '#e9ecef';
             btn.style.color = '#666';
         });
-        
-        // 更新時間範圍按鈕狀態
-        const timeButtons = document.querySelectorAll('.time-range-btn');
-        timeButtons.forEach(btn => {
-            btn.style.background = '#e9ecef';
-            btn.style.color = '#666';
-        });
-        
-        // 找到對應的按鈕並更新狀態
-        const nutritionBtn = document.querySelector(`[data-type="${nutritionType}"]`);
-        const timeBtn = document.querySelector(`[data-range="${rangeKey}"]`);
-        
-        if (nutritionBtn) {
-            nutritionBtn.style.background = color;
-            nutritionBtn.style.color = 'white';
-        }
-        if (timeBtn) {
-            timeBtn.style.background = '#1976d2';
-            timeBtn.style.color = 'white';
-        }
+        event.target.style.background = '#1976d2';
+        event.target.style.color = 'white';
         
         // 顯示統計區域
         const statsDiv = document.getElementById('global-stats');
@@ -3743,17 +3702,12 @@
         
         // 生成圖表
         setTimeout(() => {
-            renderNutritionChart(nutritionType, unit, color, rangeKey, days);
+            renderCalorieChart(rangeKey, days);
         }, 100);
     };
     
-    // 保持向後兼容
-    window.showCalorieStats = function(rangeKey, days) {
-        showNutritionStats('cal', 'kcal', '#e57373', rangeKey, days);
-    };
-    
-    // 渲染營養素圖表
-    function renderNutritionChart(nutritionType, unit, color, rangeKey, days) {
+    // 渲染熱量圖表
+    function renderCalorieChart(rangeKey, days) {
         const statsDiv = document.getElementById('global-stats');
         const monthDict = window.globalMonthDict;
         
@@ -3773,18 +3727,11 @@
         // 計算日期範圍
         const endDate = new Date();
         const startDate = new Date();
-        
-        // 確保 days 是有效數字
-        const validDays = parseInt(days) || 30;
-        startDate.setDate(endDate.getDate() - validDays);
+        startDate.setDate(endDate.getDate() - days);
         
         // 格式化日期為 YYYY-MM-DD 格式用於比較
-        const startDateStr = startDate.getFullYear() + '-' + 
-                           String(startDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                           String(startDate.getDate()).padStart(2, '0');
-        const endDateStr = endDate.getFullYear() + '-' + 
-                          String(endDate.getMonth() + 1).padStart(2, '0') + '-' + 
-                          String(endDate.getDate()).padStart(2, '0');
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
         
         console.log(`過濾條件: ${startDateStr} 到 ${endDateStr}, 天數: ${days}`);
         
@@ -3792,6 +3739,9 @@
         const filteredData = allData.filter(item => {
             const itemDate = item.date; // item.date 已經是 YYYY-MM-DD 格式
             const isInRange = itemDate >= startDateStr && itemDate <= endDateStr;
+            if (isInRange) {
+                console.log(`包含項目: ${itemDate} ${item.time} - ${item.total_cal}kcal`);
+            }
             return isInRange;
         });
         
@@ -3810,7 +3760,7 @@
         });
         
         // 準備圖表數據 - 根據時間範圍決定顯示格式
-        let labels, nutritionData;
+        let labels, calorieData;
         
         if (days === 1) {
             // 單日：顯示完整的飲食時間（包含日期和時間）
@@ -3820,73 +3770,36 @@
                 const minute = parseInt(time.split(':')[1]);
                 return `${item.date} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
             });
-            nutritionData = filteredData.map(item => {
-                switch(nutritionType) {
-                    case 'cal': return item.total_cal;
-                    case 'carb': return item.total_carb;
-                    case 'pro': return item.total_pro;
-                    case 'fat': return item.total_fat;
-                    default: return item.total_cal;
-                }
-            });
+            calorieData = filteredData.map(item => item.total_cal);
         } else {
-            // 多日：按日期分組，計算每天總營養素
-            const dailyNutrition = {};
+            // 多日：按日期分組，計算每天總熱量
+            const dailyCalories = {};
             
             filteredData.forEach(item => {
                 const date = item.date;
-                if (!dailyNutrition[date]) {
-                    dailyNutrition[date] = 0;
+                if (!dailyCalories[date]) {
+                    dailyCalories[date] = 0;
                 }
-                let nutritionValue = 0;
-                switch(nutritionType) {
-                    case 'cal': nutritionValue = item.total_cal; break;
-                    case 'carb': nutritionValue = item.total_carb; break;
-                    case 'pro': nutritionValue = item.total_pro; break;
-                    case 'fat': nutritionValue = item.total_fat; break;
-                    default: nutritionValue = item.total_cal; break;
-                }
-                dailyNutrition[date] += nutritionValue;
+                dailyCalories[date] += item.total_cal;
             });
             
             // 按日期排序
-            const sortedDates = Object.keys(dailyNutrition).sort();
+            const sortedDates = Object.keys(dailyCalories).sort();
             labels = sortedDates;
-            nutritionData = sortedDates.map(date => dailyNutrition[date]);
+            calorieData = sortedDates.map(date => dailyCalories[date]);
             
-            console.log(`每日${nutritionType}統計:`, dailyNutrition);
+            console.log('每日熱量統計:', dailyCalories);
         }
         
         // 計算統計數據
-        const totalNutrition = filteredData.reduce((sum, item) => {
-            let nutritionValue = 0;
-            switch(nutritionType) {
-                case 'cal': nutritionValue = item.total_cal; break;
-                case 'carb': nutritionValue = item.total_carb; break;
-                case 'pro': nutritionValue = item.total_pro; break;
-                case 'fat': nutritionValue = item.total_fat; break;
-                default: nutritionValue = item.total_cal; break;
-            }
-            return sum + nutritionValue;
-        }, 0);
+        const totalCalories = filteredData.reduce((sum, item) => sum + item.total_cal, 0);
+        const avgCalories = Math.round(totalCalories / filteredData.length);
+        const maxCalories = Math.max(...calorieData);
+        const minCalories = Math.min(...calorieData);
+        const lastCalories = calorieData[calorieData.length - 1];
         
-        const avgNutrition = Math.round(totalNutrition / filteredData.length);
-        const maxNutrition = Math.max(...nutritionData);
-        const minNutrition = Math.min(...nutritionData);
-        const lastNutrition = nutritionData[nutritionData.length - 1];
-        
-        // 計算每日平均營養素（多日統計）
-        const dailyAvgNutrition = days > 1 ? Math.round(totalNutrition / labels.length) : avgNutrition;
-        
-        // 獲取營養素名稱
-        const nutritionNames = {
-            'cal': '熱量',
-            'carb': '碳水化合物',
-            'pro': '蛋白質',
-            'fat': '脂肪'
-        };
-        
-        const nutritionName = nutritionNames[nutritionType] || '營養素';
+        // 計算每日平均熱量（多日統計）
+        const dailyAvgCalories = days > 1 ? Math.round(totalCalories / labels.length) : avgCalories;
         
         // 生成圖表HTML
         const timeLabel = getTimeRangeLabel(rangeKey, days);
@@ -3894,25 +3807,25 @@
         
         statsDiv.innerHTML = `
             <div style="margin-bottom: 20px;">
-                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}${nutritionName}走勢圖</div>
+                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}熱量走勢圖</div>
                 
                 <!-- 統計摘要 -->
                 <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
                     <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: ${color};">${totalNutrition.toFixed(2)}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? `總${nutritionName}` : `期間總${nutritionName}`} (${unit})</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #e57373;">${totalCalories.toFixed(2)}</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '總熱量' : '期間總熱量'} (kcal)</div>
                     </div>
                     <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${days === 1 ? avgNutrition : dailyAvgNutrition}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? `平均/餐` : `平均/天`} (${unit})</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${days === 1 ? avgCalories : dailyAvgCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '平均/餐' : '平均/天'} (kcal)</div>
                     </div>
                     <div>
                         <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? filteredData.length : labels.length}</div>
                         <div style="font-size: 0.85em; color: #666;">${days === 1 ? '餐次數' : '天數'}</div>
                     </div>
                     <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastNutrition}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '最新' : '最新日'} (${unit})</div>
+                        <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastCalories}</div>
+                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '最新' : '最新日'} (kcal)</div>
                     </div>
                 </div>
                 
@@ -3920,7 +3833,7 @@
                 <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                     <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
                         <div style="min-width: 600px; width: 100%;">
-                            <canvas id="global-nutrition-chart" width="600" height="300"></canvas>
+                            <canvas id="global-calorie-chart" width="600" height="300"></canvas>
                         </div>
                     </div>
                 </div>
@@ -3928,40 +3841,40 @@
                 <!-- 圖例 -->
                 <div style="margin-top: 15px; text-align: center;">
                     <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 8px;">
-                        <div style="width: 16px; height: 3px; background: ${color};"></div>
-                        <span style="font-size: 0.9em; color: #666;">${nutritionName}變化趨勢</span>
+                        <div style="width: 16px; height: 3px; background: #e57373;"></div>
+                        <span style="font-size: 0.9em; color: #666;">熱量變化趨勢</span>
                     </div>
                 </div>
             </div>
         `;
         
         // 渲染Chart.js圖表
-        const ctx = document.getElementById('global-nutrition-chart').getContext('2d');
+        const ctx = document.getElementById('global-calorie-chart').getContext('2d');
         
         // 銷毀舊圖表實例（如果存在）
-        if (window.globalNutritionChartInstance) {
-            window.globalNutritionChartInstance.destroy();
+        if (window.globalCalorieChartInstance) {
+            window.globalCalorieChartInstance.destroy();
         }
         
         // 計算Y軸範圍
-        const yMin = Math.max(0, Math.floor(minNutrition * 0.8));
-        const yMax = Math.ceil(maxNutrition * 1.2);
+        const yMin = Math.max(0, Math.floor(minCalories * 0.8));
+        const yMax = Math.ceil(maxCalories * 1.2);
         
-        window.globalNutritionChartInstance = new Chart(ctx, {
+        window.globalCalorieChartInstance = new Chart(ctx, {
             type: 'line',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: `${nutritionName} (${unit})`,
-                    data: nutritionData,
-                    borderColor: color,
-                    backgroundColor: color.replace(')', ', 0.1)').replace('rgb', 'rgba'),
+                    label: '熱量 (kcal)',
+                    data: calorieData,
+                    borderColor: '#e57373',
+                    backgroundColor: 'rgba(229, 115, 115, 0.1)',
                     borderWidth: 3,
                     fill: true,
                     tension: 0.4,
                     pointRadius: 4,
                     pointHoverRadius: 6,
-                    pointBackgroundColor: color,
+                    pointBackgroundColor: '#e57373',
                     pointBorderColor: '#fff',
                     pointBorderWidth: 2
                 }]
@@ -3977,7 +3890,7 @@
                         backgroundColor: 'rgba(0, 0, 0, 0.8)',
                         titleColor: '#fff',
                         bodyColor: '#fff',
-                        borderColor: color,
+                        borderColor: '#e57373',
                         borderWidth: 1,
                         cornerRadius: 8,
                         displayColors: false,
@@ -3991,9 +3904,9 @@
                             },
                             label: function(context) {
                                 if (days === 1) {
-                                    return `${nutritionName}: ${context.parsed.y} ${unit}`;
+                                    return `熱量: ${context.parsed.y} kcal`;
                                 } else {
-                                    return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
+                                    return `當日總熱量: ${context.parsed.y} kcal`;
                                 }
                             }
                         }
@@ -4036,7 +3949,7 @@
                     y: {
                         title: {
                             display: true,
-                            text: `${nutritionName} (${unit})`,
+                            text: '熱量 (kcal)',
                             color: '#666',
                             font: {
                                 size: 12,
@@ -4063,17 +3976,12 @@
                 },
                 elements: {
                     point: {
-                        hoverBackgroundColor: color,
+                        hoverBackgroundColor: '#e57373',
                         hoverBorderColor: '#fff'
                     }
                 }
             }
         });
-    }
-    
-    // 保持向後兼容的熱量圖表函數
-    function renderCalorieChart(rangeKey, days) {
-        renderNutritionChart('cal', 'kcal', '#e57373', rangeKey, days);
     }
     
     // 取得時間範圍標籤
