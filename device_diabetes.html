@@ -2652,7 +2652,7 @@
                     style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; ${isActive ? 'background: #1976d2; color: white;' : 'background: #e9ecef; color: #666;'}" 
                     onmouseover="this.style.background='${isActive ? '#1565c0' : '#dee2e6'}'" 
                     onmouseout="this.style.background='${isActive ? '#1976d2' : '#e9ecef'}'"
-                    onclick="showNutritionStats('cal', 'kcal', '#e57373', '${range.key}', ${range.days})">${range.label}</button>`;
+                    onclick="updateTimeRange('${range.key}', ${range.days})">${range.label}</button>`;
         });
         html += `</div>`;
         
@@ -3703,11 +3703,29 @@
         // no-op
     }
 
+    // 全域變數追蹤當前選擇的營養素
+    window.currentNutritionStats = {
+        type: 'cal',
+        unit: 'kcal',
+        color: '#e57373',
+        rangeKey: '1m',
+        days: 30
+    };
+
     // 營養素統計功能
     window.showNutritionStats = function(nutritionType, unit, color, rangeKey, days) {
         // 設置預設值
         rangeKey = rangeKey || '1m';
         days = days || 30;
+        
+        // 更新全域變數
+        window.currentNutritionStats = {
+            type: nutritionType,
+            unit: unit,
+            color: color,
+            rangeKey: rangeKey,
+            days: days
+        };
         
         // 更新營養素按鈕狀態
         const nutritionButtons = document.querySelectorAll('.nutrition-type-btn');
@@ -3745,6 +3763,12 @@
         setTimeout(() => {
             renderNutritionChart(nutritionType, unit, color, rangeKey, days);
         }, 100);
+    };
+    
+    // 更新時間範圍函數
+    window.updateTimeRange = function(rangeKey, days) {
+        const current = window.currentNutritionStats;
+        showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
     
     // 保持向後兼容
