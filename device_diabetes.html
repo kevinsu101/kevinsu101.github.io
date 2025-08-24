@@ -2658,8 +2658,10 @@
         
         // 統計顯示區域
         html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6; position: relative;">`;
-        html += `<button id="hide-stats-btn" onclick="hideNutritionStats()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center;">×</button>`;
+        html += `<button id="toggle-stats-btn" onclick="toggleNutritionStats()" style="position: absolute; top: 10px; right: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;">▼</button>`;
+        html += `<div id="stats-content" style="display: block;">`;
         html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
+        html += `</div>`;
         html += `</div>`;
         
         html += `</div>`;
@@ -3764,7 +3766,17 @@
         
         // 顯示統計區域
         const statsDiv = document.getElementById('global-stats');
+        const statsContent = document.getElementById('stats-content');
+        const toggleBtn = document.getElementById('toggle-stats-btn');
+        
         statsDiv.style.display = 'block';
+        if (statsContent) {
+            statsContent.style.display = 'block';
+        }
+        if (toggleBtn) {
+            toggleBtn.textContent = '▼';
+            toggleBtn.style.transform = 'rotate(0deg)';
+        }
         statsDiv.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
         
         // 生成圖表
@@ -3779,7 +3791,27 @@
         showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
     
-    // 隱藏營養素統計函數
+    // 切換營養素統計顯示函數
+    window.toggleNutritionStats = function() {
+        const statsContent = document.getElementById('stats-content');
+        const toggleBtn = document.getElementById('toggle-stats-btn');
+        
+        if (statsContent && toggleBtn) {
+            if (statsContent.style.display === 'none') {
+                // 展開
+                statsContent.style.display = 'block';
+                toggleBtn.textContent = '▼';
+                toggleBtn.style.transform = 'rotate(0deg)';
+            } else {
+                // 收合
+                statsContent.style.display = 'none';
+                toggleBtn.textContent = '▲';
+                toggleBtn.style.transform = 'rotate(180deg)';
+            }
+        }
+    };
+    
+    // 隱藏營養素統計函數（完全隱藏）
     window.hideNutritionStats = function() {
         // 隱藏統計區域
         const statsDiv = document.getElementById('global-stats');
@@ -3962,48 +3994,51 @@
         const timeLabel = getTimeRangeLabel(rangeKey, days);
         const xAxisLabel = days === 1 ? '時間' : '日期';
         
-        statsDiv.innerHTML = `
-            <div style="margin-bottom: 20px;">
-                <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}${nutritionName}走勢圖</div>
-                
-                <!-- 統計摘要 -->
-                <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
-                    <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: ${color};">${totalNutrition.toFixed(2)}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? `總${nutritionName}` : `期間總${nutritionName}`} (${unit})</div>
+        const statsContent = document.getElementById('stats-content');
+        if (statsContent) {
+            statsContent.innerHTML = `
+                <div style="margin-bottom: 20px;">
+                    <div style="text-align: center; font-weight: 600; color: #2c5282; font-size: 1.1em; margin-bottom: 15px;">${timeLabel}${nutritionName}走勢圖</div>
+                    
+                    <!-- 統計摘要 -->
+                    <div style="display: flex; justify-content: space-around; text-align: center; margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 10px;">
+                        <div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: ${color};">${totalNutrition.toFixed(2)}</div>
+                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? `總${nutritionName}` : `期間總${nutritionName}`} (${unit})</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${days === 1 ? avgNutrition : dailyAvgNutrition}</div>
+                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? `平均/餐` : `平均/天`} (${unit})</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? filteredData.length : labels.length}</div>
+                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? '餐次數' : '天數'}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastNutrition}</div>
+                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? '最新' : '最新日'} (${unit})</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #4fc3f7;">${days === 1 ? avgNutrition : dailyAvgNutrition}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? `平均/餐` : `平均/天`} (${unit})</div>
+                    
+                    <!-- 圖表容器 -->
+                    <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                        <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <div style="min-width: 600px; width: 100%;">
+                                <canvas id="global-nutrition-chart" width="600" height="300"></canvas>
+                            </div>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? filteredData.length : labels.length}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '餐次數' : '天數'}</div>
-                    </div>
-                    <div>
-                        <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastNutrition}</div>
-                        <div style="font-size: 0.85em; color: #666;">${days === 1 ? '最新' : '最新日'} (${unit})</div>
-                    </div>
-                </div>
-                
-                <!-- 圖表容器 -->
-                <div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                    <div style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                        <div style="min-width: 600px; width: 100%;">
-                            <canvas id="global-nutrition-chart" width="600" height="300"></canvas>
+                    
+                    <!-- 圖例 -->
+                    <div style="margin-top: 15px; text-align: center;">
+                        <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 8px;">
+                            <div style="width: 16px; height: 3px; background: ${color};"></div>
+                            <span style="font-size: 0.9em; color: #666;">${nutritionName}變化趨勢</span>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 圖例 -->
-                <div style="margin-top: 15px; text-align: center;">
-                    <div style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; background: #f8f9fa; border-radius: 8px;">
-                        <div style="width: 16px; height: 3px; background: ${color};"></div>
-                        <span style="font-size: 0.9em; color: #666;">${nutritionName}變化趨勢</span>
-                    </div>
-                </div>
-            </div>
-        `;
+            `;
+        }
         
         // 渲染Chart.js圖表
         const ctx = document.getElementById('global-nutrition-chart').getContext('2d');
