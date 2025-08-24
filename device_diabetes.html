@@ -3772,8 +3772,12 @@
         startDate.setDate(endDate.getDate() - days);
         
         // 格式化日期為 YYYY-MM-DD 格式用於比較
-        const startDateStr = startDate.toISOString().split('T')[0];
-        const endDateStr = endDate.toISOString().split('T')[0];
+        const startDateStr = startDate.getFullYear() + '-' + 
+                           String(startDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(startDate.getDate()).padStart(2, '0');
+        const endDateStr = endDate.getFullYear() + '-' + 
+                          String(endDate.getMonth() + 1).padStart(2, '0') + '-' + 
+                          String(endDate.getDate()).padStart(2, '0');
         
         console.log(`過濾條件: ${startDateStr} 到 ${endDateStr}, 天數: ${days}`);
         
