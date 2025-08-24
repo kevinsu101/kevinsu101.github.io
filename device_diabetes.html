@@ -2613,7 +2613,10 @@
         let html = '';
         
         // 新增統一的統計按鈕區域（放在最上方）
-        html += `<div style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef;">`;
+        html += `<div id="nutrition-stats-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
+        html += `<button id="toggle-nutrition-stats" onclick="toggleNutritionStatsSection()" style="position: absolute; top: 10px; right: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;">▼</button>`;
+        
+        html += `<div id="nutrition-stats-content">`;
         html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 營養素攝取統計</div>`;
         
         // 營養素選擇按鈕
@@ -2657,13 +2660,13 @@
         html += `</div>`;
         
         // 統計顯示區域
-        html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6; position: relative;">`;
-        html += `<button id="toggle-stats-btn" onclick="toggleNutritionStats()" style="position: absolute; top: 10px; right: 10px; background: #6c757d; color: white; border: none; border-radius: 4px; width: 30px; height: 30px; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease;">▼</button>`;
+        html += `<div id="global-stats" class="stats-display" style="display: none; padding: 15px; background: white; border-radius: 8px; border: 1px solid #dee2e6;">`;
         html += `<div id="stats-content" style="display: block;">`;
         html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
         html += `</div>`;
         html += `</div>`;
         
+        html += `</div>`;
         html += `</div>`;
         
         Object.keys(monthDict).sort().reverse().forEach(month => {
@@ -3767,16 +3770,11 @@
         // 顯示統計區域
         const statsDiv = document.getElementById('global-stats');
         const statsContent = document.getElementById('stats-content');
-        const toggleBtn = document.getElementById('toggle-stats-btn');
         
         statsDiv.style.display = 'block';
         if (statsContent) {
             statsContent.style.display = 'block';
             statsContent.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">載入圖表中...</div>';
-        }
-        if (toggleBtn) {
-            toggleBtn.textContent = '▼';
-            toggleBtn.style.transform = 'rotate(0deg)';
         }
         
         // 生成圖表
@@ -3791,7 +3789,27 @@
         showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
     
-    // 切換營養素統計顯示函數
+    // 切換整個營養素統計區塊顯示函數
+    window.toggleNutritionStatsSection = function() {
+        const nutritionContent = document.getElementById('nutrition-stats-content');
+        const toggleBtn = document.getElementById('toggle-nutrition-stats');
+        
+        if (nutritionContent && toggleBtn) {
+            if (nutritionContent.style.display === 'none') {
+                // 展開
+                nutritionContent.style.display = 'block';
+                toggleBtn.textContent = '▼';
+                toggleBtn.style.transform = 'rotate(0deg)';
+            } else {
+                // 收合
+                nutritionContent.style.display = 'none';
+                toggleBtn.textContent = '▲';
+                toggleBtn.style.transform = 'rotate(180deg)';
+            }
+        }
+    };
+    
+    // 切換營養素統計顯示函數（保留以備用）
     window.toggleNutritionStats = function() {
         const statsContent = document.getElementById('stats-content');
         const toggleBtn = document.getElementById('toggle-stats-btn');
