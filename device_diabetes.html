@@ -3994,6 +3994,7 @@
         const timeLabel = getTimeRangeLabel(rangeKey, days);
         const xAxisLabel = days === 1 ? '時間' : '日期';
         
+        // 更新統計內容
         const statsContent = document.getElementById('stats-content');
         if (statsContent) {
             statsContent.innerHTML = `
@@ -4038,145 +4039,159 @@
                     </div>
                 </div>
             `;
+            
+            // 等待 DOM 更新後再渲染圖表
+            setTimeout(() => {
+                renderChart();
+            }, 10);
         }
         
-        // 渲染Chart.js圖表
-        const ctx = document.getElementById('global-nutrition-chart').getContext('2d');
-        
-        // 銷毀舊圖表實例（如果存在）
-        if (window.globalNutritionChartInstance) {
-            window.globalNutritionChartInstance.destroy();
-        }
-        
-        // 計算Y軸範圍
-        const yMin = Math.max(0, Math.floor(minNutrition * 0.8));
-        const yMax = Math.ceil(maxNutrition * 1.2);
-        
-        window.globalNutritionChartInstance = new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: `${nutritionName} (${unit})`,
-                    data: nutritionData,
-                    borderColor: color,
-                    backgroundColor: 'transparent',
-                    borderWidth: 3,
-                    fill: false,
-                    tension: 0.4,
-                    pointRadius: 4,
-                    pointHoverRadius: 6,
-                    pointBackgroundColor: color,
-                    pointBorderColor: '#fff',
-                    pointBorderWidth: 2
-                }]
-            },
-            options: {
-                responsive: false,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                        titleColor: '#fff',
-                        bodyColor: '#fff',
+        // 渲染圖表的內部函數
+        function renderChart() {
+            // 渲染Chart.js圖表
+            const canvas = document.getElementById('global-nutrition-chart');
+            if (!canvas) {
+                console.error('Canvas element not found');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 銷毀舊圖表實例（如果存在）
+            if (window.globalNutritionChartInstance) {
+                window.globalNutritionChartInstance.destroy();
+            }
+            
+            // 計算Y軸範圍
+            const yMin = Math.max(0, Math.floor(minNutrition * 0.8));
+            const yMax = Math.ceil(maxNutrition * 1.2);
+            
+            window.globalNutritionChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `${nutritionName} (${unit})`,
+                        data: nutritionData,
                         borderColor: color,
-                        borderWidth: 1,
-                        cornerRadius: 8,
-                        displayColors: false,
-                        callbacks: {
-                            title: function(context) {
-                                if (days === 1) {
-                                    return `時間: ${context[0].label}`;
-                                } else {
-                                    return `日期: ${context[0].label}`;
+                        backgroundColor: 'transparent',
+                        borderWidth: 3,
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 4,
+                        pointHoverRadius: 6,
+                        pointBackgroundColor: color,
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: false,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: color,
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false,
+                            callbacks: {
+                                title: function(context) {
+                                    if (days === 1) {
+                                        return `時間: ${context[0].label}`;
+                                    } else {
+                                        return `日期: ${context[0].label}`;
+                                    }
+                                },
+                                label: function(context) {
+                                    if (days === 1) {
+                                        return `${nutritionName}: ${context.parsed.y} ${unit}`;
+                                    } else {
+                                        return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: xAxisLabel,
+                                color: '#666',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
                                 }
                             },
-                            label: function(context) {
-                                if (days === 1) {
-                                    return `${nutritionName}: ${context.parsed.y} ${unit}`;
-                                } else {
-                                    return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#666',
+                                maxRotation: days === 1 ? 45 : 45,
+                                minRotation: days === 1 ? 45 : 45,
+                                autoSkip: true,
+                                maxTicksLimit: days === 1 ? 8 : 10,
+                                callback: function(value, index, ticks) {
+                                    const label = this.getLabelForValue(value);
+                                    if (days === 1) {
+                                        // 單日：顯示時間部分
+                                        const timeMatch = label.match(/\d{2}:\d{2}$/);
+                                        return timeMatch ? timeMatch[0] : label;
+                                    } else {
+                                        // 多日：顯示日期
+                                        return label;
+                                    }
                                 }
                             }
-                        }
-                    }
-                },
-                scales: {
-                    x: {
-                        title: {
-                            display: true,
-                            text: xAxisLabel,
-                            color: '#666',
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            }
                         },
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            maxRotation: days === 1 ? 45 : 45,
-                            minRotation: days === 1 ? 45 : 45,
-                            autoSkip: true,
-                            maxTicksLimit: days === 1 ? 8 : 10,
-                            callback: function(value, index, ticks) {
-                                const label = this.getLabelForValue(value);
-                                if (days === 1) {
-                                    // 單日：顯示時間部分
-                                    const timeMatch = label.match(/\d{2}:\d{2}$/);
-                                    return timeMatch ? timeMatch[0] : label;
-                                } else {
-                                    // 多日：顯示日期
-                                    return label;
+                        y: {
+                            title: {
+                                display: true,
+                                text: `${nutritionName} (${unit})`,
+                                color: '#666',
+                                font: {
+                                    size: 12,
+                                    weight: 'bold'
+                                }
+                            },
+                            min: yMin,
+                            max: yMax,
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                                drawBorder: false
+                            },
+                            ticks: {
+                                color: '#666',
+                                callback: function(value) {
+                                    return value.toLocaleString();
                                 }
                             }
                         }
                     },
-                    y: {
-                        title: {
-                            display: true,
-                            text: `${nutritionName} (${unit})`,
-                            color: '#666',
-                            font: {
-                                size: 12,
-                                weight: 'bold'
-                            }
-                        },
-                        min: yMin,
-                        max: yMax,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            callback: function(value) {
-                                return value.toLocaleString();
-                            }
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    },
+                    elements: {
+                        point: {
+                            hoverBackgroundColor: color,
+                            hoverBorderColor: '#fff'
                         }
                     }
-                },
-                interaction: {
-                    intersect: false,
-                    mode: 'index'
-                },
-                elements: {
-                    point: {
-                        hoverBackgroundColor: color,
-                        hoverBorderColor: '#fff'
-                    }
                 }
-            }
-        });
-    }
-    
-    // 保持向後兼容的熱量圖表函數
+                         });
+         }
+     }
+      
+      // 保持向後兼容的熱量圖表函數
     function renderCalorieChart(rangeKey, days) {
         renderNutritionChart('cal', 'kcal', '#e57373', rangeKey, days);
     }
