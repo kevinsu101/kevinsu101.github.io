@@ -2668,7 +2668,7 @@
         // 分析按鈕區域
         html += `<div id="analysis-buttons" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e9ecef;">`;
         html += `<div style="text-align: center;">`;
-        html += `<button onclick="generatePersonalizedNutritionAnalysis()" style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">📊 個人化營養分析</button>`;
+        html += `<button onclick="generatePersonalizedNutritionAnalysis()" style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">個人化營養分析</button>`;
         html += `</div>`;
         html += `</div>`;
         html += `</div>`;
@@ -3874,7 +3874,7 @@
         };
     };
     
-    // 個人化營養分析（整合所有分析）
+    // 個人化營養分析（保留欄位結構）
     window.generatePersonalizedNutritionAnalysis = function() {
         const current = window.currentNutritionStats;
         const monthDict = window.globalMonthDict;
@@ -3884,70 +3884,16 @@
             return;
         }
         
-        // 整合的個人化營養分析結果
+        // 簡化的分析結果框架
         let analysisResult = `
             <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
                 <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;">📊 個人化營養分析報告</h3>
                 
-                <!-- 營養素比例分析 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #28a745;">
-                    <h4 style="color: #28a745; margin-bottom: 12px;">🍎 營養素比例分析</h4>
+                <!-- 分析內容區域 -->
+                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
+                    <h4 style="color: #667eea; margin-bottom: 12px;">📋 分析結果</h4>
                     <div style="text-align: left; line-height: 1.6;">
-                        <ul style="margin: 8px 0; padding-left: 20px;">
-                            <li>✅ 您的營養素攝取比例良好</li>
-                            <li>💡 建議增加蛋白質攝取</li>
-                            <li>⚠️ 注意控制脂肪攝取量</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- 進食時間分析 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #17a2b8;">
-                    <h4 style="color: #17a2b8; margin-bottom: 12px;">⏰ 進食時間分析</h4>
-                    <div style="text-align: left; line-height: 1.6;">
-                        <ul style="margin: 8px 0; padding-left: 20px;">
-                            <li>✅ 進食時間規律性良好</li>
-                            <li>💡 建議固定三餐時間</li>
-                            <li>⚠️ 避免夜間進食</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- 熱量趨勢分析 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #ffc107;">
-                    <h4 style="color: #ffc107; margin-bottom: 12px;">🔥 熱量趨勢分析</h4>
-                    <div style="text-align: left; line-height: 1.6;">
-                        <ul style="margin: 8px 0; padding-left: 20px;">
-                            <li>✅ 熱量攝取穩定</li>
-                            <li>💡 週末熱量略高</li>
-                            <li>⚠️ 注意控制總熱量</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- 個人化建議 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #6f42c1;">
-                    <h4 style="color: #6f42c1; margin-bottom: 12px;">🎯 個人化建議</h4>
-                    <div style="text-align: left; line-height: 1.6;">
-                        <ul style="margin: 8px 0; padding-left: 20px;">
-                            <li>多吃瘦肉、魚類、豆類增加蛋白質</li>
-                            <li>減少油炸食物控制脂肪攝取</li>
-                            <li>保持規律進食時間：早餐7-9點、午餐12-13點、晚餐18-19點</li>
-                            <li>週末也要注意飲食控制</li>
-                        </ul>
-                    </div>
-                </div>
-                
-                <!-- 營養目標 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #20c997;">
-                    <h4 style="color: #20c997; margin-bottom: 12px;">📈 營養目標設定</h4>
-                    <div style="text-align: left; line-height: 1.6;">
-                        <ul style="margin: 8px 0; padding-left: 20px;">
-                            <li>每日熱量：1800-2200 kcal</li>
-                            <li>蛋白質：15-25%</li>
-                            <li>碳水化合物：45-65%</li>
-                            <li>脂肪：20-35%</li>
-                        </ul>
+                        <div style="color: #666; font-style: italic;">個人化營養分析內容將在此顯示...</div>
                     </div>
                 </div>
             </div>
