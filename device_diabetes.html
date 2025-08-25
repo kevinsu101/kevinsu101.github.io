@@ -3884,15 +3884,21 @@
             return;
         }
         
+        // 檢查是否已經有分析結果，如果有則移除
+        const existingAnalysis = document.getElementById('nutrition-analysis-container');
+        if (existingAnalysis) {
+            existingAnalysis.remove();
+        }
+        
         // 顯示載入中的分析結果框架
         let analysisResult = `
-            <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
+            <div id="nutrition-analysis-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
                 <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;">📊 個人化營養分析報告</h3>
                 
                 <!-- 分析內容區域 -->
                 <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
                     <h4 style="color: #667eea; margin-bottom: 12px;">📋 分析結果</h4>
-                    <div id="analysis-content" style="text-align: left; line-height: 1.6;">
+                    <div id="analysis-content" style="text-align: left; line-height: 1.6; transition: opacity 0.3s ease;">
                         <div style="text-align: center; color: #666; font-style: italic;">
                             <div style="margin-bottom: 10px;">🤖 AI 正在分析您的飲食數據...</div>
                             <div style="font-size: 0.9em;">請稍候，這可能需要幾秒鐘時間</div>
@@ -4002,7 +4008,12 @@
     function updateAnalysisResult(result) {
         const analysisContent = document.getElementById('analysis-content');
         if (analysisContent) {
-            analysisContent.innerHTML = result;
+            // 使用淡入效果更新內容
+            analysisContent.style.opacity = '0';
+            setTimeout(() => {
+                analysisContent.innerHTML = result;
+                analysisContent.style.opacity = '1';
+            }, 200);
         }
     }
     
