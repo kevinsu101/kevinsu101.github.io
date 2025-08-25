@@ -970,6 +970,12 @@
         <!-- 輸出區塊 -->
         <div class="output-section">
             <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;"> 輸出視窗</h3>
+            
+            <!-- 分析說明區域 -->
+            <div id="analysisDescription" style="background: linear-gradient(135deg, #e3f2fd, #f3e5f5); padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #2196f3; display: none;">
+                <!-- 動態說明內容將在這裡顯示 -->
+            </div>
+            
             <div id="analysisOutput" style="color: #666; text-align: center; padding: 40px 20px;">
                 請先輸入食物資訊或圖片確認食物總類與份量
             </div>
@@ -2004,6 +2010,7 @@
             `;
             descriptionDiv.style.background = 'linear-gradient(135deg, #e3f2fd, #f3e5f5)';
             descriptionDiv.style.borderLeftColor = '#2196f3';
+            descriptionDiv.style.display = 'block';
         } else if (stage === 'nutrition') {
             descriptionDiv.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
@@ -2022,6 +2029,7 @@
             `;
             descriptionDiv.style.background = 'linear-gradient(135deg, #fff3e0, #fff8e1)';
             descriptionDiv.style.borderLeftColor = '#ff9800';
+            descriptionDiv.style.display = 'block';
         }
     }
 
@@ -3893,14 +3901,14 @@
         // 顯示載入中的分析結果框架
         let analysisResult = `
             <div id="nutrition-analysis-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
-                <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;">📊 個人化營養分析報告</h3>
+                <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;"> 個人化營養分析報告</h3>
                 
                 <!-- 分析內容區域 -->
                 <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 12px;">📋 分析結果</h4>
+                    <h4 style="color: #667eea; margin-bottom: 12px;"> 分析結果</h4>
                     <div id="analysis-content" style="text-align: left; line-height: 1.6; transition: opacity 0.3s ease;">
                         <div style="text-align: center; color: #666; font-style: italic;">
-                            <div style="margin-bottom: 10px;">🤖 AI 正在分析您的飲食數據...</div>
+                            <div style="margin-bottom: 10px;"> AI 正在分析您的飲食數據...</div>
                             <div style="font-size: 0.9em;">請稍候，這可能需要幾秒鐘時間</div>
                         </div>
                     </div>
