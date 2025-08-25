@@ -3978,7 +3978,7 @@
         const formData = new FormData();
         formData.append('analysis_data', JSON.stringify(analysisData));
         
-        fetch('/ai_nutrition_analysis', {
+        fetch('https://7a859e20cfb8.ngrok-free.app/ai_nutrition_analysis', {
             method: 'POST',
             body: formData
         })
