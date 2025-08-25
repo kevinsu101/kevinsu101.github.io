@@ -3874,7 +3874,7 @@
         };
     };
     
-    // 個人化營養分析（保留欄位結構）
+    // 個人化營養分析（整合Gemini分析）
     window.generatePersonalizedNutritionAnalysis = function() {
         const current = window.currentNutritionStats;
         const monthDict = window.globalMonthDict;
@@ -3884,7 +3884,7 @@
             return;
         }
         
-        // 簡化的分析結果框架
+        // 顯示載入中的分析結果框架
         let analysisResult = `
             <div style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
                 <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;">📊 個人化營養分析報告</h3>
@@ -3892,8 +3892,11 @@
                 <!-- 分析內容區域 -->
                 <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
                     <h4 style="color: #667eea; margin-bottom: 12px;">📋 分析結果</h4>
-                    <div style="text-align: left; line-height: 1.6;">
-                        <div style="color: #666; font-style: italic;">個人化營養分析內容將在此顯示...</div>
+                    <div id="analysis-content" style="text-align: left; line-height: 1.6;">
+                        <div style="text-align: center; color: #666; font-style: italic;">
+                            <div style="margin-bottom: 10px;">🤖 AI 正在分析您的飲食數據...</div>
+                            <div style="font-size: 0.9em;">請稍候，這可能需要幾秒鐘時間</div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3904,7 +3907,104 @@
         if (statsContent) {
             statsContent.insertAdjacentHTML('beforeend', analysisResult);
         }
+        
+        // 準備飲食數據並發送到後端
+        prepareAndSendNutritionData();
     };
+    
+    // 準備飲食數據並發送到後端
+    async function prepareAndSendNutritionData() {
+        const monthDict = window.globalMonthDict;
+        const current = window.currentNutritionStats;
+        
+        if (!monthDict || !current) {
+            console.error('缺少必要的數據');
+            return;
+        }
+        
+        // 獲取用戶ID
+        let userId = null;
+        try {
+            const profile = await liff.getProfile();
+            userId = profile.userId;
+        } catch (e) {
+            console.error('無法獲取用戶ID:', e);
+        }
+        
+        // 根據當前選擇的時間範圍準備數據
+        let analysisData = {
+            userId: userId,
+            timeRange: current.rangeKey,
+            days: current.days,
+            nutritionType: current.type,
+            unit: current.unit,
+            data: []
+        };
+        
+        // 獲取當前時間範圍的數據
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - current.days);
+        
+        const startDateStr = startDate.toISOString().split('T')[0];
+        const endDateStr = endDate.toISOString().split('T')[0];
+        
+        // 過濾數據
+        const filteredData = [];
+        for (const [date, items] of Object.entries(monthDict)) {
+            if (date >= startDateStr && date <= endDateStr) {
+                for (const item of items) {
+                    filteredData.push({
+                        date: date,
+                        time: item.time,
+                        food_name: item.food_name,
+                        total_cal: item.total_cal,
+                        total_carb: item.total_carb,
+                        total_pro: item.total_pro,
+                        total_fat: item.total_fat
+                    });
+                }
+            }
+        }
+        
+        analysisData.data = filteredData;
+        
+        // 發送到後端進行Gemini分析
+        sendToGeminiAnalysis(analysisData);
+    }
+    
+    // 發送到後端進行Gemini分析
+    function sendToGeminiAnalysis(analysisData) {
+        const formData = new FormData();
+        formData.append('analysis_data', JSON.stringify(analysisData));
+        
+        fetch('/ai_nutrition_analysis', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 更新分析結果
+                updateAnalysisResult(data.analysis_result);
+            } else {
+                console.error('分析失敗:', data.error);
+                updateAnalysisResult('❌ 分析失敗，請稍後再試');
+            }
+        })
+        .catch(error => {
+            console.error('發送分析請求失敗:', error);
+            updateAnalysisResult('❌ 網路錯誤，請檢查連線後再試');
+        });
+    }
+    
+    // 更新分析結果
+    function updateAnalysisResult(result) {
+        const analysisContent = document.getElementById('analysis-content');
+        if (analysisContent) {
+            analysisContent.innerHTML = result;
+        }
+    }
     
 
     
