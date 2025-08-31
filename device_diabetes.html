@@ -2939,10 +2939,16 @@
         });
         diaryDiv.innerHTML = html;
         
-        // 更新每個卡片的營養素建議值和狀態
-        if (window.updateNutritionGoalsInCards) {
-            window.updateNutritionGoalsInCards();
-        }
+        // 等待DOM更新完成後再更新營養素建議
+        setTimeout(() => {
+            console.log('檢查函數是否存在:', typeof window.updateNutritionGoalsInCards);
+            if (typeof window.updateNutritionGoalsInCards === 'function') {
+                console.log('開始更新營養素建議...');
+                window.updateNutritionGoalsInCards();
+            } else {
+                console.error('updateNutritionGoalsInCards 函數未定義');
+            }
+        }, 200);
         
         // 重新綁定刪除事件
         diaryDiv.querySelectorAll('.delete-diary-btn').forEach(btn => {
@@ -2975,11 +2981,17 @@
         
         // 計算當日累加值的輔助函數
         window.calculateDailyTotals = function() {
+            console.log('開始計算當日累加值...');
             const dailyTotals = {};
             
             // 遍歷所有卡片，按日期累加營養素
             const cards = document.querySelectorAll('.food-diary-card');
             console.log('找到卡片數量:', cards.length);
+            
+            if (cards.length === 0) {
+                console.log('沒有找到任何卡片，返回空結果');
+                return dailyTotals;
+            }
             
             cards.forEach((card, index) => {
                 const dateTimeText = card.querySelector('div').textContent;
@@ -3064,9 +3076,12 @@
                 
                 if (result.success) {
                     const goals = result.goals;
+                    console.log('獲取到用戶營養素建議:', goals);
                     
                     // 計算當日累加值
+                    console.log('開始調用 calculateDailyTotals...');
                     const dailyTotals = window.calculateDailyTotals();
+                    console.log('計算完成的當日累加值:', dailyTotals);
                     
                     // 更新所有卡片的當日累加值和差異
                     const cards = document.querySelectorAll('.food-diary-card');
