@@ -3982,22 +3982,41 @@
         let labels, nutritionData;
         
         if (days === 1) {
-            // 單日：顯示完整的飲食時間（包含日期和時間）
-            labels = filteredData.map(item => {
+            // 單日：生成完整的24小時時間軸，從00:00到23:00
+            const today = new Date();
+            const todayStr = today.getFullYear() + '-' + 
+                           String(today.getMonth() + 1).padStart(2, '0') + '-' + 
+                           String(today.getDate()).padStart(2, '0');
+            
+            // 生成24小時的標籤
+            labels = [];
+            for (let hour = 0; hour < 24; hour++) {
+                labels.push(`${hour.toString().padStart(2, '0')}:00`);
+            }
+            
+            // 初始化24小時的營養數據，預設為0
+            const hourlyNutrition = new Array(24).fill(0);
+            
+            // 將實際數據分配到對應的小時
+            filteredData.forEach(item => {
                 const time = item.time;
                 const hour = parseInt(time.split(':')[0]);
-                const minute = parseInt(time.split(':')[1]);
-                return `${item.date} ${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
-            });
-            nutritionData = filteredData.map(item => {
-                switch(nutritionType) {
-                    case 'cal': return item.total_cal;
-                    case 'carb': return item.total_carb;
-                    case 'pro': return item.total_pro;
-                    case 'fat': return item.total_fat;
-                    default: return item.total_cal;
+                if (hour >= 0 && hour < 24) {
+                    let nutritionValue = 0;
+                    switch(nutritionType) {
+                        case 'cal': nutritionValue = item.total_cal; break;
+                        case 'carb': nutritionValue = item.total_carb; break;
+                        case 'pro': nutritionValue = item.total_pro; break;
+                        case 'fat': nutritionValue = item.total_fat; break;
+                        default: nutritionValue = item.total_cal; break;
+                    }
+                    hourlyNutrition[hour] += nutritionValue;
                 }
             });
+            
+            nutritionData = hourlyNutrition;
+            
+            console.log(`24小時${nutritionType}數據:`, hourlyNutrition);
         } else {
             // 多日：按日期分組，計算每天總營養素
             const dailyNutrition = {};
@@ -4047,6 +4066,9 @@
         // 計算每日平均營養素（多日統計）
         const dailyAvgNutrition = days > 1 ? Math.round(totalNutrition / labels.length) : avgNutrition;
         
+        // 計算非零小時數（單日統計）
+        const nonZeroHours = days === 1 ? nutritionData.filter(value => value > 0).length : filteredData.length;
+        
         // 獲取營養素名稱
         const nutritionNames = {
             'cal': '熱量',
@@ -4079,8 +4101,8 @@
                             <div style="font-size: 0.85em; color: #666;">${days === 1 ? `平均/餐` : `平均/天`} (${unit})</div>
                         </div>
                         <div>
-                            <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? filteredData.length : labels.length}</div>
-                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? '餐次數' : '天數'}</div>
+                            <div style="font-size: 1.2em; font-weight: 700; color: #ffb74d;">${days === 1 ? nonZeroHours : labels.length}</div>
+                            <div style="font-size: 0.85em; color: #666;">${days === 1 ? '有進食時數' : '天數'}</div>
                         </div>
                         <div>
                             <div style="font-size: 1.2em; font-weight: 700; color: #4caf50;">${lastNutrition}</div>
@@ -4177,7 +4199,12 @@
                                 },
                                 label: function(context) {
                                     if (days === 1) {
-                                        return `${nutritionName}: ${context.parsed.y} ${unit}`;
+                                        const value = context.parsed.y;
+                                        if (value === 0) {
+                                            return `${context[0].label} 無進食`;
+                                        } else {
+                                            return `${nutritionName}: ${value} ${unit}`;
+                                        }
                                     } else {
                                         return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
                                     }
@@ -4202,16 +4229,18 @@
                             },
                             ticks: {
                                 color: '#666',
-                                maxRotation: days === 1 ? 45 : 45,
-                                minRotation: days === 1 ? 45 : 45,
-                                autoSkip: true,
-                                maxTicksLimit: days === 1 ? 8 : 10,
+                                maxRotation: days === 1 ? 0 : 45,
+                                minRotation: days === 1 ? 0 : 45,
+                                autoSkip: days === 1 ? false : true,
+                                maxTicksLimit: days === 1 ? 24 : 10,
                                 callback: function(value, index, ticks) {
                                     const label = this.getLabelForValue(value);
                                     if (days === 1) {
-                                        // 單日：顯示時間部分
-                                        const timeMatch = label.match(/\d{2}:\d{2}$/);
-                                        return timeMatch ? timeMatch[0] : label;
+                                        // 單日：顯示時間，每4小時顯示一次標籤
+                                        if (index % 4 === 0) {
+                                            return label;
+                                        }
+                                        return '';
                                     } else {
                                         // 多日：顯示日期
                                         return label;
