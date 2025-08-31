@@ -2786,39 +2786,39 @@
   <span style="font-size:1em;color:#ffb74d;width:90px;text-align:center;">蛋白質</span>
   <span style="font-size:1em;color:#ba68c8;width:90px;text-align:center;">脂肪</span>
 </div>
-<!-- 每日建議值對比 -->
+<!-- 當日累加營養素對比 -->
 <div style="margin-top:8px;padding:8px;background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef;">
-  <div style="font-size:0.9em;color:#666;margin-bottom:4px;text-align:center;">與每日建議值比較</div>
+  <div style="font-size:0.9em;color:#666;margin-bottom:4px;text-align:center;">當日累加與建議值比較</div>
   <div style="display:flex;gap:18px;justify-content:flex-start;min-width:400px;">
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#e57373;font-weight:600;" id="goal-calories-${item.date}-${item.time}">2000</div>
-      <div style="font-size:0.8em;color:#888;">建議</div>
+      <div style="font-size:0.85em;color:#e57373;font-weight:600;" id="daily-calories-${item.date}-${item.time}">0</div>
+      <div style="font-size:0.8em;color:#888;">今日累加</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#4fc3f7;font-weight:600;" id="goal-carbohydrates-${item.date}-${item.time}">250</div>
-      <div style="font-size:0.8em;color:#888;">建議</div>
+      <div style="font-size:0.85em;color:#4fc3f7;font-weight:600;" id="daily-carbohydrates-${item.date}-${item.time}">0</div>
+      <div style="font-size:0.8em;color:#888;">今日累加</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#ffb74d;font-weight:600;" id="goal-protein-${item.date}-${item.time}">75</div>
-      <div style="font-size:0.8em;color:#888;">建議</div>
+      <div style="font-size:0.85em;color:#ffb74d;font-weight:600;" id="daily-protein-${item.date}-${item.time}">0</div>
+      <div style="font-size:0.8em;color:#888;">今日累加</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#ba68c8;font-weight:600;" id="goal-fat-${item.date}-${item.time}">65</div>
-      <div style="font-size:0.8em;color:#888;">建議</div>
+      <div style="font-size:0.85em;color:#ba68c8;font-weight:600;" id="daily-fat-${item.date}-${item.time}">0</div>
+      <div style="font-size:0.8em;color:#888;">今日累加</div>
     </div>
   </div>
   <div style="display:flex;gap:18px;justify-content:flex-start;margin-top:4px;min-width:400px;">
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#e57373;" id="calories-status-${item.date}-${item.time}">適中</div>
+      <div style="font-size:0.85em;color:#e57373;" id="calories-diff-${item.date}-${item.time}">還需 2000</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#4fc3f7;" id="carb-status-${item.date}-${item.time}">適中</div>
+      <div style="font-size:0.85em;color:#4fc3f7;" id="carb-diff-${item.date}-${item.time}">還需 250</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#ffb74d;" id="protein-status-${item.date}-${item.time}">適中</div>
+      <div style="font-size:0.85em;color:#ffb74d;" id="protein-diff-${item.date}-${item.time}">還需 75</div>
     </div>
     <div style="width:90px;text-align:center;">
-      <div style="font-size:0.85em;color:#ba68c8;" id="fat-status-${item.date}-${item.time}">適中</div>
+      <div style="font-size:0.85em;color:#ba68c8;" id="fat-diff-${item.date}-${item.time}">還需 65</div>
     </div>
   </div>
 </div>
@@ -2954,7 +2954,7 @@
             };
         });
         
-        // 更新每個卡片的營養素建議值和狀態
+        // 更新每個卡片的當日累加營養素
         window.updateNutritionGoalsInCards = async function() {
             try {
                 // 獲取用戶ID
@@ -2986,7 +2986,10 @@
                 if (result.success) {
                     const goals = result.goals;
                     
-                    // 更新所有卡片的建議值和狀態
+                    // 計算當日累加值
+                    const dailyTotals = calculateDailyTotals();
+                    
+                    // 更新所有卡片的當日累加值和差異
                     const cards = document.querySelectorAll('.food-diary-card');
                     cards.forEach(card => {
                         // 獲取卡片的日期和時間
@@ -2996,50 +2999,69 @@
                             const date = match[1];
                             const time = match[2];
                             
-                            // 更新建議值
-                            const caloriesGoalEl = document.getElementById(`goal-calories-${date}-${time}`);
-                            const carbsGoalEl = document.getElementById(`goal-carbohydrates-${date}-${time}`);
-                            const proteinGoalEl = document.getElementById(`goal-protein-${date}-${time}`);
-                            const fatGoalEl = document.getElementById(`goal-fat-${date}-${time}`);
+                            // 獲取當日累加值
+                            const dailyData = dailyTotals[date] || { calories: 0, carbs: 0, protein: 0, fat: 0 };
                             
-                            if (caloriesGoalEl) caloriesGoalEl.textContent = goals.calories;
-                            if (carbsGoalEl) carbsGoalEl.textContent = goals.carbohydrates;
-                            if (proteinGoalEl) proteinGoalEl.textContent = goals.protein;
-                            if (fatGoalEl) fatGoalEl.textContent = goals.fat;
+                            // 更新當日累加顯示
+                            const dailyCaloriesEl = document.getElementById(`daily-calories-${date}-${time}`);
+                            const dailyCarbsEl = document.getElementById(`daily-carbohydrates-${date}-${time}`);
+                            const dailyProteinEl = document.getElementById(`daily-protein-${date}-${time}`);
+                            const dailyFatEl = document.getElementById(`daily-fat-${date}-${time}`);
                             
-                            // 獲取實際攝取值
-                            const actualCalories = parseFloat(card.querySelector('[style*="color:#e57373"]').textContent);
-                            const actualCarbs = parseFloat(card.querySelector('[style*="color:#4fc3f7"]').textContent);
-                            const actualProtein = parseFloat(card.querySelector('[style*="color:#ffb74d"]').textContent);
-                            const actualFat = parseFloat(card.querySelector('[style*="color:#ba68c8"]').textContent);
+                            if (dailyCaloriesEl) dailyCaloriesEl.textContent = Math.round(dailyData.calories);
+                            if (dailyCarbsEl) dailyCarbsEl.textContent = Math.round(dailyData.carbs);
+                            if (dailyProteinEl) dailyProteinEl.textContent = Math.round(dailyData.protein);
+                            if (dailyFatEl) dailyFatEl.textContent = Math.round(dailyData.fat);
                             
-                            // 計算狀態
-                            const caloriesStatus = getNutritionStatus(actualCalories, goals.calories);
-                            const carbsStatus = getNutritionStatus(actualCarbs, goals.carbohydrates);
-                            const proteinStatus = getNutritionStatus(actualProtein, goals.protein);
-                            const fatStatus = getNutritionStatus(actualFat, goals.fat);
+                            // 計算差異並更新顯示
+                            const caloriesDiff = goals.calories - dailyData.calories;
+                            const carbsDiff = goals.carbohydrates - dailyData.carbs;
+                            const proteinDiff = goals.protein - dailyData.protein;
+                            const fatDiff = goals.fat - dailyData.fat;
                             
-                            // 更新狀態顯示
-                            const caloriesStatusEl = document.getElementById(`calories-status-${date}-${time}`);
-                            const carbsStatusEl = document.getElementById(`carb-status-${date}-${time}`);
-                            const proteinStatusEl = document.getElementById(`protein-status-${date}-${time}`);
-                            const fatStatusEl = document.getElementById(`fat-status-${date}-${time}`);
+                            const caloriesDiffEl = document.getElementById(`calories-diff-${date}-${time}`);
+                            const carbsDiffEl = document.getElementById(`carb-diff-${date}-${time}`);
+                            const proteinDiffEl = document.getElementById(`protein-diff-${date}-${time}`);
+                            const fatDiffEl = document.getElementById(`fat-diff-${date}-${time}`);
                             
-                            if (caloriesStatusEl) {
-                                caloriesStatusEl.textContent = caloriesStatus.text;
-                                caloriesStatusEl.style.color = caloriesStatus.color;
+                            if (caloriesDiffEl) {
+                                if (caloriesDiff > 0) {
+                                    caloriesDiffEl.textContent = `還需 ${Math.round(caloriesDiff)}`;
+                                    caloriesDiffEl.style.color = '#4caf50';
+                                } else {
+                                    caloriesDiffEl.textContent = `超過 ${Math.round(Math.abs(caloriesDiff))}`;
+                                    caloriesDiffEl.style.color = '#e57373';
+                                }
                             }
-                            if (carbsStatusEl) {
-                                carbsStatusEl.textContent = carbsStatus.text;
-                                carbsStatusEl.style.color = carbsStatus.color;
+                            
+                            if (carbsDiffEl) {
+                                if (carbsDiff > 0) {
+                                    carbsDiffEl.textContent = `還需 ${Math.round(carbsDiff)}`;
+                                    carbsDiffEl.style.color = '#4caf50';
+                                } else {
+                                    carbsDiffEl.textContent = `超過 ${Math.round(Math.abs(carbsDiff))}`;
+                                    carbsDiffEl.style.color = '#e57373';
+                                }
                             }
-                            if (proteinStatusEl) {
-                                proteinStatusEl.textContent = proteinStatus.text;
-                                proteinStatusEl.style.color = proteinStatus.color;
+                            
+                            if (proteinDiffEl) {
+                                if (proteinDiff > 0) {
+                                    proteinDiffEl.textContent = `還需 ${Math.round(proteinDiff)}`;
+                                    proteinDiffEl.style.color = '#4caf50';
+                                } else {
+                                    proteinDiffEl.textContent = `超過 ${Math.round(Math.abs(proteinDiff))}`;
+                                    proteinDiffEl.style.color = '#e57373';
+                                }
                             }
-                            if (fatStatusEl) {
-                                fatStatusEl.textContent = fatStatus.text;
-                                fatStatusEl.style.color = fatStatus.color;
+                            
+                            if (fatDiffEl) {
+                                if (fatDiff > 0) {
+                                    fatDiffEl.textContent = `還需 ${Math.round(fatDiff)}`;
+                                    fatDiffEl.style.color = '#4caf50';
+                                } else {
+                                    fatDiffEl.textContent = `超過 ${Math.round(Math.abs(fatDiff))}`;
+                                    fatDiffEl.style.color = '#e57373';
+                                }
                             }
                         }
                     });
@@ -3047,6 +3069,38 @@
             } catch (error) {
                 console.error('更新卡片營養素建議失敗:', error);
             }
+        };
+        
+        // 計算當日累加值的輔助函數
+        window.calculateDailyTotals = function() {
+            const dailyTotals = {};
+            
+            // 遍歷所有卡片，按日期累加營養素
+            const cards = document.querySelectorAll('.food-diary-card');
+            cards.forEach(card => {
+                const dateTimeText = card.querySelector('div').textContent;
+                const match = dateTimeText.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
+                if (match) {
+                    const date = match[1];
+                    
+                    // 獲取實際攝取值
+                    const actualCalories = parseFloat(card.querySelector('[style*="color:#e57373"]').textContent) || 0;
+                    const actualCarbs = parseFloat(card.querySelector('[style*="color:#4fc3f7"]').textContent) || 0;
+                    const actualProtein = parseFloat(card.querySelector('[style*="color:#ffb74d"]').textContent) || 0;
+                    const actualFat = parseFloat(card.querySelector('[style*="color:#ba68c8"]').textContent) || 0;
+                    
+                    if (!dailyTotals[date]) {
+                        dailyTotals[date] = { calories: 0, carbs: 0, protein: 0, fat: 0 };
+                    }
+                    
+                    dailyTotals[date].calories += actualCalories;
+                    dailyTotals[date].carbs += actualCarbs;
+                    dailyTotals[date].protein += actualProtein;
+                    dailyTotals[date].fat += actualFat;
+                }
+            });
+            
+            return dailyTotals;
         };
         
         // 獲取營養素狀態的輔助函數
