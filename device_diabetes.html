@@ -4160,22 +4160,27 @@
             const yMax = maxNutrition > 0 ? Math.ceil(maxNutrition * 1.2) : 100; // 如果沒有數據，設定預設最大值
             
             window.globalNutritionChartInstance = new Chart(ctx, {
-                type: 'line',
+                type: days === 1 ? 'scatter' : 'line', // 單日使用散點圖，多日使用線圖
                 data: {
                     labels: labels,
                     datasets: [{
                         label: `${nutritionName} (${unit})`,
-                        data: nutritionData,
+                        data: days === 1 ? 
+                            // 單日：只顯示有數據的點，沒有數據的點不顯示
+                            nutritionData.map((value, index) => value > 0 ? { x: index, y: value } : null).filter(point => point !== null) :
+                            // 多日：顯示所有數據
+                            nutritionData,
                         borderColor: color,
-                        backgroundColor: 'transparent',
-                        borderWidth: 3,
+                        backgroundColor: days === 1 ? color : 'transparent',
+                        borderWidth: days === 1 ? 0 : 3, // 單日不顯示連線，多日顯示連線
                         fill: false,
-                        tension: 0.4,
-                        pointRadius: nutritionData.map(value => value > 0 ? 4 : 0), // 只有有數據的點才顯示
-                        pointHoverRadius: 6,
+                        tension: days === 1 ? 0 : 0.4,
+                        pointRadius: days === 1 ? 8 : nutritionData.map(value => value > 0 ? 4 : 0), // 單日固定點大小，多日根據數據
+                        pointHoverRadius: 10,
                         pointBackgroundColor: color,
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
+                        showLine: days === 1 ? false : true // 單日不顯示連線
                     }]
                 },
                 options: {
@@ -4197,7 +4202,9 @@
                                 title: function(context) {
                                     if (context && context.length > 0 && context[0]) {
                                         if (days === 1) {
-                                            return `時間: ${context[0].label}`;
+                                            // 單日：從x座標計算時間
+                                            const hour = Math.floor(context[0].parsed.x);
+                                            return `時間: ${hour.toString().padStart(2, '0')}:00`;
                                         } else {
                                             return `日期: ${context[0].label}`;
                                         }
@@ -4208,11 +4215,7 @@
                                     if (context && context.length > 0 && context[0]) {
                                         if (days === 1) {
                                             const value = context.parsed.y;
-                                            if (value === 0) {
-                                                return `${context[0].label} 無進食`;
-                                            } else {
-                                                return `${nutritionName}: ${value} ${unit}`;
-                                            }
+                                            return `${nutritionName}: ${value} ${unit}`;
                                         } else {
                                             return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
                                         }
@@ -4224,6 +4227,7 @@
                     },
                     scales: {
                         x: {
+                            type: days === 1 ? 'linear' : 'category', // 單日使用線性軸，多日使用分類軸
                             title: {
                                 display: true,
                                 text: xAxisLabel,
@@ -4237,22 +4241,26 @@
                                 color: 'rgba(0, 0, 0, 0.1)',
                                 drawBorder: false
                             },
+                            min: days === 1 ? -0.5 : undefined,
+                            max: days === 1 ? 23.5 : undefined,
                             ticks: {
                                 color: '#666',
                                 maxRotation: days === 1 ? 0 : 45,
                                 minRotation: days === 1 ? 0 : 45,
                                 autoSkip: days === 1 ? false : true,
                                 maxTicksLimit: days === 1 ? 24 : 10,
+                                stepSize: days === 1 ? 4 : undefined, // 單日每4小時顯示一次
                                 callback: function(value, index, ticks) {
-                                    const label = this.getLabelForValue(value);
                                     if (days === 1) {
-                                        // 單日：顯示時間，每4小時顯示一次標籤
-                                        if (index % 4 === 0) {
-                                            return label;
+                                        // 單日：顯示時間格式
+                                        const hour = Math.floor(value);
+                                        if (hour >= 0 && hour < 24) {
+                                            return `${hour.toString().padStart(2, '0')}:00`;
                                         }
                                         return '';
                                     } else {
                                         // 多日：顯示日期
+                                        const label = this.getLabelForValue(value);
                                         return label;
                                     }
                                 }
