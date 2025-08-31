@@ -1233,6 +1233,10 @@
             // 當切換到飲食日誌分頁時，自動載入資料
             if (targetSectionId === 'section-food-diary') {
                 fetchFoodDiary();
+                // 載入營養素建議
+                setTimeout(() => {
+                    loadNutritionGoals();
+                }, 1000);
             }
             // 當切換到 CGM 分析頁面時，自動載入資料
             if (targetSectionId === 'section-cgm-analysis') {
@@ -2619,6 +2623,69 @@
         
         let html = '';
         
+        // 營養素建議區塊
+        html += `<div id="nutrition-goals-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
+        html += `<button id="toggle-nutrition-goals" onclick="toggleNutritionGoalsSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
+        
+        html += `<div id="nutrition-goals-content">`;
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">🎯 每日營養素建議</div>`;
+        
+        // 營養素建議顯示區域
+        html += `<div id="nutrition-goals-display" style="margin-bottom: 15px;">`;
+        html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">`;
+        html += `<div style="text-align: center; padding: 10px; background: #fff3e0; border-radius: 8px; border: 2px solid #e57373;">`;
+        html += `<div style="font-size: 1.1em; font-weight: 700; color: #e57373;" id="goal-calories">2000</div>`;
+        html += `<div style="font-size: 0.9em; color: #666;">熱量 (kcal)</div>`;
+        html += `</div>`;
+        html += `<div style="text-align: center; padding: 10px; background: #e3f2fd; border-radius: 8px; border: 2px solid #4fc3f7;">`;
+        html += `<div style="font-size: 1.1em; font-weight: 700; color: #4fc3f7;" id="goal-carbohydrates">250</div>`;
+        html += `<div style="font-size: 0.9em; color: #666;">碳水化合物 (g)</div>`;
+        html += `</div>`;
+        html += `<div style="text-align: center; padding: 10px; background: #fff8e1; border-radius: 8px; border: 2px solid #ffb74d;">`;
+        html += `<div style="font-size: 1.1em; font-weight: 700; color: #ffb74d;" id="goal-protein">75</div>`;
+        html += `<div style="font-size: 0.9em; color: #666;">蛋白質 (g)</div>`;
+        html += `</div>`;
+        html += `<div style="text-align: center; padding: 10px; background: #f3e5f5; border-radius: 8px; border: 2px solid #ba68c8;">`;
+        html += `<div style="font-size: 1.1em; font-weight: 700; color: #ba68c8;" id="goal-fat">65</div>`;
+        html += `<div style="font-size: 0.9em; color: #666;">脂肪 (g)</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `<div style="text-align: center; margin-top: 10px;">`;
+        html += `<button onclick="showNutritionGoalsEdit()" style="background: #1976d2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">編輯建議</button>`;
+        html += `</div>`;
+        html += `</div>`;
+        
+        // 營養素建議編輯區域
+        html += `<div id="nutrition-goals-edit" style="display: none;">`;
+        html += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">`;
+        html += `<h4 style="margin-top: 0; margin-bottom: 15px; color: #2c5282;">修改每日營養素建議</h4>`;
+        html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">`;
+        html += `<div>`;
+        html += `<label style="display: block; margin-bottom: 5px; color: #666; font-size: 0.9em;">熱量 (kcal)</label>`;
+        html += `<input type="number" id="edit-calories" min="0" step="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">`;
+        html += `</div>`;
+        html += `<div>`;
+        html += `<label style="display: block; margin-bottom: 5px; color: #666; font-size: 0.9em;">碳水化合物 (g)</label>`;
+        html += `<input type="number" id="edit-carbohydrates" min="0" step="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">`;
+        html += `</div>`;
+        html += `<div>`;
+        html += `<label style="display: block; margin-bottom: 5px; color: #666; font-size: 0.9em;">蛋白質 (g)</label>`;
+        html += `<input type="number" id="edit-protein" min="0" step="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">`;
+        html += `</div>`;
+        html += `<div>`;
+        html += `<label style="display: block; margin-bottom: 5px; color: #666; font-size: 0.9em;">脂肪 (g)</label>`;
+        html += `<input type="number" id="edit-fat" min="0" step="1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `<div style="display: flex; gap: 10px; margin-top: 15px; justify-content: center;">`;
+        html += `<button onclick="saveNutritionGoals()" style="background: #4caf50; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">保存</button>`;
+        html += `<button onclick="cancelNutritionGoalsEdit()" style="background: #f44336; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">取消</button>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        html += `</div>`;
+        
         // 新增統一的統計按鈕區域（放在最上方）
         html += `<div id="nutrition-stats-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
         html += `<button id="toggle-nutrition-stats" onclick="toggleNutritionStatsSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
@@ -3828,6 +3895,172 @@
         }
     };
     
+    // 切換營養素建議區塊顯示函數
+    window.toggleNutritionGoalsSection = function() {
+        const goalsContent = document.getElementById('nutrition-goals-content');
+        const toggleBtn = document.getElementById('toggle-nutrition-goals');
+        
+        if (goalsContent && toggleBtn) {
+            if (goalsContent.style.display === 'none') {
+                // 展開
+                goalsContent.style.display = 'block';
+                toggleBtn.textContent = '▼';
+                toggleBtn.style.transform = 'rotate(0deg)';
+            } else {
+                // 收合
+                goalsContent.style.display = 'none';
+                toggleBtn.textContent = '▲';
+                toggleBtn.style.transform = 'rotate(180deg)';
+            }
+        }
+    };
+
+    // 顯示營養素建議編輯模式
+    window.showNutritionGoalsEdit = function() {
+        const displayDiv = document.getElementById('nutrition-goals-display');
+        const editDiv = document.getElementById('nutrition-goals-edit');
+        
+        if (displayDiv && editDiv) {
+            displayDiv.style.display = 'none';
+            editDiv.style.display = 'block';
+            
+            // 填入當前值
+            document.getElementById('edit-calories').value = document.getElementById('goal-calories').textContent;
+            document.getElementById('edit-carbohydrates').value = document.getElementById('goal-carbohydrates').textContent;
+            document.getElementById('edit-protein').value = document.getElementById('goal-protein').textContent;
+            document.getElementById('edit-fat').value = document.getElementById('goal-fat').textContent;
+        }
+    };
+
+    // 取消營養素建議編輯
+    window.cancelNutritionGoalsEdit = function() {
+        const displayDiv = document.getElementById('nutrition-goals-display');
+        const editDiv = document.getElementById('nutrition-goals-edit');
+        
+        if (displayDiv && editDiv) {
+            displayDiv.style.display = 'block';
+            editDiv.style.display = 'none';
+        }
+    };
+
+    // 保存營養素建議
+    window.saveNutritionGoals = async function() {
+        try {
+            // 獲取輸入值
+            const calories = parseFloat(document.getElementById('edit-calories').value);
+            const carbohydrates = parseFloat(document.getElementById('edit-carbohydrates').value);
+            const protein = parseFloat(document.getElementById('edit-protein').value);
+            const fat = parseFloat(document.getElementById('edit-fat').value);
+            
+            // 驗證輸入
+            if (isNaN(calories) || isNaN(carbohydrates) || isNaN(protein) || isNaN(fat)) {
+                alert('請輸入有效的數字');
+                return;
+            }
+            
+            if (calories < 0 || carbohydrates < 0 || protein < 0 || fat < 0) {
+                alert('數值不能為負數');
+                return;
+            }
+            
+            // 獲取用戶ID
+            let userId = null;
+            try {
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+            } catch (e) {
+                console.error('無法獲取用戶ID:', e);
+                alert('無法獲取用戶資訊，請重新登入');
+                return;
+            }
+            
+            // 準備數據
+            const goalsData = {
+                userId: userId,
+                action: 'save',
+                goals: {
+                    calories: calories,
+                    carbohydrates: carbohydrates,
+                    protein: protein,
+                    fat: fat
+                }
+            };
+            
+            // 發送到後端
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/nutrition_goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(goalsData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 更新顯示
+                document.getElementById('goal-calories').textContent = calories;
+                document.getElementById('goal-carbohydrates').textContent = carbohydrates;
+                document.getElementById('goal-protein').textContent = protein;
+                document.getElementById('goal-fat').textContent = fat;
+                
+                // 切換回顯示模式
+                cancelNutritionGoalsEdit();
+                
+                alert('營養素建議已保存');
+            } else {
+                alert('保存失敗: ' + result.message);
+            }
+            
+        } catch (error) {
+            console.error('保存營養素建議失敗:', error);
+            alert('保存失敗，請稍後再試');
+        }
+    };
+
+    // 載入營養素建議
+    window.loadNutritionGoals = async function() {
+        try {
+            // 獲取用戶ID
+            let userId = null;
+            try {
+                const profile = await liff.getProfile();
+                userId = profile.userId;
+            } catch (e) {
+                console.error('無法獲取用戶ID:', e);
+                return;
+            }
+            
+            // 準備數據
+            const goalsData = {
+                userId: userId,
+                action: 'get'
+            };
+            
+            // 發送到後端
+            const response = await fetch('https://7a859e20cfb8.ngrok-free.app/nutrition_goals', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(goalsData)
+            });
+            
+            const result = await response.json();
+            
+            if (result.success) {
+                // 更新顯示
+                document.getElementById('goal-calories').textContent = result.goals.calories;
+                document.getElementById('goal-carbohydrates').textContent = result.goals.carbohydrates;
+                document.getElementById('goal-protein').textContent = result.goals.protein;
+                document.getElementById('goal-fat').textContent = result.goals.fat;
+            }
+            
+        } catch (error) {
+            console.error('載入營養素建議失敗:', error);
+        }
+    };
+
     // 切換營養素統計顯示函數（保留以備用）
     window.toggleNutritionStats = function() {
         const statsContent = document.getElementById('stats-content');
