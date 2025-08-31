@@ -4017,6 +4017,8 @@
             nutritionData = hourlyNutrition;
             
             console.log(`24小時${nutritionType}數據:`, hourlyNutrition);
+        console.log(`圖表標籤:`, labels);
+        console.log(`營養數據:`, nutritionData);
         } else {
             // 多日：按日期分組，計算每天總營養素
             const dailyNutrition = {};
@@ -4058,13 +4060,13 @@
             return sum + nutritionValue;
         }, 0);
         
-        const avgNutrition = Math.round(totalNutrition / filteredData.length);
+        const avgNutrition = filteredData.length > 0 ? Math.round(totalNutrition / filteredData.length) : 0;
         const maxNutrition = Math.max(...nutritionData);
         const minNutrition = Math.min(...nutritionData);
-        const lastNutrition = nutritionData[nutritionData.length - 1];
+        const lastNutrition = nutritionData[nutritionData.length - 1] || 0;
         
         // 計算每日平均營養素（多日統計）
-        const dailyAvgNutrition = days > 1 ? Math.round(totalNutrition / labels.length) : avgNutrition;
+        const dailyAvgNutrition = days > 1 ? (labels.length > 0 ? Math.round(totalNutrition / labels.length) : 0) : avgNutrition;
         
         // 計算非零小時數（單日統計）
         const nonZeroHours = days === 1 ? nutritionData.filter(value => value > 0).length : filteredData.length;
@@ -4137,6 +4139,8 @@
         
         // 渲染圖表的內部函數
         function renderChart() {
+            console.log('開始渲染圖表:', { labels, nutritionData, nutritionType, days });
+            
             // 渲染Chart.js圖表
             const canvas = document.getElementById('global-nutrition-chart');
             if (!canvas) {
@@ -4152,8 +4156,8 @@
             }
             
             // 計算Y軸範圍
-            const yMin = Math.max(0, Math.floor(minNutrition * 0.8));
-            const yMax = Math.ceil(maxNutrition * 1.2);
+            const yMin = 0;
+            const yMax = maxNutrition > 0 ? Math.ceil(maxNutrition * 1.2) : 100; // 如果沒有數據，設定預設最大值
             
             window.globalNutritionChartInstance = new Chart(ctx, {
                 type: 'line',
@@ -4167,7 +4171,7 @@
                         borderWidth: 3,
                         fill: false,
                         tension: 0.4,
-                        pointRadius: 4,
+                        pointRadius: nutritionData.map(value => value > 0 ? 4 : 0), // 只有有數據的點才顯示
                         pointHoverRadius: 6,
                         pointBackgroundColor: color,
                         pointBorderColor: '#fff',
@@ -4191,23 +4195,29 @@
                             displayColors: false,
                             callbacks: {
                                 title: function(context) {
-                                    if (days === 1) {
-                                        return `時間: ${context[0].label}`;
-                                    } else {
-                                        return `日期: ${context[0].label}`;
+                                    if (context && context.length > 0 && context[0]) {
+                                        if (days === 1) {
+                                            return `時間: ${context[0].label}`;
+                                        } else {
+                                            return `日期: ${context[0].label}`;
+                                        }
                                     }
+                                    return '';
                                 },
                                 label: function(context) {
-                                    if (days === 1) {
-                                        const value = context.parsed.y;
-                                        if (value === 0) {
-                                            return `${context[0].label} 無進食`;
+                                    if (context && context.length > 0 && context[0]) {
+                                        if (days === 1) {
+                                            const value = context.parsed.y;
+                                            if (value === 0) {
+                                                return `${context[0].label} 無進食`;
+                                            } else {
+                                                return `${nutritionName}: ${value} ${unit}`;
+                                            }
                                         } else {
-                                            return `${nutritionName}: ${value} ${unit}`;
+                                            return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
                                         }
-                                    } else {
-                                        return `當日總${nutritionName}: ${context.parsed.y} ${unit}`;
                                     }
+                                    return '';
                                 }
                             }
                         }
