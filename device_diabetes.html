@@ -2640,7 +2640,7 @@
                     style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; background: #e9ecef; color: #666;" 
                     onmouseover="this.style.background='#dee2e6'" 
                     onmouseout="this.style.background='#e9ecef'"
-                    onclick="showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}')">${nutrition.label}</button>`;
+                    onclick="(async () => { await showNutritionStats('${nutrition.key}', '${nutrition.unit}', '${nutrition.color}'); })()">${nutrition.label}</button>`;
         });
         html += `</div>`;
         
@@ -2661,7 +2661,7 @@
                     style="padding: 8px 16px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.9em; font-weight: 500; transition: all 0.3s ease; background: #e9ecef; color: #666;" 
                     onmouseover="this.style.background='#dee2e6'" 
                     onmouseout="this.style.background='#e9ecef'"
-                    onclick="updateTimeRange('${range.key}', ${range.days})">${range.label}</button>`;
+                    onclick="(async () => { await updateTimeRange('${range.key}', ${range.days}); })()">${range.label}</button>`;
         });
         html += `</div>`;
         html += `</div>`;
@@ -3795,17 +3795,17 @@
         }
         
         // 生成圖表
-        setTimeout(() => {
+        setTimeout(async () => {
             renderNutritionChart(nutritionType, unit, color, rangeKey, days);
             // 顯示趨勢分析
-            showTrendAnalysis(nutritionType, unit, rangeKey, days);
+            await showTrendAnalysis(nutritionType, unit, rangeKey, days);
         }, 100);
     };
     
     // 更新時間範圍函數
-    window.updateTimeRange = function(rangeKey, days) {
+    window.updateTimeRange = async function(rangeKey, days) {
         const current = window.currentNutritionStats;
-        showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
+        await showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
     
     // 切換整個營養素統計區塊顯示函數
@@ -4274,7 +4274,7 @@
     };
 
     // 顯示趨勢分析
-    window.showTrendAnalysis = function(nutritionType, unit, rangeKey, days) {
+    window.showTrendAnalysis = async function(nutritionType, unit, rangeKey, days) {
         const trendDiv = document.getElementById('trend-analysis');
         const trendContent = document.getElementById('trend-analysis-content');
         
@@ -4283,10 +4283,17 @@
         // 顯示趨勢分析區域
         trendDiv.style.display = 'block';
         
-        // 根據營養素類型和時間範圍生成趨勢分析
-        const analysis = generateTrendAnalysis(nutritionType, unit, rangeKey, days);
+        // 先顯示載入中訊息
+        trendContent.innerHTML = '<div style="text-align: center; color: #666; font-style: italic;">正在生成趨勢分析...</div>';
         
-        trendContent.innerHTML = analysis;
+        try {
+            // 根據營養素類型和時間範圍生成趨勢分析
+            const analysis = await generateTrendAnalysis(nutritionType, unit, rangeKey, days);
+            trendContent.innerHTML = analysis;
+        } catch (error) {
+            console.error('趨勢分析顯示失敗:', error);
+            trendContent.innerHTML = '<div style="text-align: center; color: #dc3545;">趨勢分析生成失敗</div>';
+        }
     };
 
     // 生成趨勢分析文字
@@ -4301,9 +4308,14 @@
         }
         
         try {
+            console.log('開始生成趨勢分析:', { nutritionType, unit, rangeKey, days });
+            
             // 準備數據
             const foodData = prepareFoodDataForAnalysis(nutritionType, days);
+            console.log('準備的食物數據:', foodData);
+            
             if (!foodData || foodData.length === 0) {
+                console.log('無食物數據，返回預設訊息');
                 return `<span style="color: #888;">此時間範圍內無飲食記錄，請嘗試選擇其他時間範圍</span>`;
             }
             
@@ -4350,18 +4362,31 @@
 
     // 準備食物數據供分析使用
     function prepareFoodDataForAnalysis(nutritionType, days) {
-        if (!window.globalMonthDict) return null;
+        console.log('準備食物數據:', { nutritionType, days });
+        console.log('globalMonthDict:', window.globalMonthDict);
+        
+        if (!window.globalMonthDict) {
+            console.log('globalMonthDict 不存在');
+            return null;
+        }
         
         const data = [];
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(endDate.getDate() - days);
         
+        console.log('時間範圍:', { startDate: startDate.toISOString(), endDate: endDate.toISOString() });
+        
         // 收集指定時間範圍內的數據
+        let totalItems = 0;
+        let filteredItems = 0;
+        
         Object.keys(window.globalMonthDict).forEach(month => {
             window.globalMonthDict[month].forEach(item => {
+                totalItems++;
                 const itemDate = new Date(item.date);
                 if (itemDate >= startDate && itemDate <= endDate) {
+                    filteredItems++;
                     data.push({
                         date: item.date,
                         time: item.time,
@@ -4375,23 +4400,30 @@
             });
         });
         
+        console.log(`數據收集完成: 總項目 ${totalItems}, 過濾後 ${filteredItems}, 返回 ${data.length} 筆`);
         return data;
     }
 
     // 調用後端AI趨勢分析
     async function callAITrendAnalysis(analysisData) {
         try {
+            console.log('準備調用AI趨勢分析:', analysisData);
+            
             const formData = new FormData();
             formData.append('analysis_data', JSON.stringify(analysisData));
             
+            console.log('發送請求到後端...');
             const response = await fetch('https://7a859e20cfb8.ngrok-free.app/ai_nutrition_analysis', {
                 method: 'POST',
                 body: formData
             });
             
+            console.log('收到後端回應:', response.status);
             const result = await response.json();
+            console.log('後端回應內容:', result);
             
             if (result.success) {
+                console.log('AI趨勢分析成功:', result.trend_analysis);
                 return result.trend_analysis;
             } else {
                 console.error('AI趨勢分析失敗:', result.message);
