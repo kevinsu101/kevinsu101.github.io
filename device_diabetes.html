@@ -3920,12 +3920,22 @@
         console.log(`合併後總數據: ${allData.length} 筆`);
         
         // 計算日期範圍
-        const endDate = new Date();
-        const startDate = new Date();
+        const now = new Date();
+        let startDate, endDate;
         
         // 確保 days 是有效數字
         const validDays = parseInt(days) || 30;
-        startDate.setDate(endDate.getDate() - validDays);
+        
+        if (validDays === 1) {
+            // 今天：從00:00到23:59
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        } else {
+            // 其他時間範圍：從現在時間往前推指定天數
+            endDate = new Date();
+            startDate = new Date();
+            startDate.setDate(endDate.getDate() - validDays);
+        }
         
         // 格式化日期為 YYYY-MM-DD 格式用於比較
         const startDateStr = startDate.getFullYear() + '-' + 
@@ -3950,9 +3960,10 @@
             // 更新統計內容，但不隱藏時間範圍選擇器
             const statsContent = document.getElementById('stats-content');
             if (statsContent) {
+                const timeLabel = getTimeRangeLabel(rangeKey, days);
                 statsContent.innerHTML = `
                     <div style="text-align: center; color: #666; padding: 20px;">
-                        <div style="margin-bottom: 10px;">過去${days}天內無飲食記錄</div>
+                        <div style="margin-bottom: 10px;">${timeLabel}內無飲食記錄</div>
                         <div style="font-size: 0.9em; color: #888;">請嘗試選擇其他時間範圍或營養素類型</div>
                     </div>
                 `;
@@ -4255,7 +4266,7 @@
     // 取得時間範圍標籤
     function getTimeRangeLabel(rangeKey, days) {
         switch(rangeKey) {
-            case '1d': return '過去1天';
+            case '1d': return '今天';
             case '1w': return '過去1週';
             case '1m': return '過去1個月';
             case '3m': return '過去3個月';
@@ -4371,11 +4382,28 @@
         }
         
         const data = [];
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - days);
+        const now = new Date();
         
-        console.log('時間範圍:', { startDate: startDate.toISOString(), endDate: endDate.toISOString() });
+        // 計算時間範圍
+        let startDate, endDate;
+        
+        if (days === 1) {
+            // 過去一天：從今天00:00到23:59
+            startDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0);
+            endDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 23, 59, 59);
+        } else {
+            // 其他時間範圍：從現在時間往前推指定天數
+            endDate = new Date();
+            startDate = new Date();
+            startDate.setDate(endDate.getDate() - days);
+        }
+        
+        console.log('時間範圍:', { 
+            startDate: startDate.toISOString(), 
+            endDate: endDate.toISOString(),
+            days: days,
+            isToday: days === 1
+        });
         
         // 收集指定時間範圍內的數據
         let totalItems = 0;
