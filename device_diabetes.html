@@ -2925,7 +2925,9 @@
         diaryDiv.innerHTML = html;
         
         // 更新每個卡片的營養素建議值和狀態
-        updateNutritionGoalsInCards();
+        if (window.updateNutritionGoalsInCards) {
+            window.updateNutritionGoalsInCards();
+        }
         
         // 重新綁定刪除事件
         diaryDiv.querySelectorAll('.delete-diary-btn').forEach(btn => {
@@ -2954,6 +2956,40 @@
             };
         });
         
+
+        
+        // 計算當日累加值的輔助函數
+        window.calculateDailyTotals = function() {
+            const dailyTotals = {};
+            
+            // 遍歷所有卡片，按日期累加營養素
+            const cards = document.querySelectorAll('.food-diary-card');
+            cards.forEach(card => {
+                const dateTimeText = card.querySelector('div').textContent;
+                const match = dateTimeText.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
+                if (match) {
+                    const date = match[1];
+                    
+                    // 獲取實際攝取值
+                    const actualCalories = parseFloat(card.querySelector('[style*="color:#e57373"]').textContent) || 0;
+                    const actualCarbs = parseFloat(card.querySelector('[style*="color:#4fc3f7"]').textContent) || 0;
+                    const actualProtein = parseFloat(card.querySelector('[style*="color:#ffb74d"]').textContent) || 0;
+                    const actualFat = parseFloat(card.querySelector('[style*="color:#ba68c8"]').textContent) || 0;
+                    
+                    if (!dailyTotals[date]) {
+                        dailyTotals[date] = { calories: 0, carbs: 0, protein: 0, fat: 0 };
+                    }
+                    
+                    dailyTotals[date].calories += actualCalories;
+                    dailyTotals[date].carbs += actualCarbs;
+                    dailyTotals[date].protein += actualProtein;
+                    dailyTotals[date].fat += actualFat;
+                }
+            });
+            
+            return dailyTotals;
+        };
+
         // 更新每個卡片的當日累加營養素
         window.updateNutritionGoalsInCards = async function() {
             try {
@@ -2987,7 +3023,7 @@
                     const goals = result.goals;
                     
                     // 計算當日累加值
-                    const dailyTotals = calculateDailyTotals();
+                    const dailyTotals = window.calculateDailyTotals();
                     
                     // 更新所有卡片的當日累加值和差異
                     const cards = document.querySelectorAll('.food-diary-card');
@@ -3070,39 +3106,7 @@
                 console.error('更新卡片營養素建議失敗:', error);
             }
         };
-        
-        // 計算當日累加值的輔助函數
-        window.calculateDailyTotals = function() {
-            const dailyTotals = {};
-            
-            // 遍歷所有卡片，按日期累加營養素
-            const cards = document.querySelectorAll('.food-diary-card');
-            cards.forEach(card => {
-                const dateTimeText = card.querySelector('div').textContent;
-                const match = dateTimeText.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
-                if (match) {
-                    const date = match[1];
-                    
-                    // 獲取實際攝取值
-                    const actualCalories = parseFloat(card.querySelector('[style*="color:#e57373"]').textContent) || 0;
-                    const actualCarbs = parseFloat(card.querySelector('[style*="color:#4fc3f7"]').textContent) || 0;
-                    const actualProtein = parseFloat(card.querySelector('[style*="color:#ffb74d"]').textContent) || 0;
-                    const actualFat = parseFloat(card.querySelector('[style*="color:#ba68c8"]').textContent) || 0;
-                    
-                    if (!dailyTotals[date]) {
-                        dailyTotals[date] = { calories: 0, carbs: 0, protein: 0, fat: 0 };
-                    }
-                    
-                    dailyTotals[date].calories += actualCalories;
-                    dailyTotals[date].carbs += actualCarbs;
-                    dailyTotals[date].protein += actualProtein;
-                    dailyTotals[date].fat += actualFat;
-                }
-            });
-            
-            return dailyTotals;
-        };
-        
+
         // 獲取營養素狀態的輔助函數
         window.getNutritionStatus = function(actual, goal) {
             if (!goal || goal <= 0) return { text: '適中', color: '#666' };
