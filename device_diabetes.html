@@ -2672,10 +2672,13 @@
         html += `<div style="text-align: center; color: #666; font-style: italic;">載入統計中...</div>`;
         html += `</div>`;
         
-        // 分析按鈕區域
-        html += `<div id="analysis-buttons" style="display: none; margin-top: 15px; padding-top: 15px; border-top: 1px solid #e9ecef;">`;
-        html += `<div style="text-align: center;">`;
-        html += `<button onclick="generatePersonalizedNutritionAnalysis()" style="padding: 12px 24px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.3s ease; box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 16px rgba(102, 126, 234, 0.4)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">個人化營養分析</button>`;
+        // 趨勢分析區域
+        html += `<div id="trend-analysis" style="display: none; margin-top: 15px; padding: 15px; background: linear-gradient(135deg, #f8f9fa, #e9ecef); border-radius: 8px; border: 1px solid #dee2e6;">`;
+        html += `<div style="text-align: center; margin-bottom: 10px;">`;
+        html += `<span style="font-weight: 600; color: #2c5282; font-size: 1.05em;">📊 趨勢分析</span>`;
+        html += `</div>`;
+        html += `<div id="trend-analysis-content" style="text-align: center; color: #666; font-style: italic; line-height: 1.5;">`;
+        html += `點擊上方營養素按鈕查看趨勢分析`;
         html += `</div>`;
         html += `</div>`;
         html += `</div>`;
@@ -3794,6 +3797,8 @@
         // 生成圖表
         setTimeout(() => {
             renderNutritionChart(nutritionType, unit, color, rangeKey, days);
+            // 顯示趨勢分析
+            showTrendAnalysis(nutritionType, unit, rangeKey, days);
         }, 100);
     };
     
@@ -3857,6 +3862,12 @@
             timeRangeContainer.style.display = 'none';
         }
         
+        // 隱藏趨勢分析區域
+        const trendDiv = document.getElementById('trend-analysis');
+        if (trendDiv) {
+            trendDiv.style.display = 'none';
+        }
+        
         // 重置營養素按鈕狀態
         const nutritionButtons = document.querySelectorAll('.nutrition-type-btn');
         nutritionButtons.forEach(btn => {
@@ -3881,148 +3892,7 @@
         };
     };
     
-    // 個人化營養分析（整合Gemini分析）
-    window.generatePersonalizedNutritionAnalysis = function() {
-        const current = window.currentNutritionStats;
-        const monthDict = window.globalMonthDict;
-        
-        if (!monthDict || Object.keys(monthDict).length === 0) {
-            alert('沒有飲食記錄可供分析');
-            return;
-        }
-        
-        // 檢查是否已經有分析結果，如果有則移除
-        const existingAnalysis = document.getElementById('nutrition-analysis-container');
-        if (existingAnalysis) {
-            existingAnalysis.remove();
-        }
-        
-        // 顯示載入中的分析結果框架
-        let analysisResult = `
-            <div id="nutrition-analysis-container" style="background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); padding: 25px; border-radius: 15px; margin-top: 20px; border: 2px solid #dee2e6;">
-                <h3 style="color: #667eea; margin-bottom: 20px; text-align: center; font-size: 1.3em;"> 個人化營養分析報告</h3>
-                
-                <!-- 分析內容區域 -->
-                <div style="background: white; padding: 20px; border-radius: 10px; border-left: 4px solid #667eea;">
-                    <h4 style="color: #667eea; margin-bottom: 12px;"> 分析結果</h4>
-                    <div id="analysis-content" style="text-align: left; line-height: 1.6; transition: opacity 0.3s ease;">
-                        <div style="text-align: center; color: #666; font-style: italic;">
-                            <div style="margin-bottom: 10px;"> AI 正在分析您的飲食數據...</div>
-                            <div style="font-size: 0.9em;">請稍候，這可能需要幾秒鐘時間</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-        
-        // 顯示分析結果
-        const statsContent = document.getElementById('stats-content');
-        if (statsContent) {
-            statsContent.insertAdjacentHTML('beforeend', analysisResult);
-        }
-        
-        // 準備飲食數據並發送到後端
-        prepareAndSendNutritionData();
-    };
-    
-    // 準備飲食數據並發送到後端
-    async function prepareAndSendNutritionData() {
-        const monthDict = window.globalMonthDict;
-        const current = window.currentNutritionStats;
-        
-        if (!monthDict || !current) {
-            console.error('缺少必要的數據');
-            return;
-        }
-        
-        // 獲取用戶ID
-        let userId = null;
-        try {
-            const profile = await liff.getProfile();
-            userId = profile.userId;
-        } catch (e) {
-            console.error('無法獲取用戶ID:', e);
-        }
-        
-        // 根據當前選擇的時間範圍準備數據
-        let analysisData = {
-            userId: userId,
-            timeRange: current.rangeKey,
-            days: current.days,
-            nutritionType: current.type,
-            unit: current.unit,
-            data: []
-        };
-        
-        // 獲取當前時間範圍的數據
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(endDate.getDate() - current.days);
-        
-        const startDateStr = startDate.toISOString().split('T')[0];
-        const endDateStr = endDate.toISOString().split('T')[0];
-        
-        // 過濾數據
-        const filteredData = [];
-        for (const [date, items] of Object.entries(monthDict)) {
-            if (date >= startDateStr && date <= endDateStr) {
-                for (const item of items) {
-                    filteredData.push({
-                        date: date,
-                        time: item.time,
-                        food_name: item.food_name,
-                        total_cal: item.total_cal,
-                        total_carb: item.total_carb,
-                        total_pro: item.total_pro,
-                        total_fat: item.total_fat
-                    });
-                }
-            }
-        }
-        
-        analysisData.data = filteredData;
-        
-        // 發送到後端進行Gemini分析
-        sendToGeminiAnalysis(analysisData);
-    }
-    
-    // 發送到後端進行Gemini分析
-    function sendToGeminiAnalysis(analysisData) {
-        const formData = new FormData();
-        formData.append('analysis_data', JSON.stringify(analysisData));
-        
-        fetch('https://7a859e20cfb8.ngrok-free.app/ai_nutrition_analysis', {
-            method: 'POST',
-            body: formData
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                // 更新分析結果
-                updateAnalysisResult(data.analysis_result);
-            } else {
-                console.error('分析失敗:', data.error);
-                updateAnalysisResult('❌ 分析失敗，請稍後再試');
-            }
-        })
-        .catch(error => {
-            console.error('發送分析請求失敗:', error);
-            updateAnalysisResult('❌ 網路錯誤，請檢查連線後再試');
-        });
-    }
-    
-    // 更新分析結果
-    function updateAnalysisResult(result) {
-        const analysisContent = document.getElementById('analysis-content');
-        if (analysisContent) {
-            // 使用淡入效果更新內容
-            analysisContent.style.opacity = '0';
-            setTimeout(() => {
-                analysisContent.innerHTML = result;
-                analysisContent.style.opacity = '1';
-            }, 200);
-        }
-    }
+
     
 
     
@@ -4220,11 +4090,6 @@
             // 等待 DOM 更新後再渲染圖表
             setTimeout(() => {
                 renderChart();
-                // 渲染完成後顯示分析按鈕
-                const analysisButtons = document.getElementById('analysis-buttons');
-                if (analysisButtons) {
-                    analysisButtons.style.display = 'block';
-                }
             }, 10);
         }
         
@@ -4389,6 +4254,167 @@
             case '1y': return '過去1年';
             default: return `過去${days}天`;
         }
+    }
+
+    // 更新時間範圍
+    window.updateTimeRange = function(rangeKey, days) {
+        const currentStats = window.currentNutritionStats;
+        if (currentStats) {
+            showNutritionStats(currentStats.type, currentStats.unit, currentStats.color, rangeKey, days);
+        }
+    };
+
+    // 顯示趨勢分析
+    window.showTrendAnalysis = function(nutritionType, unit, rangeKey, days) {
+        const trendDiv = document.getElementById('trend-analysis');
+        const trendContent = document.getElementById('trend-analysis-content');
+        
+        if (!trendDiv || !trendContent) return;
+        
+        // 顯示趨勢分析區域
+        trendDiv.style.display = 'block';
+        
+        // 根據營養素類型和時間範圍生成趨勢分析
+        const analysis = generateTrendAnalysis(nutritionType, unit, rangeKey, days);
+        
+        trendContent.innerHTML = analysis;
+    };
+
+    // 生成趨勢分析文字
+    function generateTrendAnalysis(nutritionType, unit, rangeKey, days) {
+        const nutritionName = getNutritionName(nutritionType);
+        const timeRangeLabel = getTimeRangeLabel(rangeKey, days);
+        
+        // 獲取當前營養統計數據
+        const currentStats = window.currentNutritionStats;
+        if (!currentStats || !window.globalMonthDict) {
+            return `<span style="color: #888;">無法生成趨勢分析，請先選擇營養素類型</span>`;
+        }
+        
+        try {
+            // 計算趨勢分析
+            const trendData = calculateTrendData(nutritionType, days);
+            if (!trendData) {
+                return `<span style="color: #888;">此時間範圍內無足夠數據進行趨勢分析</span>`;
+            }
+            
+            // 生成30字以內的趨勢分析
+            const analysis = generateTrendText(trendData, nutritionName, timeRangeLabel);
+            
+            return `<span style="color: #2c5282; font-weight: 500;">${analysis}</span>`;
+            
+        } catch (error) {
+            console.error('趨勢分析生成失敗:', error);
+            return `<span style="color: #dc3545;">趨勢分析生成失敗</span>`;
+        }
+    }
+
+    // 獲取營養素名稱
+    function getNutritionName(nutritionType) {
+        const names = {
+            'cal': '熱量',
+            'carb': '碳水化合物',
+            'pro': '蛋白質',
+            'fat': '脂肪'
+        };
+        return names[nutritionType] || '營養素';
+    }
+
+    // 計算趨勢數據
+    function calculateTrendData(nutritionType, days) {
+        if (!window.globalMonthDict) return null;
+        
+        const data = [];
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(endDate.getDate() - days);
+        
+        // 收集指定時間範圍內的數據
+        Object.keys(window.globalMonthDict).forEach(month => {
+            window.globalMonthDict[month].forEach(item => {
+                const itemDate = new Date(item.date);
+                if (itemDate >= startDate && itemDate <= endDate) {
+                    let value = 0;
+                    switch (nutritionType) {
+                        case 'cal':
+                            value = parseFloat(item.total_cal) || 0;
+                            break;
+                        case 'carb':
+                            value = parseFloat(item.total_carb) || 0;
+                            break;
+                        case 'pro':
+                            value = parseFloat(item.total_pro) || 0;
+                            break;
+                        case 'fat':
+                            value = parseFloat(item.total_fat) || 0;
+                            break;
+                    }
+                    data.push({
+                        date: item.date,
+                        value: value
+                    });
+                }
+            });
+        });
+        
+        if (data.length === 0) return null;
+        
+        // 按日期分組並計算每日總量
+        const dailyData = {};
+        data.forEach(item => {
+            if (!dailyData[item.date]) {
+                dailyData[item.date] = 0;
+            }
+            dailyData[item.date] += item.value;
+        });
+        
+        // 轉換為陣列並排序
+        const sortedData = Object.entries(dailyData)
+            .map(([date, value]) => ({ date, value }))
+            .sort((a, b) => new Date(a.date) - new Date(b.date));
+        
+        return sortedData;
+    }
+
+    // 生成趨勢分析文字
+    function generateTrendText(trendData, nutritionName, timeRangeLabel) {
+        if (!trendData || trendData.length < 2) {
+            return `${timeRangeLabel}內${nutritionName}攝取數據不足，無法進行趨勢分析。`;
+        }
+        
+        const values = trendData.map(item => item.value);
+        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
+        const firstHalf = values.slice(0, Math.ceil(values.length / 2));
+        const secondHalf = values.slice(Math.ceil(values.length / 2));
+        const firstAvg = firstHalf.reduce((sum, val) => sum + val, 0) / firstHalf.length;
+        const secondAvg = secondHalf.reduce((sum, val) => sum + val, 0) / secondHalf.length;
+        
+        // 判斷趨勢
+        let trend = '';
+        if (secondAvg > firstAvg * 1.1) {
+            trend = '呈上升趨勢';
+        } else if (secondAvg < firstAvg * 0.9) {
+            trend = '呈下降趨勢';
+        } else {
+            trend = '相對穩定';
+        }
+        
+        // 計算變異係數
+        const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
+        const stdDev = Math.sqrt(variance);
+        const cv = (stdDev / avg) * 100;
+        
+        let stability = '';
+        if (cv < 15) {
+            stability = '攝取量穩定';
+        } else if (cv < 30) {
+            stability = '攝取量略有波動';
+        } else {
+            stability = '攝取量波動較大';
+        }
+        
+        // 組合30字以內的分析
+        return `${timeRangeLabel}${nutritionName}攝取${trend}，${stability}，平均每日${avg.toFixed(1)}單位。`;
     }
 </script>
 <!-- Chart.js and dependencies -->
