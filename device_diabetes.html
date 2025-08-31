@@ -2628,30 +2628,30 @@
         html += `<button id="toggle-nutrition-goals" onclick="toggleNutritionGoalsSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
         
         html += `<div id="nutrition-goals-content">`;
-        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">🎯 每日營養素建議</div>`;
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;"> 每日營養素建議</div>`;
         
         // 營養素建議顯示區域
         html += `<div id="nutrition-goals-display" style="margin-bottom: 15px;">`;
-        html += `<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px;">`;
-        html += `<div style="text-align: center; padding: 10px; background: #fff3e0; border-radius: 8px; border: 2px solid #e57373;">`;
-        html += `<div style="font-size: 1.1em; font-weight: 700; color: #e57373;" id="goal-calories">2000</div>`;
-        html += `<div style="font-size: 0.9em; color: #666;">熱量 (kcal)</div>`;
+        html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 400px; margin: 0 auto;">`;
+        html += `<div style="text-align: center; padding: 15px; background: #fff3e0; border-radius: 12px; border: 3px solid #e57373; box-shadow: 0 2px 8px rgba(229, 115, 115, 0.2);">`;
+        html += `<div style="font-size: 1.3em; font-weight: 700; color: #e57373; margin-bottom: 5px;" id="goal-calories">2000</div>`;
+        html += `<div style="font-size: 0.9em; color: #666; font-weight: 500;">熱量 (kcal)</div>`;
         html += `</div>`;
-        html += `<div style="text-align: center; padding: 10px; background: #e3f2fd; border-radius: 8px; border: 2px solid #4fc3f7;">`;
-        html += `<div style="font-size: 1.1em; font-weight: 700; color: #4fc3f7;" id="goal-carbohydrates">250</div>`;
-        html += `<div style="font-size: 0.9em; color: #666;">碳水化合物 (g)</div>`;
+        html += `<div style="text-align: center; padding: 15px; background: #e3f2fd; border-radius: 12px; border: 3px solid #4fc3f7; box-shadow: 0 2px 8px rgba(79, 195, 247, 0.2);">`;
+        html += `<div style="font-size: 1.3em; font-weight: 700; color: #4fc3f7; margin-bottom: 5px;" id="goal-carbohydrates">250</div>`;
+        html += `<div style="font-size: 0.9em; color: #666; font-weight: 500;">碳水化合物 (g)</div>`;
         html += `</div>`;
-        html += `<div style="text-align: center; padding: 10px; background: #fff8e1; border-radius: 8px; border: 2px solid #ffb74d;">`;
-        html += `<div style="font-size: 1.1em; font-weight: 700; color: #ffb74d;" id="goal-protein">75</div>`;
-        html += `<div style="font-size: 0.9em; color: #666;">蛋白質 (g)</div>`;
+        html += `<div style="text-align: center; padding: 15px; background: #fff8e1; border-radius: 12px; border: 3px solid #ffb74d; box-shadow: 0 2px 8px rgba(255, 183, 77, 0.2);">`;
+        html += `<div style="font-size: 1.3em; font-weight: 700; color: #ffb74d; margin-bottom: 5px;" id="goal-protein">75</div>`;
+        html += `<div style="font-size: 0.9em; color: #666; font-weight: 500;">蛋白質 (g)</div>`;
         html += `</div>`;
-        html += `<div style="text-align: center; padding: 10px; background: #f3e5f5; border-radius: 8px; border: 2px solid #ba68c8;">`;
-        html += `<div style="font-size: 1.1em; font-weight: 700; color: #ba68c8;" id="goal-fat">65</div>`;
-        html += `<div style="font-size: 0.9em; color: #666;">脂肪 (g)</div>`;
+        html += `<div style="text-align: center; padding: 15px; background: #f3e5f5; border-radius: 12px; border: 3px solid #ba68c8; box-shadow: 0 2px 8px rgba(186, 104, 200, 0.2);">`;
+        html += `<div style="font-size: 1.3em; font-weight: 700; color: #ba68c8; margin-bottom: 5px;" id="goal-fat">65</div>`;
+        html += `<div style="font-size: 0.9em; color: #666; font-weight: 500;">脂肪 (g)</div>`;
         html += `</div>`;
         html += `</div>`;
-        html += `<div style="text-align: center; margin-top: 10px;">`;
-        html += `<button onclick="showNutritionGoalsEdit()" style="background: #1976d2; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.9em;">編輯建議</button>`;
+        html += `<div style="text-align: center; margin-top: 15px;">`;
+        html += `<button onclick="showNutritionGoalsEdit()" style="background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3); transition: all 0.3s ease;">編輯建議</button>`;
         html += `</div>`;
         html += `</div>`;
         
@@ -3899,6 +3899,8 @@
     window.toggleNutritionGoalsSection = function() {
         const goalsContent = document.getElementById('nutrition-goals-content');
         const toggleBtn = document.getElementById('toggle-nutrition-goals');
+        const goalsDisplay = document.getElementById('nutrition-goals-display');
+        const goalsEdit = document.getElementById('nutrition-goals-edit');
         
         if (goalsContent && toggleBtn) {
             if (goalsContent.style.display === 'none') {
@@ -3907,8 +3909,9 @@
                 toggleBtn.textContent = '▼';
                 toggleBtn.style.transform = 'rotate(0deg)';
             } else {
-                // 收合
-                goalsContent.style.display = 'none';
+                // 收合 - 只隱藏內容，保留標題
+                if (goalsDisplay) goalsDisplay.style.display = 'none';
+                if (goalsEdit) goalsEdit.style.display = 'none';
                 toggleBtn.textContent = '▲';
                 toggleBtn.style.transform = 'rotate(180deg)';
             }
@@ -3919,8 +3922,17 @@
     window.showNutritionGoalsEdit = function() {
         const displayDiv = document.getElementById('nutrition-goals-display');
         const editDiv = document.getElementById('nutrition-goals-edit');
+        const goalsContent = document.getElementById('nutrition-goals-content');
+        const toggleBtn = document.getElementById('toggle-nutrition-goals');
         
         if (displayDiv && editDiv) {
+            // 確保內容區域是展開的
+            if (goalsContent) goalsContent.style.display = 'block';
+            if (toggleBtn) {
+                toggleBtn.textContent = '▼';
+                toggleBtn.style.transform = 'rotate(0deg)';
+            }
+            
             displayDiv.style.display = 'none';
             editDiv.style.display = 'block';
             
@@ -4005,7 +4017,13 @@
                 document.getElementById('goal-fat').textContent = fat;
                 
                 // 切換回顯示模式
-                cancelNutritionGoalsEdit();
+                const displayDiv = document.getElementById('nutrition-goals-display');
+                const editDiv = document.getElementById('nutrition-goals-edit');
+                
+                if (displayDiv && editDiv) {
+                    displayDiv.style.display = 'block';
+                    editDiv.style.display = 'none';
+                }
                 
                 alert('營養素建議已保存');
             } else {
