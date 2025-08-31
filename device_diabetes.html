@@ -2690,8 +2690,8 @@
         html += `<div id="nutrition-stats-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
         html += `<button id="toggle-nutrition-stats" onclick="toggleNutritionStatsSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
         
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">營養素攝取統計</div>`;
         html += `<div id="nutrition-stats-content">`;
-        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">📊 營養素攝取統計</div>`;
         
         // 營養素選擇按鈕
         html += `<div style="display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-bottom: 15px;">`;
@@ -3887,25 +3887,7 @@
         await showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
     
-    // 切換整個營養素統計區塊顯示函數
-    window.toggleNutritionStatsSection = function() {
-        const nutritionContent = document.getElementById('nutrition-stats-content');
-        const toggleBtn = document.getElementById('toggle-nutrition-stats');
-        
-        if (nutritionContent && toggleBtn) {
-            if (nutritionContent.style.display === 'none') {
-                // 展開
-                nutritionContent.style.display = 'block';
-                toggleBtn.textContent = '▼';
-                toggleBtn.style.transform = 'rotate(0deg)';
-            } else {
-                // 收合
-                nutritionContent.style.display = 'none';
-                toggleBtn.textContent = '▲';
-                toggleBtn.style.transform = 'rotate(180deg)';
-            }
-        }
-    };
+
     
     // 切換營養素建議區塊顯示函數
     window.toggleNutritionGoalsSection = function() {
