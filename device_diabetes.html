@@ -2941,12 +2941,8 @@
         
         // 等待DOM更新完成後再更新營養素建議
         setTimeout(() => {
-            console.log('檢查函數是否存在:', typeof window.updateNutritionGoalsInCards);
             if (typeof window.updateNutritionGoalsInCards === 'function') {
-                console.log('開始更新營養素建議...');
                 window.updateNutritionGoalsInCards();
-            } else {
-                console.error('updateNutritionGoalsInCards 函數未定義');
             }
         }, 200);
         
@@ -2981,50 +2977,39 @@
         
         // 計算當日累加值的輔助函數
         window.calculateDailyTotals = function() {
-            console.log('開始計算當日累加值...');
             const dailyTotals = {};
             
             // 遍歷所有卡片，按日期累加營養素
             const cards = document.querySelectorAll('.food-diary-card');
-            console.log('找到卡片數量:', cards.length);
             
             if (cards.length === 0) {
-                console.log('沒有找到任何卡片，返回空結果');
                 return dailyTotals;
             }
             
             cards.forEach((card, index) => {
                 const dateTimeText = card.querySelector('div').textContent;
-                console.log(`卡片 ${index} 日期時間文字:`, dateTimeText);
                 
                 const match = dateTimeText.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
                 if (match) {
                     const date = match[1];
-                    console.log(`處理日期: ${date}`);
                     
                     // 直接從DOM中提取營養素值
                     const nutritionSpans = card.querySelectorAll('span[style*="font-size:1.35em"]');
-                    console.log(`找到營養素span數量:`, nutritionSpans.length);
                     
                     let actualCalories = 0, actualCarbs = 0, actualProtein = 0, actualFat = 0;
                     
                     nutritionSpans.forEach((span, spanIndex) => {
                         const value = parseFloat(span.textContent) || 0;
                         const spanColor = span.style.color;
-                        console.log(`營養素span ${spanIndex}: 值=${value}, 顏色=${spanColor}`);
                         
                         if (spanColor === 'rgb(229, 115, 115)' || spanColor === '#e57373') {
                             actualCalories = value;
-                            console.log(`設定熱量: ${actualCalories}`);
                         } else if (spanColor === 'rgb(79, 195, 247)' || spanColor === '#4fc3f7') {
                             actualCarbs = value;
-                            console.log(`設定碳水: ${actualCarbs}`);
                         } else if (spanColor === 'rgb(255, 183, 77)' || spanColor === '#ffb74d') {
                             actualProtein = value;
-                            console.log(`設定蛋白質: ${actualProtein}`);
                         } else if (spanColor === 'rgb(186, 104, 200)' || spanColor === '#ba68c8') {
                             actualFat = value;
-                            console.log(`設定脂肪: ${actualFat}`);
                         }
                     });
                     
@@ -3036,12 +3021,9 @@
                     dailyTotals[date].carbs += actualCarbs;
                     dailyTotals[date].protein += actualProtein;
                     dailyTotals[date].fat += actualFat;
-                    
-                    console.log(`日期 ${date} 累加後:`, dailyTotals[date]);
                 }
             });
             
-            console.log('最終計算的當日累加值:', dailyTotals);
             return dailyTotals;
         };
 
@@ -3076,12 +3058,9 @@
                 
                 if (result.success) {
                     const goals = result.goals;
-                    console.log('獲取到用戶營養素建議:', goals);
                     
                     // 計算當日累加值
-                    console.log('開始調用 calculateDailyTotals...');
                     const dailyTotals = window.calculateDailyTotals();
-                    console.log('計算完成的當日累加值:', dailyTotals);
                     
                     // 更新所有卡片的當日累加值和差異
                     const cards = document.querySelectorAll('.food-diary-card');
@@ -3124,14 +3103,7 @@
                             const proteinDiff = goals.protein - dailyData.protein;
                             const fatDiff = goals.fat - dailyData.fat;
                             
-                            console.log(`日期 ${date} 時間 ${time}:`, {
-                                dailyData,
-                                goals,
-                                caloriesDiff,
-                                carbsDiff,
-                                proteinDiff,
-                                fatDiff
-                            });
+
                             
                             const caloriesDiffEl = document.getElementById(`calories-diff-${date}-${time}`);
                             const carbsDiffEl = document.getElementById(`carb-diff-${date}-${time}`);
