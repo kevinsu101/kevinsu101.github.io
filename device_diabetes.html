@@ -2922,7 +2922,7 @@
                 }
                 let sgrHtml = mealSGR ? `<div style='color:#1976d2;font-size:1.05em;font-weight:700;margin:6px 0 2px 0;'>碳水血糖反應（SGR）：${mealSGR}</div>` : '';
                 // 一定顯示營養建議按鈕
-                let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示營養建議</button>`;
+                let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示餐點營養建議</button>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;position:relative;">
                     <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}" title="刪除" style="position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1em;color:#e57373;z-index:2;line-height:1;">刪除</button>
