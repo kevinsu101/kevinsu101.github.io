@@ -2979,28 +2979,40 @@
             
             // 遍歷所有卡片，按日期累加營養素
             const cards = document.querySelectorAll('.food-diary-card');
-            cards.forEach(card => {
+            console.log('找到卡片數量:', cards.length);
+            
+            cards.forEach((card, index) => {
                 const dateTimeText = card.querySelector('div').textContent;
+                console.log(`卡片 ${index} 日期時間文字:`, dateTimeText);
+                
                 const match = dateTimeText.match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2})/);
                 if (match) {
                     const date = match[1];
+                    console.log(`處理日期: ${date}`);
                     
-                    // 獲取實際攝取值 - 修正選擇器
-                    const nutritionElements = card.querySelectorAll('[style*="font-size:1.35em"]');
+                    // 直接從DOM中提取營養素值
+                    const nutritionSpans = card.querySelectorAll('span[style*="font-size:1.35em"]');
+                    console.log(`找到營養素span數量:`, nutritionSpans.length);
+                    
                     let actualCalories = 0, actualCarbs = 0, actualProtein = 0, actualFat = 0;
                     
-                    nutritionElements.forEach(el => {
-                        const value = parseFloat(el.textContent) || 0;
-                        const parentStyle = el.parentElement.style.cssText;
+                    nutritionSpans.forEach((span, spanIndex) => {
+                        const value = parseFloat(span.textContent) || 0;
+                        const spanColor = span.style.color;
+                        console.log(`營養素span ${spanIndex}: 值=${value}, 顏色=${spanColor}`);
                         
-                        if (parentStyle.includes('color:#e57373')) {
+                        if (spanColor === 'rgb(229, 115, 115)' || spanColor === '#e57373') {
                             actualCalories = value;
-                        } else if (parentStyle.includes('color:#4fc3f7')) {
+                            console.log(`設定熱量: ${actualCalories}`);
+                        } else if (spanColor === 'rgb(79, 195, 247)' || spanColor === '#4fc3f7') {
                             actualCarbs = value;
-                        } else if (parentStyle.includes('color:#ffb74d')) {
+                            console.log(`設定碳水: ${actualCarbs}`);
+                        } else if (spanColor === 'rgb(255, 183, 77)' || spanColor === '#ffb74d') {
                             actualProtein = value;
-                        } else if (parentStyle.includes('color:#ba68c8')) {
+                            console.log(`設定蛋白質: ${actualProtein}`);
+                        } else if (spanColor === 'rgb(186, 104, 200)' || spanColor === '#ba68c8') {
                             actualFat = value;
+                            console.log(`設定脂肪: ${actualFat}`);
                         }
                     });
                     
@@ -3012,10 +3024,12 @@
                     dailyTotals[date].carbs += actualCarbs;
                     dailyTotals[date].protein += actualProtein;
                     dailyTotals[date].fat += actualFat;
+                    
+                    console.log(`日期 ${date} 累加後:`, dailyTotals[date]);
                 }
             });
             
-            console.log('計算的當日累加值:', dailyTotals);
+            console.log('最終計算的當日累加值:', dailyTotals);
             return dailyTotals;
         };
 
