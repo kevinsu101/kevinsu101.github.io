@@ -781,7 +781,7 @@
         <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
         <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
         <button id="btn-food-diary" class="nav-btn">飲食日誌</button>
-        <button id="btn-personal-advice" class="nav-btn">個人化營養飲食建議</button>
+
         <button id="btn-feedback" class="nav-btn">意見回饋</button>
         
     </div>
@@ -994,6 +994,20 @@
 
     <div id="section-food-diary" class="content-section" style="display: none;">
         <h2>飲食日誌</h2>
+        
+        <!-- 個人化營養飲食建議區塊 -->
+        <div id="personal-advice-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">
+            <button id="toggle-personal-advice" onclick="togglePersonalAdviceSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>
+            
+            <div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人化營養飲食建議</div>
+            <div id="personal-advice-content">
+                <div style="margin: 30px 0; text-align: center;">
+                    <button id="loadPersonalAdviceBtn" style="padding:10px 22px;background:#1976d2;color:#fff;border:none;border-radius:8px;font-size:1.08em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.08);margin-bottom:18px;">取得個人化營養飲食建議</button>
+                    <div id="personal-advice-area"></div>
+                </div>
+            </div>
+        </div>
+        
         <div id="foodDiaryOutput" style="padding: 10px;"></div>
     </div>
 
@@ -1192,13 +1206,7 @@
         <div id="feedbackResult"></div>
     </div>
 
-    <div id="section-personal-advice" class="content-section" style="display: none;">
-        <h2>個人化營養飲食建議</h2>
-        <div style="margin: 30px 0; text-align: center;">
-            <button id="loadPersonalAdviceBtn" style="padding:10px 22px;background:#1976d2;color:#fff;border:none;border-radius:8px;font-size:1.08em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.08);margin-bottom:18px;">取得個人化營養飲食建議</button>
-            <div id="personal-advice-area"></div>
-        </div>
-    </div>
+
 </div>
 
 <script>
@@ -1236,6 +1244,10 @@
                 // 載入營養素建議
                 setTimeout(() => {
                     loadNutritionGoals();
+                    // 綁定個人化營養飲食建議按鈕
+                    if (window.bindPersonalAdviceButton) {
+                        window.bindPersonalAdviceButton();
+                    }
                 }, 1000);
             }
             // 當切換到 CGM 分析頁面時，自動載入資料
@@ -2922,7 +2934,7 @@
                 }
                 let sgrHtml = mealSGR ? `<div style='color:#1976d2;font-size:1.05em;font-weight:700;margin:6px 0 2px 0;'>碳水血糖反應（SGR）：${mealSGR}</div>` : '';
                 // 一定顯示營養建議按鈕
-                let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示餐點營養建議</button>`;
+                let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示營養建議</button>`;
                 html += `
                 <div class="food-diary-card" style="border:1px solid #e9ecef;border-radius:10px;padding:12px;margin-bottom:12px;background:#fff;position:relative;">
                     <button class="delete-diary-btn" data-date="${item.date}" data-time="${item.time}" title="刪除" style="position:absolute;top:10px;right:10px;background:transparent;border:none;cursor:pointer;font-size:1em;color:#e57373;z-index:2;line-height:1;">刪除</button>
@@ -3978,31 +3990,35 @@
         document.getElementById('personal-advice-area').innerHTML = '<div style="text-align:center;padding:40px 0;"><span class="loader"></span><div style="margin-top:12px;color:#1976d2;font-size:1.1em;">正在產生個人化建議...</div></div>';
     }
 
-    // 觸發按鈕事件
-    const adviceBtn = document.getElementById('loadPersonalAdviceBtn');
-    adviceBtn.onclick = async function() {
-        const userId = window.globalUserId || localStorage.getItem('line_user_id');
-        if (!userId) {
-            document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">找不到用戶ID，請先登入</div>';
-            return;
+    // 個人化營養飲食建議按鈕事件綁定函數
+    window.bindPersonalAdviceButton = function() {
+        const adviceBtn = document.getElementById('loadPersonalAdviceBtn');
+        if (adviceBtn) {
+            adviceBtn.onclick = async function() {
+                const userId = window.globalUserId || localStorage.getItem('line_user_id');
+                if (!userId) {
+                    document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">找不到用戶ID，請先登入</div>';
+                    return;
+                }
+                showAdviceLoading();
+                try {
+                    const res = await fetch('https://7a859e20cfb8.ngrok-free.app/advice_flask', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId })
+                    });
+                    const result = await res.json();
+                    if (result.success && result.advice_text) {
+                        renderPersonalAdvice(result.advice_text);
+                    } else {
+                        document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">查無建議</div>';
+                    }
+                } catch (e) {
+                    document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">載入建議失敗，請稍後再試</div>';
+                }
+            };
         }
-        showAdviceLoading();
-        try {
-            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/advice_flask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
-            });
-            const result = await res.json();
-            if (result.success && result.advice_text) {
-                renderPersonalAdvice(result.advice_text);
-            } else {
-                document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">查無建議</div>';
-            }
-        } catch (e) {
-            document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">載入建議失敗，請稍後再試</div>';
-        }
-    }
+    };
     // loader 樣式
     const style = document.createElement('style');
     style.innerHTML = `.loader {border: 4px solid #f3f3f3;border-top: 4px solid #1976d2;border-radius: 50%;width: 36px;height: 36px;animation: spin 1s linear infinite;display:inline-block;}@keyframes spin {0% { transform: rotate(0deg);}100% { transform: rotate(360deg);}}`;
@@ -4144,7 +4160,26 @@
         const current = window.currentNutritionStats;
         await showNutritionStats(current.type, current.unit, current.color, rangeKey, days);
     };
-    
+
+    // 切換個人化營養飲食建議區塊顯示函數
+    window.togglePersonalAdviceSection = function() {
+        const adviceContent = document.getElementById('personal-advice-content');
+        const toggleBtn = document.getElementById('toggle-personal-advice');
+        
+        if (adviceContent && toggleBtn) {
+            if (adviceContent.style.display === 'none') {
+                // 展開 - 顯示內容
+                adviceContent.style.display = 'block';
+                toggleBtn.textContent = '▼';
+                toggleBtn.style.transform = 'rotate(0deg)';
+            } else {
+                // 收合 - 隱藏內容，保留標題
+                adviceContent.style.display = 'none';
+                toggleBtn.textContent = '▲';
+                toggleBtn.style.transform = 'rotate(180deg)';
+            }
+        }
+    };
 
     
     // 切換營養素建議區塊顯示函數
