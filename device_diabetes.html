@@ -1230,10 +1230,6 @@
                 // 載入營養素建議
                 setTimeout(() => {
                     loadNutritionGoals();
-                    // 綁定個人化營養飲食建議按鈕
-                    if (window.bindPersonalAdviceButton) {
-                        window.bindPersonalAdviceButton();
-                    }
                 }, 1000);
             }
             // 當切換到 CGM 分析頁面時，自動載入資料
@@ -2950,10 +2946,14 @@
         });
         diaryDiv.innerHTML = html;
         
-        // 等待DOM更新完成後再更新營養素建議
+        // 等待DOM更新完成後再更新營養素建議和綁定按鈕
         setTimeout(() => {
             if (typeof window.updateNutritionGoalsInCards === 'function') {
                 window.updateNutritionGoalsInCards();
+            }
+            // 綁定個人化營養飲食建議按鈕
+            if (window.bindPersonalAdviceButton) {
+                window.bindPersonalAdviceButton();
             }
         }, 200);
         
@@ -3991,10 +3991,15 @@
 
     // 個人化營養飲食建議按鈕事件綁定函數
     window.bindPersonalAdviceButton = function() {
+        console.log('開始綁定個人化營養飲食建議按鈕...');
         const adviceBtn = document.getElementById('loadPersonalAdviceBtn');
+        console.log('找到按鈕元素:', adviceBtn);
         if (adviceBtn) {
+            console.log('成功綁定按鈕事件');
             adviceBtn.onclick = async function() {
+                console.log('個人化營養飲食建議按鈕被點擊');
                 const userId = window.globalUserId || localStorage.getItem('line_user_id');
+                console.log('用戶ID:', userId);
                 if (!userId) {
                     document.getElementById('personal-advice-area').innerHTML = '<div style="color:#d9534f;">找不到用戶ID，請先登入</div>';
                     return;
