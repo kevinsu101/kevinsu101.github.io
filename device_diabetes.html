@@ -994,20 +994,6 @@
 
     <div id="section-food-diary" class="content-section" style="display: none;">
         <h2>飲食日誌</h2>
-        
-        <!-- 個人化營養飲食建議區塊 -->
-        <div id="personal-advice-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">
-            <button id="toggle-personal-advice" onclick="togglePersonalAdviceSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>
-            
-            <div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人化營養飲食建議</div>
-            <div id="personal-advice-content">
-                <div style="margin: 30px 0; text-align: center;">
-                    <button id="loadPersonalAdviceBtn" style="padding:10px 22px;background:#1976d2;color:#fff;border:none;border-radius:8px;font-size:1.08em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.08);margin-bottom:18px;">取得個人化營養飲食建議</button>
-                    <div id="personal-advice-area"></div>
-                </div>
-            </div>
-        </div>
-        
         <div id="foodDiaryOutput" style="padding: 10px;"></div>
     </div>
 
@@ -2763,6 +2749,19 @@
         html += `</div>`;
         html += `</div>`;
         
+        html += `</div>`;
+        html += `</div>`;
+        
+        // 個人化營養飲食建議區塊
+        html += `<div id="personal-advice-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
+        html += `<button id="toggle-personal-advice" onclick="togglePersonalAdviceSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
+        
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人化營養飲食建議</div>`;
+        html += `<div id="personal-advice-content">`;
+        html += `<div style="margin: 30px 0; text-align: center;">`;
+        html += `<button id="loadPersonalAdviceBtn" style="padding:10px 22px;background:#1976d2;color:#fff;border:none;border-radius:8px;font-size:1.08em;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(25,118,210,0.08);margin-bottom:18px;">取得個人化營養飲食建議</button>`;
+        html += `<div id="personal-advice-area"></div>`;
+        html += `</div>`;
         html += `</div>`;
         html += `</div>`;
         
