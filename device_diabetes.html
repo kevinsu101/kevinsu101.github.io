@@ -2618,9 +2618,9 @@
         let html = '';
 
         // 個人數據折疊區塊（含右上更新按鈕）
-        html += `<div id="personal-metrics-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">
-            <button id="toggle-personal-metrics" onclick="togglePersonalMetricsSection()" style="position: absolute; top: 8px; right: 36px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>
-            <button id="refresh-personal-metrics" title="更新數據" onclick="refreshPersonalMetrics()" style="position: absolute; top: 6px; right: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">更新</button>
+        html += `<div id=\"personal-metrics-container\" style=\"margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;\">
+            <button id=\"toggle-personal-metrics\" onclick=\"togglePersonalMetricsSection()\" style=\"position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;\">▼</button>
+            <button id=\"refresh-personal-metrics\" title=\"更新數據\" onclick=\"refreshPersonalMetrics()\" style=\"position: absolute; top: 6px; left: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;\">更新</button>
             <div style="text-align: center; margin-bottom: 10px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人數據</div>
             <div id="personal-metrics-content" style="display: block;">
                 <div id="personal-metrics-body" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;">
@@ -4292,26 +4292,37 @@
         }
     };
 
-    // 將個人數據渲染為美觀卡片
+    // 將個人數據渲染為可左右滑動的橫向表格（類似 CGM 療程表）
     function renderPersonalMetricsHtml(data) {
-        // 預期欄位範例：height_cm, weight_kg, bmi, hba1c, tc, ldl, hdl, tg, sbp, dbp, egfr, creatinine, updated_at
         const safe = (v, fallback='-') => (v===null||v===undefined||v==='') ? fallback : v;
+        const headers = [
+            { key: 'height_cm', label: '身高(cm)' },
+            { key: 'weight_kg', label: '體重(kg)' },
+            { key: 'bmi', label: 'BMI' },
+            { key: 'hba1c', label: 'HbA1c(%)' },
+            { key: 'tc', label: '總膽固醇(mg/dL)' },
+            { key: 'ldl', label: 'LDL(mg/dL)' },
+            { key: 'hdl', label: 'HDL(mg/dL)' },
+            { key: 'tg', label: '三酸甘油脂(mg/dL)' },
+            { key: 'sbp', label: '收縮壓(mmHg)' },
+            { key: 'dbp', label: '舒張壓(mmHg)' },
+            { key: 'egfr', label: 'eGFR(mL/min)' },
+            { key: 'creatinine', label: '肌酐(mg/dL)' },
+            { key: 'updated_at', label: '更新時間' }
+        ];
+        const headerHtml = headers.map(h => `<th style=\"padding: 12px; text-align: center; white-space: nowrap;\">${h.label}</th>`).join('');
+        const rowHtml = headers.map(h => `<td style=\"padding: 12px; text-align: center; border-top: 1px solid #e2e8f0;\">${safe(data[h.key])}</td>`).join('');
         return `
-            <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
-                ${metricCard('身高', safe(data.height_cm),'cm','#4fc3f7')}
-                ${metricCard('體重', safe(data.weight_kg),'kg','#e57373')}
-                ${metricCard('BMI', safe(data.bmi),'','#ba68c8')}
-                ${metricCard('HbA1c', safe(data.hba1c),'%','#ffb74d')}
-                ${metricCard('TC', safe(data.tc),'mg/dL','#1976d2')}
-                ${metricCard('LDL', safe(data.ldl),'mg/dL','#8d5524')}
-                ${metricCard('HDL', safe(data.hdl),'mg/dL','#43a047')}
-                ${metricCard('TG', safe(data.tg),'mg/dL','#6a1b9a')}
-                ${metricCard('收縮壓', safe(data.sbp),'mmHg','#f57c00')}
-                ${metricCard('舒張壓', safe(data.dbp),'mmHg','#455a64')}
-                ${metricCard('eGFR', safe(data.egfr),'mL/min','#0097a7')}
-                ${metricCard('肌酐', safe(data.creatinine),'mg/dL','#c2185b')}
+            <div style=\"overflow-x: auto; margin-bottom: 10px;\">
+              <table style=\"width: 100%; border-collapse: collapse; min-width: 900px;\">
+                <thead>
+                  <tr style=\"background: #2c5282; color: #fff;\">${headerHtml}</tr>
+                </thead>
+                <tbody>
+                  <tr>${rowHtml}</tr>
+                </tbody>
+              </table>
             </div>
-            <div style="text-align:right;color:#888;margin-top:8px;">更新時間：${safe(data.updated_at)}</div>
         `;
     }
 
