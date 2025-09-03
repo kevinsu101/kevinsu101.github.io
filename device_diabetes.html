@@ -2617,17 +2617,7 @@
         
         let html = '';
 
-        // 個人數據折疊區塊（含右上更新按鈕）
-        html += `<div id=\"personal-metrics-container\" style=\"margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;\">
-            <button id=\"toggle-personal-metrics\" onclick=\"togglePersonalMetricsSection()\" style=\"position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;\">▼</button>
-            <button id=\"refresh-personal-metrics\" title=\"更新數據\" onclick=\"refreshPersonalMetrics()\" style=\"position: absolute; top: 6px; left: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;\">更新</button>
-            <div style="text-align: center; margin-bottom: 10px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人數據</div>
-            <div id="personal-metrics-content" style="display: block;">
-                <div id="personal-metrics-body" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;">
-                    <div style="text-align:center; color:#666;">載入中...</div>
-                </div>
-            </div>
-        </div>`;
+
         
         // 營養素建議區塊
         html += `<div id="nutrition-goals-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
@@ -2760,6 +2750,17 @@
         html += `</div>`;
         html += `</div>`;
         
+        // 個人數據折疊區塊（含右上更新按鈕）
+        html += `<div id=\"personal-metrics-container\" style=\"margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;\">
+            <button id=\"toggle-personal-metrics\" onclick=\"togglePersonalMetricsSection()\" style=\"position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;\">▼</button>
+            <button id=\"refresh-personal-metrics\" title=\"更新數據\" onclick=\"refreshPersonalMetrics()\" style=\"position: absolute; top: 6px; left: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;\">更新</button>
+            <div style="text-align: center; margin-bottom: 10px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人數據</div>
+            <div id="personal-metrics-content" style="display: block;">
+                <div id="personal-metrics-body" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;">
+                    <div style="text-align:center; color:#666;">載入中...</div>
+                </div>
+            </div>
+        </div>`;
         // 個人化營養飲食建議區塊
         html += `<div id="personal-advice-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
         html += `<button id="toggle-personal-advice" onclick="togglePersonalAdviceSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
