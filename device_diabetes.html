@@ -4326,7 +4326,6 @@
             return `${curNum} (→0)`;
         };
         const headers = [
-            { key: 'period_index', label: '期數' },
             { key: 'period_range', label: '監測期間' },
             { key: 'tir_percent', label: 'TIR(%)' },
             { key: 'tar_percent', label: 'TAR(%)' },
@@ -4350,7 +4349,7 @@
         const latestTwo = sorted.slice(0,2);
         const latest = latestTwo[0] || null;
         const prev = latestTwo[1] || null;
-        const trendKeys = new Set(headers.map(h=>h.key).filter(k => !['period_index','period_range'].includes(k)));
+        const trendKeys = new Set(headers.map(h=>h.key).filter(k => !['period_range'].includes(k)));
         const bodyHtml = latest ? (()=>{
             const tds = headers.map(h => {
                 let val;
