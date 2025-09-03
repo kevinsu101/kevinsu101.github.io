@@ -4302,9 +4302,19 @@
     // 將 CGM Metrics 渲染為可左右滑動的橫向表格（多筆療程）
     function renderPersonalMetricsHtml(rows) {
         const safe = (v, fallback='-') => (v===null||v===undefined||v==='') ? fallback : v;
+        const fmtDate = (d) => {
+            const raw = safe(d, '');
+            if (!raw) return '-';
+            const dt = new Date(raw);
+            if (isNaN(dt.getTime())) return raw; // 無法解析就原樣顯示
+            const y = dt.getFullYear();
+            const m = String(dt.getMonth() + 1).padStart(2, '0');
+            const day = String(dt.getDate()).padStart(2, '0');
+            return `${y}-${m}-${day}`;
+        };
         const headers = [
             { key: 'period_index', label: '期數' },
-            { key: 'period_range', label: '期間' },
+            { key: 'period_range', label: '監測期間' },
             { key: 'tir_percent', label: 'TIR(%)' },
             { key: 'tar_percent', label: 'TAR(%)' },
             { key: 'tbr_percent', label: 'TBR(%)' },
@@ -4320,7 +4330,7 @@
             const tds = headers.map(h => {
                 let val;
                 if (h.key === 'period_range') {
-                    val = `${safe(r.start_date)}~${safe(r.end_date)}`;
+                    val = `${fmtDate(r.start_date)}~${fmtDate(r.end_date)}`;
                 } else {
                     val = safe(r[h.key]);
                 }
