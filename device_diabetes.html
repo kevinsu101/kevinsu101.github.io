@@ -4251,14 +4251,15 @@
         body.innerHTML = '<div style="text-align:center; color:#666;">載入中...</div>';
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
         try {
-            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_personal_metrics', {
+            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_cgm_metrics', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, action: 'get' })
             });
             const result = await res.json();
-            if (result.success && result.data) {
-                body.innerHTML = renderPersonalMetricsHtml(result.data);
+            if (result.success) {
+                const rows = Array.isArray(result.data) ? result.data : [];
+                body.innerHTML = renderPersonalMetricsHtml(rows);
             } else {
                 body.innerHTML = `<div style="color:#d9534f;">讀取失敗：${result.message || '未知錯誤'}</div>`;
             }
@@ -4274,14 +4275,20 @@
         if (btn) { btn.disabled = true; btn.textContent = '更新中...'; }
         const userId = window.globalUserId || 'FALLBACK_USER_ID';
         try {
-            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_personal_metrics', {
+            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_cgm_metrics', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId, action: 'refresh' })
             });
             const result = await res.json();
-            if (result.success && result.data) {
-                body.innerHTML = renderPersonalMetricsHtml(result.data);
+            if (result.success) {
+                // 更新成功後重新載入清單
+                if (typeof window.loadPersonalMetrics === 'function') {
+                    await window.loadPersonalMetrics();
+                }
+                if (typeof result.count !== 'undefined') {
+                    alert(`已寫入 ${result.count} 筆療程指標`);
+                }
             } else {
                 alert(result.message || '更新失敗');
             }
@@ -4292,34 +4299,47 @@
         }
     };
 
-    // 將個人數據渲染為可左右滑動的橫向表格（類似 CGM 療程表）
-    function renderPersonalMetricsHtml(data) {
+    // 將 CGM Metrics 渲染為可左右滑動的橫向表格（多筆療程）
+    function renderPersonalMetricsHtml(rows) {
         const safe = (v, fallback='-') => (v===null||v===undefined||v==='') ? fallback : v;
         const headers = [
-            { key: 'height_cm', label: '身高(cm)' },
-            { key: 'weight_kg', label: '體重(kg)' },
-            { key: 'bmi', label: 'BMI' },
-            { key: 'hba1c', label: 'HbA1c(%)' },
-            { key: 'tc', label: '總膽固醇(mg/dL)' },
-            { key: 'ldl', label: 'LDL(mg/dL)' },
-            { key: 'hdl', label: 'HDL(mg/dL)' },
-            { key: 'tg', label: '三酸甘油脂(mg/dL)' },
-            { key: 'sbp', label: '收縮壓(mmHg)' },
-            { key: 'dbp', label: '舒張壓(mmHg)' },
-            { key: 'egfr', label: 'eGFR(mL/min)' },
-            { key: 'creatinine', label: '肌酐(mg/dL)' },
-            { key: 'updated_at', label: '更新時間' }
+            { key: 'period_index', label: '期數' },
+            { key: 'start_date', label: '開始' },
+            { key: 'end_date', label: '結束' },
+            { key: 'cgm_count', label: '筆數' },
+            { key: 'tir_percent', label: 'TIR(%)' },
+            { key: 'tar_percent', label: 'TAR(%)' },
+            { key: 'tbr_percent', label: 'TBR(%)' },
+            { key: 'cv_percent', label: 'CV(%)' },
+            { key: 'avg_glucose', label: '平均' },
+            { key: 'gmi', label: 'GMI(%)' },
+            { key: 'std_dev', label: 'SD' },
+            { key: 'breakfast_peak_time', label: '早餐達峰(分)' },
+            { key: 'breakfast_peak_rise', label: '早餐升幅' },
+            { key: 'breakfast_peak_duration', label: '早餐持續(分)' },
+            { key: 'breakfast_tir', label: '早餐TIR(%)' },
+            { key: 'lunch_peak_time', label: '午餐達峰(分)' },
+            { key: 'lunch_peak_rise', label: '午餐升幅' },
+            { key: 'lunch_peak_duration', label: '午餐持續(分)' },
+            { key: 'lunch_tir', label: '午餐TIR(%)' },
+            { key: 'dinner_peak_time', label: '晚餐達峰(分)' },
+            { key: 'dinner_peak_rise', label: '晚餐升幅' },
+            { key: 'dinner_peak_duration', label: '晚餐持續(分)' },
+            { key: 'dinner_tir', label: '晚餐TIR(%)' },
         ];
         const headerHtml = headers.map(h => `<th style=\"padding: 12px; text-align: center; white-space: nowrap;\">${h.label}</th>`).join('');
-        const rowHtml = headers.map(h => `<td style=\"padding: 12px; text-align: center; border-top: 1px solid #e2e8f0;\">${safe(data[h.key])}</td>`).join('');
+        const bodyHtml = (rows || []).map(r => {
+            const tds = headers.map(h => `<td style=\"padding: 10px; text-align: center; border-top: 1px solid #e2e8f0;\">${safe(r[h.key])}</td>`).join('');
+            return `<tr>${tds}</tr>`;
+        }).join('');
         return `
             <div style=\"overflow-x: auto; margin-bottom: 10px;\">
-              <table style=\"width: 100%; border-collapse: collapse; min-width: 900px;\">
+              <table style=\"width: 100%; border-collapse: collapse; min-width: 1200px;\">
                 <thead>
                   <tr style=\"background: #2c5282; color: #fff;\">${headerHtml}</tr>
                 </thead>
                 <tbody>
-                  <tr>${rowHtml}</tr>
+                  ${bodyHtml || '<tr><td colspan="23" style="text-align:center;color:#888;">尚無資料</td></tr>'}
                 </tbody>
               </table>
             </div>
