@@ -4312,6 +4312,19 @@
             const day = String(dt.getDate()).padStart(2, '0');
             return `${y}-${m}-${day}`;
         };
+        const toNum = (v) => {
+            const n = parseFloat(v);
+            return isNaN(n) ? null : n;
+        };
+        const withTrend = (key, cur, prev) => {
+            const curNum = toNum(cur);
+            const prevNum = toNum(prev);
+            if (curNum === null || prevNum === null) return safe(cur);
+            const diff = Math.round((curNum - prevNum) * 10) / 10;
+            if (diff > 0) return `${curNum} (↑${Math.abs(diff)})`;
+            if (diff < 0) return `${curNum} (↓${Math.abs(diff)})`;
+            return `${curNum} (→0)`;
+        };
         const headers = [
             { key: 'period_index', label: '期數' },
             { key: 'period_range', label: '監測期間' },
@@ -4326,18 +4339,32 @@
             { key: 'dinner_tir', label: '晚餐TIR(%)' },
         ];
         const headerHtml = headers.map(h => `<th style=\"padding: 12px; text-align: center; white-space: nowrap;\">${h.label}</th>`).join('');
-        const bodyHtml = (rows || []).map(r => {
+        // 僅保留最新兩筆；顯示最新一筆並加上與上一筆的趨勢
+        const sorted = (rows || []).slice().sort((a,b) => {
+            const ai = parseInt(a.period_index||0), bi = parseInt(b.period_index||0);
+            if (bi !== ai) return bi - ai;
+            const ad = new Date(a.start_date||0).getTime();
+            const bd = new Date(b.start_date||0).getTime();
+            return bd - ad;
+        });
+        const latestTwo = sorted.slice(0,2);
+        const latest = latestTwo[0] || null;
+        const prev = latestTwo[1] || null;
+        const trendKeys = new Set(headers.map(h=>h.key).filter(k => !['period_index','period_range'].includes(k)));
+        const bodyHtml = latest ? (()=>{
             const tds = headers.map(h => {
                 let val;
                 if (h.key === 'period_range') {
-                    val = `${fmtDate(r.start_date)}~${fmtDate(r.end_date)}`;
+                    val = `${fmtDate(latest.start_date)}~${fmtDate(latest.end_date)}`;
+                } else if (trendKeys.has(h.key) && prev) {
+                    val = withTrend(h.key, latest[h.key], prev[h.key]);
                 } else {
-                    val = safe(r[h.key]);
+                    val = safe(latest[h.key]);
                 }
                 return `<td style=\"padding: 10px; text-align: center; border-top: 1px solid #e2e8f0;\">${val}</td>`;
             }).join('');
             return `<tr>${tds}</tr>`;
-        }).join('');
+        })() : '<tr><td colspan="23" style="text-align:center;color:#888;">尚無資料</td></tr>';
         return `
             <div style=\"overflow-x: auto; margin-bottom: 10px;\">
               <table style=\"width: 100%; border-collapse: collapse; min-width: 1200px;\">
@@ -4345,7 +4372,7 @@
                   <tr style=\"background: #2c5282; color: #fff;\">${headerHtml}</tr>
                 </thead>
                 <tbody>
-                  ${bodyHtml || '<tr><td colspan="23" style="text-align:center;color:#888;">尚無資料</td></tr>'}
+                  ${bodyHtml}
                 </tbody>
               </table>
             </div>
