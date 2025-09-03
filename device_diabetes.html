@@ -2616,6 +2616,18 @@
         window.globalMonthDict = monthDict;
         
         let html = '';
+
+        // 個人數據折疊區塊（含右上更新按鈕）
+        html += `<div id="personal-metrics-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">
+            <button id="toggle-personal-metrics" onclick="togglePersonalMetricsSection()" style="position: absolute; top: 8px; right: 36px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>
+            <button id="refresh-personal-metrics" title="更新數據" onclick="refreshPersonalMetrics()" style="position: absolute; top: 6px; right: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;">更新</button>
+            <div style="text-align: center; margin-bottom: 10px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人數據</div>
+            <div id="personal-metrics-content" style="display: block;">
+                <div id="personal-metrics-body" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;">
+                    <div style="text-align:center; color:#666;">載入中...</div>
+                </div>
+            </div>
+        </div>`;
         
         // 營養素建議區塊
         html += `<div id="nutrition-goals-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
@@ -2948,6 +2960,10 @@
         
         // 等待DOM更新完成後再更新營養素建議和綁定按鈕
         setTimeout(() => {
+            // 載入個人數據
+            if (typeof window.loadPersonalMetrics === 'function') {
+                window.loadPersonalMetrics();
+            }
             if (typeof window.updateNutritionGoalsInCards === 'function') {
                 window.updateNutritionGoalsInCards();
             }
@@ -4211,6 +4227,100 @@
             }
         }
     };
+
+    // 個人數據 折疊/展開
+    window.togglePersonalMetricsSection = function() {
+        const content = document.getElementById('personal-metrics-content');
+        const toggleBtn = document.getElementById('toggle-personal-metrics');
+        if (!content || !toggleBtn) return;
+        if (content.style.display === 'none') {
+            content.style.display = 'block';
+            toggleBtn.textContent = '▼';
+            toggleBtn.style.transform = 'rotate(0deg)';
+        } else {
+            content.style.display = 'none';
+            toggleBtn.textContent = '▲';
+            toggleBtn.style.transform = 'rotate(180deg)';
+        }
+    };
+
+    // 載入個人數據（GET）
+    window.loadPersonalMetrics = async function() {
+        const body = document.getElementById('personal-metrics-body');
+        if (!body) return;
+        body.innerHTML = '<div style="text-align:center; color:#666;">載入中...</div>';
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        try {
+            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_personal_metrics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, action: 'get' })
+            });
+            const result = await res.json();
+            if (result.success && result.data) {
+                body.innerHTML = renderPersonalMetricsHtml(result.data);
+            } else {
+                body.innerHTML = `<div style="color:#d9534f;">讀取失敗：${result.message || '未知錯誤'}</div>`;
+            }
+        } catch (e) {
+            body.innerHTML = '<div style="color:#d9534f;">讀取失敗，請稍後再試</div>';
+        }
+    };
+
+    // 刷新個人數據（觸發與FHIR同步，寫入DB後回傳最新）
+    window.refreshPersonalMetrics = async function() {
+        const btn = document.getElementById('refresh-personal-metrics');
+        const body = document.getElementById('personal-metrics-body');
+        if (btn) { btn.disabled = true; btn.textContent = '更新中...'; }
+        const userId = window.globalUserId || 'FALLBACK_USER_ID';
+        try {
+            const res = await fetch('https://7a859e20cfb8.ngrok-free.app/user_personal_metrics', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, action: 'refresh' })
+            });
+            const result = await res.json();
+            if (result.success && result.data) {
+                body.innerHTML = renderPersonalMetricsHtml(result.data);
+            } else {
+                alert(result.message || '更新失敗');
+            }
+        } catch (e) {
+            alert('更新失敗，請稍後再試');
+        } finally {
+            if (btn) { btn.disabled = false; btn.textContent = '更新'; }
+        }
+    };
+
+    // 將個人數據渲染為美觀卡片
+    function renderPersonalMetricsHtml(data) {
+        // 預期欄位範例：height_cm, weight_kg, bmi, hba1c, tc, ldl, hdl, tg, sbp, dbp, egfr, creatinine, updated_at
+        const safe = (v, fallback='-') => (v===null||v===undefined||v==='') ? fallback : v;
+        return `
+            <div style="display:grid;grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap:12px;">
+                ${metricCard('身高', safe(data.height_cm),'cm','#4fc3f7')}
+                ${metricCard('體重', safe(data.weight_kg),'kg','#e57373')}
+                ${metricCard('BMI', safe(data.bmi),'','#ba68c8')}
+                ${metricCard('HbA1c', safe(data.hba1c),'%','#ffb74d')}
+                ${metricCard('TC', safe(data.tc),'mg/dL','#1976d2')}
+                ${metricCard('LDL', safe(data.ldl),'mg/dL','#8d5524')}
+                ${metricCard('HDL', safe(data.hdl),'mg/dL','#43a047')}
+                ${metricCard('TG', safe(data.tg),'mg/dL','#6a1b9a')}
+                ${metricCard('收縮壓', safe(data.sbp),'mmHg','#f57c00')}
+                ${metricCard('舒張壓', safe(data.dbp),'mmHg','#455a64')}
+                ${metricCard('eGFR', safe(data.egfr),'mL/min','#0097a7')}
+                ${metricCard('肌酐', safe(data.creatinine),'mg/dL','#c2185b')}
+            </div>
+            <div style="text-align:right;color:#888;margin-top:8px;">更新時間：${safe(data.updated_at)}</div>
+        `;
+    }
+
+    function metricCard(label, value, unit, color) {
+        return `<div style="text-align:center;padding:12px;border:1px solid #e9ecef;border-radius:10px;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+            <div style="font-size:0.92em;color:#666;margin-bottom:4px;">${label}</div>
+            <div style="font-size:1.35em;font-weight:700;color:${color}">${value}<span style="font-size:0.7em;margin-left:4px;color:#888;">${unit}</span></div>
+        </div>`;
+    }
 
     // 切換營養素統計區塊顯示函數
     window.toggleNutritionStatsSection = function() {
