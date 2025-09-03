@@ -4304,32 +4304,28 @@
         const safe = (v, fallback='-') => (v===null||v===undefined||v==='') ? fallback : v;
         const headers = [
             { key: 'period_index', label: '期數' },
-            { key: 'start_date', label: '開始' },
-            { key: 'end_date', label: '結束' },
-            { key: 'cgm_count', label: '筆數' },
+            { key: 'period_range', label: '期間' },
             { key: 'tir_percent', label: 'TIR(%)' },
             { key: 'tar_percent', label: 'TAR(%)' },
             { key: 'tbr_percent', label: 'TBR(%)' },
             { key: 'cv_percent', label: 'CV(%)' },
             { key: 'avg_glucose', label: '平均' },
             { key: 'gmi', label: 'GMI(%)' },
-            { key: 'std_dev', label: 'SD' },
-            { key: 'breakfast_peak_time', label: '早餐達峰(分)' },
-            { key: 'breakfast_peak_rise', label: '早餐升幅' },
-            { key: 'breakfast_peak_duration', label: '早餐持續(分)' },
             { key: 'breakfast_tir', label: '早餐TIR(%)' },
-            { key: 'lunch_peak_time', label: '午餐達峰(分)' },
-            { key: 'lunch_peak_rise', label: '午餐升幅' },
-            { key: 'lunch_peak_duration', label: '午餐持續(分)' },
             { key: 'lunch_tir', label: '午餐TIR(%)' },
-            { key: 'dinner_peak_time', label: '晚餐達峰(分)' },
-            { key: 'dinner_peak_rise', label: '晚餐升幅' },
-            { key: 'dinner_peak_duration', label: '晚餐持續(分)' },
             { key: 'dinner_tir', label: '晚餐TIR(%)' },
         ];
         const headerHtml = headers.map(h => `<th style=\"padding: 12px; text-align: center; white-space: nowrap;\">${h.label}</th>`).join('');
         const bodyHtml = (rows || []).map(r => {
-            const tds = headers.map(h => `<td style=\"padding: 10px; text-align: center; border-top: 1px solid #e2e8f0;\">${safe(r[h.key])}</td>`).join('');
+            const tds = headers.map(h => {
+                let val;
+                if (h.key === 'period_range') {
+                    val = `${safe(r.start_date)}~${safe(r.end_date)}`;
+                } else {
+                    val = safe(r[h.key]);
+                }
+                return `<td style=\"padding: 10px; text-align: center; border-top: 1px solid #e2e8f0;\">${val}</td>`;
+            }).join('');
             return `<tr>${tds}</tr>`;
         }).join('');
         return `
