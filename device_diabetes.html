@@ -777,11 +777,10 @@
 
     <div class="navigation-tabs">
         <button id="btn-home" class="nav-btn active">首頁</button>
-        <button id="btn-cgm-upload" class="nav-btn">CGM資料上傳</button>
-        <button id="btn-cgm-analysis" class="nav-btn">CGM資料與分析</button>
+        <button id="btn-cgm-upload" class="nav-btn">個人資料上傳</button>
+        <button id="btn-cgm-analysis" class="nav-btn">個人CGM資料與分析</button>
         <button id="btn-ai-food" class="nav-btn">AI食物辨識</button>
-        <button id="btn-food-diary" class="nav-btn">飲食日誌</button>
-
+        <button id="btn-food-diary" class="nav-btn">個人飲食日誌</button>
         <button id="btn-feedback" class="nav-btn">意見回饋</button>
         
     </div>
@@ -2625,7 +2624,6 @@
         
         html += `<div id="nutrition-goals-content">`;
         html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;"> 使用者自訂每日營養素攝取量</div>`;
-        html += `<div style="text-align: center; margin-bottom: 15px; font-size: 0.8em; color: #666; line-height: 1.4; padding: 0 10px;">提供的建議是每天攝取1200～2700大卡的熱量，再根據個人食量和活動量的需求加以調整，建議一天中三大營養素的熱量來源分布比例，碳水化合物占50～60%、蛋白質10～20%、脂肪20～30%；</div>`;
         
         // 營養素建議顯示區域
         html += `<div id="nutrition-goals-display" style="margin-bottom: 15px;">`;
@@ -2687,7 +2685,7 @@
         html += `<div id="nutrition-stats-container" style="margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;">`;
         html += `<button id="toggle-nutrition-stats" onclick="toggleNutritionStatsSection()" style="position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;">▼</button>`;
         
-        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">營養素攝取統計</div>`;
+        html += `<div style="text-align: center; margin-bottom: 15px; font-weight: 600; color: #2c5282; font-size: 1.1em;">營養素攝取趨勢分析</div>`;
         html += `<div id="nutrition-stats-content">`;
         
         // 營養素選擇按鈕
@@ -4328,16 +4326,16 @@
             return `${curNum} (→0)`;
         };
         const headers = [
-            { key: 'period_range', label: '監測期間' },
+            { key: 'period_range', label: '最新監測期間' },
             { key: 'tir_percent', label: 'TIR(%)' },
             { key: 'tar_percent', label: 'TAR(%)' },
             { key: 'tbr_percent', label: 'TBR(%)' },
-            { key: 'cv_percent', label: 'CV(%)' },
-            { key: 'avg_glucose', label: '平均' },
-            { key: 'gmi', label: 'GMI(%)' },
-            { key: 'breakfast_tir', label: '早餐TIR(%)' },
-            { key: 'lunch_tir', label: '午餐TIR(%)' },
-            { key: 'dinner_tir', label: '晚餐TIR(%)' },
+            { key: 'cv_percent', label: 'CV' },
+            { key: 'avg_glucose', label: '平均血糖' },
+            { key: 'gmi', label: 'GMI' },
+            { key: 'breakfast_tir', label: '早餐平均TIR' },
+            { key: 'lunch_tir', label: '午餐平均TIR' },
+            { key: 'dinner_tir', label: '晚餐平均TIR' },
         ];
         const headerHtml = headers.map(h => `<th style=\"padding: 12px; text-align: center; white-space: nowrap;\">${h.label}</th>`).join('');
         // 僅保留最新兩筆；顯示最新一筆並加上與上一筆的趨勢
