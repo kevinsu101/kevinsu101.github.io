@@ -1190,8 +1190,6 @@
         </form>
         <div id="feedbackResult"></div>
     </div>
-
-
 </div>
 
 <script>
@@ -1792,7 +1790,6 @@
     const analyzeBtn = document.getElementById('analyzeBtn');
     const analysisOutput = document.getElementById('analysisOutput');
     const foodTextInput = document.getElementById('foodTextInput');
-
     // 錄音功能
     const voiceBtn = document.getElementById('voiceBtn');
     const micTestResult = document.getElementById('micTestResult');
@@ -2376,7 +2373,6 @@
         });
     }
     });
-
     // 在<script>區塊內，找到 handleNutritionInfoCards 函數，將其內容替換為：
     function handleNutritionInfoCards(nutritionInfo) {
         // 依 ***** 分割 nutrition_info
@@ -2751,9 +2747,11 @@
         // 個人數據折疊區塊（含右上更新按鈕）
         html += `<div id=\"personal-metrics-container\" style=\"margin-bottom: 20px; padding: 15px; background: #f8f9fa; border-radius: 12px; border: 2px solid #e9ecef; position: relative;\">
             <button id=\"toggle-personal-metrics\" onclick=\"togglePersonalMetricsSection()\" style=\"position: absolute; top: 8px; right: 8px; background: #6c757d; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; transition: transform 0.3s ease; line-height: 1;\">▼</button>
-            <button id=\"refresh-personal-metrics\" title=\"更新數據\" onclick=\"refreshPersonalMetrics()\" style=\"position: absolute; top: 6px; left: 8px; background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;\">更新</button>
             <div style="text-align: center; margin-bottom: 10px; font-weight: 600; color: #2c5282; font-size: 1.1em;">個人連續血糖監測數據</div>
-            <div id="personal-metrics-content" style="display: block;">
+            <div id=\"personal-metrics-content\" style=\"display: block;\">
+                <div style=\"display:flex; justify-content:flex-end; gap:8px; margin-bottom:8px;\">
+                    <button id=\"refresh-personal-metrics\" title=\"更新數據\" onclick=\"refreshPersonalMetrics()\" style=\"background: #1976d2; color: #fff; border: none; border-radius: 6px; padding: 6px 10px; font-size: 12px; cursor: pointer;\">更新</button>
+                </div>
                 <div id="personal-metrics-body" style="padding: 10px; background: #fff; border: 1px solid #dee2e6; border-radius: 8px;">
                     <div style="text-align:center; color:#666;">載入中...</div>
                 </div>
@@ -3479,7 +3477,6 @@
             daysDiv.innerHTML = '<div class="cgm-error-message">單日摘要載入失敗</div>';
         }
     }
-
     // 美化mean_peak表格
     async function renderMeanPeakChart(periodIndex) {
         const canvas = document.getElementById('big-cgm-chart-canvas2');
@@ -3549,7 +3546,7 @@
             // 美化表格
             let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
             data.mean_peak.forEach(row => {
-                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
+                table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.mean_tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
             });
             table += '</tbody></table>';
             tableDiv.innerHTML = table;
@@ -4095,7 +4092,6 @@
         rangeKey: '1m',
         days: 30
     };
-
     // 營養素統計功能
     window.showNutritionStats = function(nutritionType, unit, color, rangeKey, days) {
         // 設置預設值
@@ -4644,7 +4640,6 @@
     window.showCalorieStats = function(rangeKey, days) {
         showNutritionStats('cal', 'kcal', '#e57373', rangeKey, days);
     };
-    
     // 渲染營養素圖表
     function renderNutritionChart(nutritionType, unit, color, rangeKey, days) {
         const statsDiv = document.getElementById('global-stats');
@@ -5260,4 +5255,3 @@
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom/dist/chartjs-plugin-zoom.min.js"></script>
 </body>
 </html>
-
