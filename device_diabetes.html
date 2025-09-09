@@ -840,11 +840,11 @@
         <div style="text-align: center; padding: 40px 20px;">
             </p>
             <div style="background-color: #f8f9fa; padding: 25px; border-radius: 12px; margin: 20px 0;">
-                <h3 style="color: var(--title-color); margin-bottom: 20px;">主要功能</h3>
+                <h3 style="color: var(--title-color); margin-bottom: 20px;">基本功能介紹</h3>
                 <div style="display: grid; gap: 15px; text-align: left;">
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> CGM 資料上傳</strong><br>
-                        <span style="color: #666;">上傳您的連續血糖監測 CSV 檔案</span>
+                        <strong> 個人資料上傳</strong><br>
+                        <span style="color: #666;">可以以CSV格式，上傳CGM資料</span>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
                         <strong> 個人CGM資料與分析</strong><br>
@@ -856,15 +856,7 @@
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
                         <strong> 個人飲食日誌</strong><br>
-                        <span style="color: #666;">記錄每日飲食、營養素與碳水份數</span>
-                    </div>
-                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人化營養建議</strong><br>
-                        <span style="color: #666;">依據CGM與飲食資料產生個人化建議</span>
-                    </div>
-                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 衛教知識</strong><br>
-                        <span style="color: #666;">掌握糖尿病照護與飲食控制的重點知識</span>
+                        <span style="color: #666;">記錄每日飲食、營養素與碳水份數、個人化營養建議</span>
                     </div>
                 </div>
             </div>
@@ -1199,7 +1191,6 @@
         <div id="feedbackResult"></div>
     </div>
 </div>
-
 <script>
     document.addEventListener('DOMContentLoaded', () => {
         // 修正：navButtons 與 contentSections 提前宣告，供所有分頁切換共用
@@ -1786,7 +1777,6 @@
             document.getElementById('cgmPatientId').removeAttribute('readonly');
         }
     }
-
     // ------------------------- AI食物營養辨識 -------------------------
     const uploadImageBtn = document.getElementById('uploadImageBtn');
     const imageUpload = document.getElementById('imageUpload');
