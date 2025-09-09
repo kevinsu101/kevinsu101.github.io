@@ -187,6 +187,7 @@
             border-color: var(--input-focus-border);
             box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.4);
         }
+
         .submit-btn {
             width: 100%;
             padding: 12px;
@@ -384,6 +385,7 @@
                 min-width: 90px !important;
                 height: 42px !important;
             }
+            
             /* 按鈕容器在手機版的優化 */
             .button-container {
                 gap: 15px !important;
@@ -769,6 +771,7 @@
     </style>
 </head>
 <body>
+
 <div class="container">
     <h1>CGM飯後血糖管理平台</h1>
 
@@ -847,24 +850,12 @@
                         <span style="color: #666;">上傳您的連續血糖監測 CSV 檔案</span>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人CGM資料與分析</strong><br>
-                        <span style="color: #666;">瀏覽療程數據、AGP圖與餐後波動分析</span>
+                        <strong> 資料分析</strong><br>
+                        <span style="color: #666;">智能分析血糖變化趨勢與模式</span>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
                         <strong> AI 食物辨識</strong><br>
                         <span style="color: #666;">自動識別食物並估算營養成分</span>
-                    </div>
-                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人飲食日誌</strong><br>
-                        <span style="color: #666;">記錄每日飲食、營養素與碳水份數</span>
-                    </div>
-                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人化營養建議</strong><br>
-                        <span style="color: #666;">依據CGM與飲食資料產生個人化建議</span>
-                    </div>
-                    <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 衛教知識</strong><br>
-                        <span style="color: #666;">掌握糖尿病照護與飲食控制的重點知識</span>
                     </div>
                 </div>
             </div>
@@ -974,6 +965,7 @@
             確認食物種類與份量
             </button>
         </div>
+        
         <!-- 輸出區塊 -->
         <div class="output-section">
             <h3 style="margin-top: 0; margin-bottom: 15px; color: var(--title-color); font-size: 1.1em;"> 輸出視窗</h3>
@@ -1327,6 +1319,7 @@
 
     // 頁面載入時自動執行登入
     autoLogin();
+
     // ------------------------- 使用者設定功能 -------------------------
     // 檢查使用者設定狀態
     async function checkUserSetting() {
@@ -1525,6 +1518,7 @@
     const uploadResultTitle = document.getElementById('uploadResultTitle');
     const uploadResultDetails = document.getElementById('uploadResultDetails');
     const closeModalBtn = document.getElementById('closeModalBtn');
+
     // 自動發送LINE訊息函數
     async function sendLineMessage(message) {
         try {
@@ -1710,6 +1704,7 @@
             }
         });
     }
+
     // 查詢用戶資料並自動填入表單
     async function fetchUserData() {
         if (!window.globalUserId) {
@@ -1903,6 +1898,7 @@
             imageUpload.click();
         });
     }
+
     // 圖片選擇處理
     if (imageUpload) {
         imageUpload.addEventListener('change', (event) => {
@@ -2094,6 +2090,7 @@
             const mm = String(now.getMinutes()).padStart(2, '0');
             displayTime = `${y}-${m}-${d}T${hh}:${mm}`;
         }
+
         let html = '<div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px;">';
         html += '<h4 style="color: #2c5282; margin-bottom: 15px;">辨識到的食物：</h4>';
         
@@ -2269,6 +2266,7 @@
         
         return selectedFoods.join(',');
     }
+
     // 執行營養分析（第二階段）
     async function performNutritionAnalysis(foodInfo) {
         // 先讀取用戶設定的時間，避免等下切換畫面把 input 移除
@@ -2468,6 +2466,7 @@
         }
         html += `<button id="nextStepBtn" style="margin-top:18px;padding:12px 24px;background-color:#28a745;color:white;border:none;border-radius:8px;cursor:pointer;font-size:1.1em;float:right;">下一步</button>`;
         analysisOutput.innerHTML = html;
+
         // 新增食物名稱編輯功能
         window.editFoodName = function(idx) {
             const card = parsedCards[idx];
@@ -2646,6 +2645,7 @@
         html += `<button onclick="showNutritionGoalsEdit()" style="background: #1976d2; color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-size: 0.95em; font-weight: 500; box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3); transition: all 0.3s ease;">編輯建議</button>`;
         html += `</div>`;
         html += `</div>`;
+        
         // 營養素建議編輯區域
         html += `<div id="nutrition-goals-edit" style="display: none;">`;
         html += `<div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">`;
@@ -2997,6 +2997,9 @@
                 });
             };
         });
+        
+
+        
         // 計算當日累加值的輔助函數
         window.calculateDailyTotals = function() {
             const dailyTotals = {};
@@ -3192,6 +3195,7 @@
                 return { text: '適中', color: '#666' };
             }
         };
+        
         // 營養素比例切換函數
         window.toggleNutritionRatio = function(btn, date, time) {
             const contentId = `nutrition-ratio-${date}-${time}`;
@@ -3373,6 +3377,7 @@
 
         container.innerHTML = html;
     }
+
     // 新增大圖表顯示函數
     async function showBigCgmChart(periodIndex, startDate, endDate) {
         const chartArea = document.getElementById('big-cgm-chart-area');
@@ -3539,7 +3544,7 @@
                 }
             });
             // 美化表格
-            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'><=50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
+            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
             data.mean_peak.forEach(row => {
                 table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.mean_tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
             });
@@ -3549,6 +3554,7 @@
             tableDiv.innerHTML = '<div class="cgm-error-message">波動分析載入失敗</div>';
         }
     }
+
     // AGP專用繪圖，canvas寬高自適應
     function renderAgpChart(agpData) {
         const canvas = document.getElementById('big-cgm-chart-canvas');
@@ -3715,6 +3721,7 @@
             console.error(`Error loading CGM data for period ${periodIndex}:`, error);
         }
     }
+
     const chartInstances = {}; // To keep track of charts
     function renderCgmChart(ctx, cgmData, periodIndex) {
         // Destroy existing chart for this canvas if it exists
@@ -3857,7 +3864,7 @@
                 }
             });
             // 美化表格
-            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'><=50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
+            let table = `<table style='border-collapse:collapse;margin-left:8px;background:#f8f9fa;border-radius:10px;box-shadow:0 2px 8px rgba(44,82,130,0.06);overflow:hidden;'><thead><tr style='background:#e3f0ff;'><th style='padding:8px 14px;font-weight:700;'>餐別</th><th style='padding:8px 14px;font-weight:700;'>平均達峰時間</th><th style='padding:8px 14px;font-weight:700;'>平均波動升幅</th><th style='padding:8px 14px;font-weight:700;'>平均波動持續</th><th style='padding:8px 14px;font-weight:700;'>TIR</th><th style='padding:8px 14px;font-weight:700;'>≤50mg/dL</th><th style='padding:8px 14px;font-weight:700;'>>50mg/dL</th></tr></thead><tbody>`;
             data.mean_peak.forEach(row => {
                 table += `<tr><td style='padding:8px 14px;'>${mealMap[row.meal]||row.meal} ${row.meal}</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_time)}m</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_rise)} mg/dL</td><td style='padding:8px 14px;'>${Math.round(row.mean_peak_duration/60*10)/10}h</td><td style='padding:8px 14px;'>${row.mean_tir}%</td><td style='padding:8px 14px;'>${row.count_le_50}</td><td style='padding:8px 14px;'>${row.count_gt_50}</td></tr>`;
             });
@@ -3867,6 +3874,7 @@
             tableDiv.innerHTML = '<div class="cgm-error-message">波動分析載入失敗</div>';
         }
     }
+
     // 顯示單日詳細圖表
     window.showBigCgmDayDetail = async function(date, periodIndex) {
         const detailDiv = document.getElementById('big-cgm-day-detail');
@@ -4032,6 +4040,7 @@
     const style = document.createElement('style');
     style.innerHTML = `.loader {border: 4px solid #f3f3f3;border-top: 4px solid #1976d2;border-radius: 50%;width: 36px;height: 36px;animation: spin 1s linear infinite;display:inline-block;}@keyframes spin {0% { transform: rotate(0deg);}100% { transform: rotate(360deg);}}`;
     document.head.appendChild(style);
+
     // 新增食物項目函數
     function addNewFood() {
         const newFoodName = document.getElementById('new-food-name').value.trim();
@@ -4230,6 +4239,7 @@
             toggleBtn.style.transform = 'rotate(180deg)';
         }
     };
+
     // 載入個人數據（GET）
     window.loadPersonalMetrics = async function() {
         const body = document.getElementById('personal-metrics-body');
@@ -4422,6 +4432,7 @@
             document.getElementById('edit-fat').value = document.getElementById('goal-fat').textContent;
         }
     };
+
     // 取消營養素建議編輯
     window.cancelNutritionGoalsEdit = function() {
         const displayDiv = document.getElementById('nutrition-goals-display');
@@ -4620,6 +4631,11 @@
             days: 30
         };
     };
+    
+
+    
+
+    
     // 保持向後兼容
     window.showCalorieStats = function(rangeKey, days) {
         showNutritionStats('cal', 'kcal', '#e57373', rangeKey, days);
@@ -4801,6 +4817,7 @@
             'pro': '蛋白質',
             'fat': '脂肪'
         };
+        
         const nutritionName = nutritionNames[nutritionType] || '營養素';
         
         // 生成圖表HTML
@@ -5139,6 +5156,7 @@
         };
         return names[nutritionType] || '營養素';
     }
+
     // 準備食物數據供分析使用
     function prepareFoodDataForAnalysis(nutritionType, days) {
         console.log('準備食物數據:', { nutritionType, days });
