@@ -843,12 +843,12 @@
                 <h3 style="color: var(--title-color); margin-bottom: 20px;">基本功能簡介</h3>
                 <div style="display: grid; gap: 15px; text-align: left;">
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1; min-width: 0;">
                                 <strong> 個人資料上傳</strong><br>
                                 <span style="color: #666;">可以以CSV格式，上傳CGM資料</span>
                             </div>
-                            <button onclick="openUsageGuide()" style="background: var(--button-bg); color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 8px; cursor: pointer; margin-left: 10px;" title="點擊查看使用說明">
+                            <button onclick="openUsageGuide()" style="background: var(--button-bg); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" title="點擊查看使用說明">
                                 使用說明
                             </button>
                         </div>
@@ -922,8 +922,8 @@
         </div>
 
         <!-- 使用說明模態視窗 -->
-        <div id="usage-guide-modal" class="modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5);">
-            <div class="modal-content" style="background-color: #fefefe; margin: 2% auto; padding: 15px; border-radius: 12px; width: 95%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative;">
+        <div id="usage-guide-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); overflow-y: auto;">
+            <div style="background-color: #fefefe; margin: 10px auto; padding: 15px; border-radius: 12px; width: calc(100% - 20px); max-width: 500px; min-height: 200px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--button-bg); padding-bottom: 10px;">
                     <h2 style="color: var(--title-color); margin: 0;">📋 CGM資料上傳使用說明</h2>
                     <button onclick="closeUsageGuide()" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px;">✕</button>
@@ -5369,13 +5369,6 @@
             
             // 顯示使用說明模態視窗
             modal.style.display = 'block';
-            modal.style.zIndex = '9999';
-            modal.style.position = 'fixed';
-            modal.style.left = '0';
-            modal.style.top = '0';
-            modal.style.width = '100%';
-            modal.style.height = '100%';
-            modal.style.backgroundColor = 'rgba(0,0,0,0.5)';
             
             console.log('模態視窗已設置為顯示');
             console.log('模態視窗位置:', modal.getBoundingClientRect());
