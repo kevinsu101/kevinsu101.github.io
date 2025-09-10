@@ -5397,23 +5397,7 @@
                 </div>
                 
                 <div style="line-height: 1.6; color: var(--text-color);">
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                        <h3 style="color: #1976d2; margin-top: 0;">🎯 功能說明</h3>
-                        <p>本功能讓您可以上傳CGM（連續血糖監測）資料，系統會自動分析您的血糖趨勢，提供個人化的健康建議。</p>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📁 支援的檔案格式</h3>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
-                            <ul style="margin: 0; padding-left: 20px;">
-                                <li><strong>CSV檔案</strong> - 逗號分隔值格式</li>
-                                <li><strong>Excel檔案</strong> - .xlsx 或 .xls 格式</li>
-                                <li><strong>文字檔案</strong> - .txt 格式（需符合CSV結構）</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
+                    <div style="margin-bottom: 20px;">
                         <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 資料格式要求</h3>
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
                             <p><strong>重要：</strong>您的CSV檔案必須包含以下欄位：</p>
@@ -5425,68 +5409,26 @@
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📝 範例資料格式</h3>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 14px;">
-                                <thead>
-                                    <tr style="background: #e9ecef;">
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">date</th>
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">time</th>
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">glucose</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">08:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">120</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">12:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">140</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">18:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">110</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
+                    <div style="margin-bottom: 20px;">
                         <h3 style="color: var(--title-color); margin-bottom: 15px;">🚀 上傳步驟</h3>
                         <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
                             <ol style="margin: 0; padding-left: 20px;">
                                 <li>點擊「選擇檔案」按鈕</li>
                                 <li>選擇您的CGM資料檔案</li>
-                                <li>輸入病患姓名和ID（可選）</li>
                                 <li>點擊「上傳CGM資料」按鈕</li>
                                 <li>等待系統處理完成</li>
-                                <li>查看分析結果和建議</li>
                             </ol>
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">⚠️ 注意事項</h3>
-                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                            <ul style="margin: 0; padding-left: 20px;">
-                                <li>檔案大小限制：<strong>10MB</strong></li>
-                                <li>資料時間範圍：建議至少包含<strong>7天</strong>的資料</li>
-                                <li>血糖值單位：請確保使用<strong>mg/dL</strong></li>
-                                <li>時間格式：請使用<strong>24小時制</strong>（如：14:30）</li>
-                                <li>資料完整性：避免空白或無效的數值</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-top: 20px;">
-                        <h3 style="color: #155724; margin-top: 0;">💡 小貼士</h3>
-                        <p style="margin-bottom: 0;">上傳完成後，您可以在「個人CGM資料與分析」頁面查看詳細的血糖趨勢圖表、AGP分析報告，以及個人化的健康建議。</p>
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">⚠️ 注意事項</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>檔案大小限制：<strong>10MB</strong></li>
+                            <li>支援格式：<strong>CSV、Excel</strong></li>
+                            <li>血糖值單位：<strong>mg/dL</strong></li>
+                            <li>時間格式：<strong>24小時制</strong></li>
+                        </ul>
                     </div>
                 </div>
             </div>
@@ -5494,23 +5436,22 @@
         
         document.body.appendChild(modal);
         
-        // 動態添加圖片到模態視窗中
+        // 動態添加圖片到資料格式要求區塊中
         setTimeout(() => {
-            const exampleSection = modal.querySelector('h3');
-            if (exampleSection && exampleSection.textContent.includes('範例資料格式')) {
-                const exampleDiv = exampleSection.closest('div[style*="margin-bottom: 25px"]');
-                if (exampleDiv) {
-                    const imageDiv = document.createElement('div');
-                    imageDiv.style.cssText = 'margin-bottom: 25px;';
-                    imageDiv.innerHTML = `
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📸 實際範例圖片</h3>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
-                            <p style="margin-bottom: 15px; color: #666;">以下是一個實際的CGM資料範例：</p>
-                            <img src="1757524809256.jpg" alt="CGM資料範例" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                            <p style="margin-top: 10px; font-size: 14px; color: #666;">此範例展示了CGM資料的實際格式，包含日期、時間和血糖值等欄位</p>
-                        </div>
-                    `;
-                    exampleDiv.parentNode.insertBefore(imageDiv, exampleDiv.nextSibling);
+            const formatSection = modal.querySelector('h3');
+            if (formatSection && formatSection.textContent.includes('資料格式要求')) {
+                const formatDiv = formatSection.closest('div[style*="margin-bottom: 25px"]');
+                if (formatDiv) {
+                    const formatContent = formatDiv.querySelector('div[style*="background: #fff3cd"]');
+                    if (formatContent) {
+                        const imageDiv = document.createElement('div');
+                        imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                        imageDiv.innerHTML = `
+                            <p style="margin-bottom: 10px; color: #666; font-size: 14px;">實際範例：</p>
+                            <img src="1757524809256.jpg" alt="CGM資料範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);">
+                        `;
+                        formatContent.appendChild(imageDiv);
+                    }
                 }
             }
         }, 100);
