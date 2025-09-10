@@ -5493,6 +5493,28 @@
         `;
         
         document.body.appendChild(modal);
+        
+        // 動態添加圖片到模態視窗中
+        setTimeout(() => {
+            const exampleSection = modal.querySelector('h3');
+            if (exampleSection && exampleSection.textContent.includes('範例資料格式')) {
+                const exampleDiv = exampleSection.closest('div[style*="margin-bottom: 25px"]');
+                if (exampleDiv) {
+                    const imageDiv = document.createElement('div');
+                    imageDiv.style.cssText = 'margin-bottom: 25px;';
+                    imageDiv.innerHTML = `
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📸 實際範例圖片</h3>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; text-align: center;">
+                            <p style="margin-bottom: 15px; color: #666;">以下是一個實際的CGM資料範例：</p>
+                            <img src="web_img/1757524809256.jpg" alt="CGM資料範例" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                            <p style="margin-top: 10px; font-size: 14px; color: #666;">此範例展示了CGM資料的實際格式，包含日期、時間和血糖值等欄位</p>
+                        </div>
+                    `;
+                    exampleDiv.parentNode.insertBefore(imageDiv, exampleDiv.nextSibling);
+                }
+            }
+        }, 100);
+        
         console.log('使用說明模態視窗已創建並顯示');
     }
     
