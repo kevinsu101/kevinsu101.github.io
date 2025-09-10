@@ -922,8 +922,8 @@
         </div>
 
         <!-- 使用說明模態視窗 -->
-        <div id="usage-guide-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); overflow-y: auto;">
-            <div style="background-color: #fefefe; margin: 10px auto; padding: 15px; border-radius: 12px; width: calc(100% - 20px); max-width: 500px; min-height: 200px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative;">
+        <div id="usage-guide-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); overflow-y: auto; box-sizing: border-box;">
+            <div style="background-color: #fefefe; margin: 20px; padding: 20px; border-radius: 12px; width: calc(100vw - 40px); max-width: 500px; min-height: 200px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; box-sizing: border-box;">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--button-bg); padding-bottom: 10px;">
                     <h2 style="color: var(--title-color); margin: 0;">📋 CGM資料上傳使用說明</h2>
                     <button onclick="closeUsageGuide()" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px;">✕</button>
@@ -5355,25 +5355,56 @@
     // 使用說明功能
     function openUsageGuide() {
         console.log('openUsageGuide 函數被調用');
+        
+        // 先隱藏其他可能的模態視窗
+        const otherModals = document.querySelectorAll('.modal');
+        otherModals.forEach(m => {
+            if (m.id !== 'usage-guide-modal') {
+                m.style.display = 'none';
+            }
+        });
+        
         const modal = document.getElementById('usage-guide-modal');
         if (modal) {
             console.log('找到模態視窗，正在顯示');
             
-            // 先隱藏其他可能的模態視窗
-            const otherModals = document.querySelectorAll('.modal');
-            otherModals.forEach(m => {
-                if (m.id !== 'usage-guide-modal') {
-                    m.style.display = 'none';
-                }
-            });
+            // 創建一個簡單的測試模態視窗
+            const testModal = document.createElement('div');
+            testModal.id = 'test-modal';
+            testModal.style.cssText = `
+                position: fixed;
+                z-index: 10000;
+                left: 0;
+                top: 0;
+                width: 100vw;
+                height: 100vh;
+                background-color: rgba(0,0,0,0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
             
-            // 顯示使用說明模態視窗
-            modal.style.display = 'block';
+            testModal.innerHTML = `
+                <div style="background: white; padding: 20px; border-radius: 10px; max-width: 90%; max-height: 90%; overflow-y: auto;">
+                    <h2>📋 CGM資料上傳使用說明</h2>
+                    <p>這是一個測試模態視窗，確認基本功能正常。</p>
+                    <button onclick="closeTestModal()" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer;">關閉</button>
+                </div>
+            `;
             
-            console.log('模態視窗已設置為顯示');
-            console.log('模態視窗位置:', modal.getBoundingClientRect());
+            document.body.appendChild(testModal);
+            console.log('測試模態視窗已創建並顯示');
+            
         } else {
             console.error('找不到 usage-guide-modal 元素');
+        }
+    }
+    
+    function closeTestModal() {
+        const testModal = document.getElementById('test-modal');
+        if (testModal) {
+            testModal.remove();
+            console.log('測試模態視窗已關閉');
         }
     }
 
