@@ -921,109 +921,6 @@
             </div>
         </div>
 
-        <!-- 使用說明模態視窗 -->
-        <div id="usage-guide-modal" style="display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100vw; height: 100vh; background-color: rgba(0,0,0,0.5); overflow-y: auto; box-sizing: border-box;">
-            <div style="background-color: #fefefe; margin: 20px; padding: 20px; border-radius: 12px; width: calc(100vw - 40px); max-width: 500px; min-height: 200px; box-shadow: 0 4px 20px rgba(0,0,0,0.3); position: relative; box-sizing: border-box;">
-                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 2px solid var(--button-bg); padding-bottom: 10px;">
-                    <h2 style="color: var(--title-color); margin: 0;">📋 CGM資料上傳使用說明</h2>
-                    <button onclick="closeUsageGuide()" style="background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 16px;">✕</button>
-                </div>
-                
-                <div style="line-height: 1.6; color: var(--text-color);">
-                    <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2196f3;">
-                        <h3 style="color: #1976d2; margin-top: 0;">🎯 功能說明</h3>
-                        <p>本功能讓您可以上傳CGM（連續血糖監測）資料，系統會自動分析您的血糖趨勢，提供個人化的健康建議。</p>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📁 支援的檔案格式</h3>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
-                            <ul style="margin: 0; padding-left: 20px;">
-                                <li><strong>CSV檔案</strong> - 逗號分隔值格式</li>
-                                <li><strong>Excel檔案</strong> - .xlsx 或 .xls 格式</li>
-                                <li><strong>文字檔案</strong> - .txt 格式（需符合CSV結構）</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 資料格式要求</h3>
-                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <p><strong>重要：</strong>您的CSV檔案必須包含以下欄位：</p>
-                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
-                                <div>📅 <strong>date</strong> - 日期 (格式：YYYY-MM-DD)</div>
-                                <div>⏰ <strong>time</strong> - 時間 (格式：HH:MM)</div>
-                                <div>🩸 <strong>glucose</strong> - 血糖值 (mg/dL)</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📝 範例資料格式</h3>
-                        <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; font-family: monospace; font-size: 14px;">
-                                <thead>
-                                    <tr style="background: #e9ecef;">
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">date</th>
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">time</th>
-                                        <th style="border: 1px solid #dee2e6; padding: 8px; text-align: left;">glucose</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">08:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">120</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">12:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">140</td>
-                                    </tr>
-                                    <tr>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">2024-01-15</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">18:00</td>
-                                        <td style="border: 1px solid #dee2e6; padding: 8px;">110</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🚀 上傳步驟</h3>
-                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <ol style="margin: 0; padding-left: 20px;">
-                                <li>點擊「選擇檔案」按鈕</li>
-                                <li>選擇您的CGM資料檔案</li>
-                                <li>輸入病患姓名和ID（可選）</li>
-                                <li>點擊「上傳CGM資料」按鈕</li>
-                                <li>等待系統處理完成</li>
-                                <li>查看分析結果和建議</li>
-                            </ol>
-                        </div>
-                    </div>
-
-                    <div style="margin-bottom: 25px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">⚠️ 注意事項</h3>
-                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                            <ul style="margin: 0; padding-left: 20px;">
-                                <li>檔案大小限制：<strong>10MB</strong></li>
-                                <li>資料時間範圍：建議至少包含<strong>7天</strong>的資料</li>
-                                <li>血糖值單位：請確保使用<strong>mg/dL</strong></li>
-                                <li>時間格式：請使用<strong>24小時制</strong>（如：14:30）</li>
-                                <li>資料完整性：避免空白或無效的數值</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745; margin-top: 20px;">
-                        <h3 style="color: #155724; margin-top: 0;">💡 小貼士</h3>
-                        <p style="margin-bottom: 0;">上傳完成後，您可以在「個人CGM資料與分析」頁面查看詳細的血糖趨勢圖表、AGP分析報告，以及個人化的健康建議。</p>
-                    </div>
-                </div>
-            </div>
-        </div>
         
         <div class="upload-form-container">
             <form id="cgm-upload-form">
@@ -5359,9 +5256,7 @@
         // 先隱藏其他可能的模態視窗
         const otherModals = document.querySelectorAll('.modal');
         otherModals.forEach(m => {
-            if (m.id !== 'usage-guide-modal') {
-                m.style.display = 'none';
-            }
+            m.style.display = 'none';
         });
         
         // 移除可能存在的舊模態視窗
@@ -5504,18 +5399,8 @@
     }
 
 
-    // 點擊背景關閉彈窗 - 使用事件監聽器而不是覆蓋window.onclick
+    // 為使用說明按鈕添加事件監聽器作為備用方案
     document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('usage-guide-modal');
-        if (modal) {
-            modal.addEventListener('click', function(event) {
-                if (event.target === modal) {
-                    closeUsageGuide();
-                }
-            });
-        }
-        
-        // 為使用說明按鈕添加事件監聽器作為備用方案
         const usageGuideBtn = document.querySelector('button[onclick="openUsageGuide()"]');
         if (usageGuideBtn) {
             console.log('找到使用說明按鈕，添加事件監聽器');
