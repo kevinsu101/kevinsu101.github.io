@@ -5465,15 +5465,18 @@
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 動態血糖圖</h3>
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">AGP動態血糖圖</h3>
                         <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <p><strong>圖表功能：</strong></p>
-                            <ul style="margin: 0; padding-left: 20px;">
-                                <li><strong>時間軸縮放</strong> - 可放大縮小查看特定時段</li>
-                                <li><strong>數據點懸停</strong> - 查看具體時間點的血糖值</li>
-                                <li><strong>目標線顯示</strong> - 正常血糖範圍標示</li>
-                                <li><strong>趨勢分析</strong> - 上升/下降趨勢標記</li>
-                            </ul>
+                            <p><strong>圖表說明：</strong></p>
+                            <p>AGP（Ambulatory Glucose Profile）動態血糖曲線圖，顯示您一天中血糖的變化模式和波動範圍。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>藍色線條</strong> - 平均血糖值，顯示整體趨勢</div>
+                                <div><strong>淺綠色帶</strong> - 25-75%分位帶，表示血糖穩定範圍</div>
+                                <div><strong>淺黃色帶</strong> - 5-95%分位帶，表示血糖變化範圍</div>
+                                <div><strong>Y軸</strong> - 血糖值 (mg/dL)，範圍通常為40-220</div>
+                                <div><strong>X軸</strong> - 時間軸，顯示24小時的血糖變化</div>
+                            </div>
+                            <p style="margin-top: 10px; font-size: 14px; color: #666;"><strong>圖表含意：</strong>分位帶越窄表示血糖越穩定，分位帶在餐後時間變寬是正常現象，表示血糖對食物的反應。</p>
                         </div>
                     </div>
 
@@ -5550,6 +5553,30 @@
                         }
                     } else {
                         console.log('找不到療程數據瀏覽區塊');
+                    }
+                } else if (h3.textContent.includes('AGP動態血糖圖')) {
+                    console.log('找到AGP動態血糖圖標題');
+                    const agpDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (agpDiv) {
+                        const agpContent = agpDiv.querySelector('div[style*="background: #d4edda"]');
+                        if (agpContent) {
+                            console.log('找到AGP動態血糖圖區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">AGP動態血糖圖範例：</p>
+                                <img src="./webset_4.png" alt="AGP動態血糖圖範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('AGP動態血糖圖圖片載入成功:', this.src);" 
+                                     onerror="console.log('AGP動態血糖圖圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            agpContent.appendChild(imageDiv);
+                            console.log('AGP動態血糖圖圖片已添加');
+                        } else {
+                            console.log('找不到AGP動態血糖圖內容區塊');
+                        }
+                    } else {
+                        console.log('找不到AGP動態血糖圖區塊');
                     }
                 }
             });
