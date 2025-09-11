@@ -876,8 +876,15 @@
                         </div>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人飲食日誌</strong><br>
-                        <span style="color: #666;">記錄每日飲食、營養素與碳水份數、個人化營養建議</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <strong> 個人飲食日誌</strong><br>
+                                <span style="color: #666;">記錄每日飲食、營養素與碳水份數、個人化營養建議</span>
+                            </div>
+                            <button onclick="openDietLogGuide()" style="background: var(--button-bg); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" title="點擊查看使用說明">
+                                使用說明
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -5801,6 +5808,225 @@
         }
     }
 
+    // 個人飲食日誌使用說明功能
+    function openDietLogGuide() {
+        console.log('openDietLogGuide 函數被調用');
+        
+        // 先隱藏其他可能的模態視窗
+        const otherModals = document.querySelectorAll('.modal');
+        otherModals.forEach(m => {
+            m.style.display = 'none';
+        });
+        
+        // 移除可能存在的舊模態視窗
+        const existingModal = document.getElementById('diet-log-guide-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // 創建動態模態視窗
+        const modal = document.createElement('div');
+        modal.id = 'diet-log-guide-modal';
+        modal.style.cssText = `
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <button onclick="closeDietLogGuide()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
+                
+                <div style="margin-bottom: 20px; padding-right: 30px;">
+                    <h2 style="color: var(--title-color); margin: 0;">📝 個人飲食日誌使用說明</h2>
+                </div>
+                
+                <div style="line-height: 1.6; color: var(--text-color);">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🍽️ 飲食紀錄</h3>
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                            <p><strong>功能說明：</strong></p>
+                            <p>查看您的每日飲食記錄，包括餐次時間、食物內容和營養成分分析。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>餐次資訊</strong> - 顯示用餐時間和餐次類型</div>
+                                <div><strong>食物清單</strong> - 列出該餐的所有食物項目</div>
+                                <div><strong>營養總計</strong> - 熱量、碳水化合物、蛋白質、脂肪</div>
+                                <div><strong>碳水份數</strong> - 糖尿病飲食管理的重要指標</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">⚙️ 使用者自訂每日營養素攝取量</h3>
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <p><strong>設定功能：</strong></p>
+                            <p>根據個人需求設定每日營養素攝取目標，系統會以此為基準進行分析。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>熱量目標</strong> - 設定每日總熱量攝取目標</div>
+                                <div><strong>碳水化合物</strong> - 設定碳水化合物的攝取量</div>
+                                <div><strong>蛋白質</strong> - 設定蛋白質的攝取量</div>
+                                <div><strong>脂肪</strong> - 設定脂肪的攝取量</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📈 營養素攝取趨勢分析</h3>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p><strong>分析功能：</strong></p>
+                            <p>透過圖表和數據分析，了解您的營養素攝取趨勢和變化模式。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>趨勢圖表</strong> - 顯示營養素攝取的變化趨勢</div>
+                                <div><strong>時間範圍</strong> - 可選擇1天、1週、1個月等不同期間</div>
+                                <div><strong>統計數據</strong> - 總攝取量、平均值、最新日攝取量</div>
+                                <div><strong>AI分析</strong> - 自動分析攝取狀況並提供建議</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">💡 個人化營養飲食建議</h3>
+                        <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                            <p><strong>建議功能：</strong></p>
+                            <p>結合CGM血糖數據和飲食記錄，提供個人化的營養建議和飲食指導。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>個人化回饋</strong> - 根據您的數據提供專屬建議</div>
+                                <div><strong>飲食分析</strong> - 分析食物成分對血糖的影響</div>
+                                <div><strong>臨床依據</strong> - 基於ADA指南的專業建議</div>
+                                <div><strong>自我管理</strong> - 提供日常飲食管理提醒</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                        <h3 style="color: #155724; margin-top: 0; margin-bottom: 10px;">💡 使用小貼士</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>定期查看飲食記錄，了解自己的飲食模式</li>
+                            <li>根據個人需求調整營養素攝取目標</li>
+                            <li>關注趨勢分析，及時調整飲食習慣</li>
+                            <li>參考個人化建議，改善血糖控制</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 動態添加圖片到對應區塊中
+        setTimeout(() => {
+            console.log('開始添加個人飲食日誌圖片到模態視窗');
+            
+            const allH3s = modal.querySelectorAll('h3');
+            console.log('找到的h3標題數量:', allH3s.length);
+            
+            allH3s.forEach((h3, index) => {
+                console.log(`h3[${index}]:`, h3.textContent);
+                
+                if (h3.textContent.includes('飲食紀錄')) {
+                    console.log('找到飲食紀錄標題');
+                    const dietDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (dietDiv) {
+                        const dietContent = dietDiv.querySelector('div[style*="background: #e3f2fd"]');
+                        if (dietContent) {
+                            console.log('找到飲食紀錄區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">飲食紀錄範例：</p>
+                                <img src="./webset_9.png" alt="飲食紀錄範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('飲食紀錄圖片載入成功:', this.src);" 
+                                     onerror="console.log('飲食紀錄圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            dietContent.appendChild(imageDiv);
+                            console.log('飲食紀錄圖片已添加');
+                        }
+                    }
+                } else if (h3.textContent.includes('使用者自訂每日營養素攝取量')) {
+                    console.log('找到使用者自訂每日營養素攝取量標題');
+                    const customDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (customDiv) {
+                        const customContent = customDiv.querySelector('div[style*="background: #d4edda"]');
+                        if (customContent) {
+                            console.log('找到使用者自訂區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">營養素攝取量設定範例：</p>
+                                <img src="./webset_10.png" alt="營養素攝取量設定範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('營養素攝取量設定圖片載入成功:', this.src);" 
+                                     onerror="console.log('營養素攝取量設定圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            customContent.appendChild(imageDiv);
+                            console.log('營養素攝取量設定圖片已添加');
+                        }
+                    }
+                } else if (h3.textContent.includes('營養素攝取趨勢分析')) {
+                    console.log('找到營養素攝取趨勢分析標題');
+                    const trendDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (trendDiv) {
+                        const trendContent = trendDiv.querySelector('div[style*="background: #fff3cd"]');
+                        if (trendContent) {
+                            console.log('找到營養素攝取趨勢分析區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">營養素攝取趨勢分析範例：</p>
+                                <img src="./webset_11.png" alt="營養素攝取趨勢分析範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('營養素攝取趨勢分析圖片載入成功:', this.src);" 
+                                     onerror="console.log('營養素攝取趨勢分析圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            trendContent.appendChild(imageDiv);
+                            console.log('營養素攝取趨勢分析圖片已添加');
+                        }
+                    }
+                } else if (h3.textContent.includes('個人化營養飲食建議')) {
+                    console.log('找到個人化營養飲食建議標題');
+                    const adviceDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (adviceDiv) {
+                        const adviceContent = adviceDiv.querySelector('div[style*="background: #f8d7da"]');
+                        if (adviceContent) {
+                            console.log('找到個人化營養飲食建議區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">個人化營養飲食建議範例：</p>
+                                <img src="./webset_12.png" alt="個人化營養飲食建議範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('個人化營養飲食建議圖片載入成功:', this.src);" 
+                                     onerror="console.log('個人化營養飲食建議圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            adviceContent.appendChild(imageDiv);
+                            console.log('個人化營養飲食建議圖片已添加');
+                        }
+                    }
+                }
+            });
+        }, 100);
+        
+        console.log('個人飲食日誌使用說明模態視窗已創建並顯示');
+    }
+    
+    function closeDietLogGuide() {
+        const modal = document.getElementById('diet-log-guide-modal');
+        if (modal) {
+            modal.remove();
+            console.log('個人飲食日誌使用說明模態視窗已關閉');
+        }
+    }
+
 
     // 為使用說明按鈕添加事件監聽器作為備用方案
     document.addEventListener('DOMContentLoaded', function() {
@@ -5840,6 +6066,19 @@
             });
         } else {
             console.error('找不到AI食物辨識使用說明按鈕');
+        }
+
+        // 為個人飲食日誌使用說明按鈕添加事件監聽器
+        const dietLogGuideBtn = document.querySelector('button[onclick="openDietLogGuide()"]');
+        if (dietLogGuideBtn) {
+            console.log('找到個人飲食日誌使用說明按鈕，添加事件監聽器');
+            dietLogGuideBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('按鈕被點擊，調用openDietLogGuide');
+                openDietLogGuide();
+            });
+        } else {
+            console.error('找不到個人飲食日誌使用說明按鈕');
         }
     });
 </script>
