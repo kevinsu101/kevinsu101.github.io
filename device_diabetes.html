@@ -5558,19 +5558,6 @@
 
     // 為使用說明按鈕添加事件監聽器作為備用方案
     document.addEventListener('DOMContentLoaded', function() {
-        // 為原本的使用說明按鈕添加事件監聽器
-        const usageGuideBtn = document.querySelector('button[onclick="openUsageGuide()"]');
-        if (usageGuideBtn) {
-            console.log('找到使用說明按鈕，添加事件監聽器');
-            usageGuideBtn.addEventListener('click', function(e) {
-                e.preventDefault();
-                console.log('按鈕被點擊，調用openUsageGuide');
-                openUsageGuide();
-            });
-        } else {
-            console.error('找不到使用說明按鈕');
-        }
-
         // 為CGM上傳使用說明按鈕添加事件監聽器
         const cgmUploadGuideBtn = document.querySelector('button[onclick="openCgmUploadGuide()"]');
         if (cgmUploadGuideBtn) {
