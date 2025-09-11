@@ -865,8 +865,15 @@
                         </div>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> AI 食物辨識</strong><br>
-                        <span style="color: #666;">自動識別食物名稱與份量，並估算營養成分</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <strong> AI 食物辨識</strong><br>
+                                <span style="color: #666;">自動識別食物名稱與份量，並估算營養成分</span>
+                            </div>
+                            <button onclick="openAiFoodGuide()" style="background: var(--button-bg); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" title="點擊查看使用說明">
+                                使用說明
+                            </button>
+                        </div>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
                         <strong> 個人飲食日誌</strong><br>
@@ -5496,20 +5503,9 @@
                         </div>
                     </div>
 
-                    <div style="margin-bottom: 20px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🎯 使用步驟</h3>
-                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
-                            <ol style="margin: 0; padding-left: 20px;">
-                                <li>選擇要查看的日期範圍</li>
-                                <li>點擊「載入資料」按鈕</li>
-                                <li>瀏覽療程數據和圖表</li>
-                                <li>分析餐後血糖波動模式</li>
-                            </ol>
-                        </div>
-                    </div>
 
                     <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">💡 小貼士</h3>
+                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">注意事項</h3>
                         <ul style="margin: 0; padding-left: 20px;">
                             <li>建議查看<strong>至少7天</strong>的數據進行分析</li>
                             <li>關注<strong>餐後2小時</strong>的血糖變化</li>
@@ -5620,6 +5616,191 @@
         }
     }
 
+    // AI食物辨識使用說明功能
+    function openAiFoodGuide() {
+        console.log('openAiFoodGuide 函數被調用');
+        
+        // 先隱藏其他可能的模態視窗
+        const otherModals = document.querySelectorAll('.modal');
+        otherModals.forEach(m => {
+            m.style.display = 'none';
+        });
+        
+        // 移除可能存在的舊模態視窗
+        const existingModal = document.getElementById('ai-food-guide-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // 創建動態模態視窗
+        const modal = document.createElement('div');
+        modal.id = 'ai-food-guide-modal';
+        modal.style.cssText = `
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <button onclick="closeAiFoodGuide()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
+                
+                <div style="margin-bottom: 20px; padding-right: 30px;">
+                    <h2 style="color: var(--title-color); margin: 0;">🤖 AI食物辨識使用說明</h2>
+                </div>
+                
+                <div style="line-height: 1.6; color: var(--text-color);">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📝 輸入說明</h3>
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                            <p><strong>功能說明：</strong></p>
+                            <p>透過文字描述、圖片上傳或語音錄音的方式，輸入您所吃的食物資訊。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>文字輸入</strong> - 描述食物名稱和份量</div>
+                                <div><strong>圖片上傳</strong> - 拍攝食物照片進行辨識</div>
+                                <div><strong>語音錄音</strong> - 用語音描述食物內容</div>
+                                <div><strong>範例格式</strong> - 一碗白飯、兩片吐司、一個蘋果</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🔍 食物辨識名稱與份量</h3>
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <p><strong>辨識結果：</strong></p>
+                            <p>AI會自動辨識食物名稱並估算份量，您可以手動調整和新增食物項目。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>自動辨識</strong> - AI識別食物名稱和份量</div>
+                                <div><strong>手動調整</strong> - 可修改食物名稱和份量</div>
+                                <div><strong>新增項目</strong> - 可手動新增遺漏的食物</div>
+                                <div><strong>確認選擇</strong> - 選擇要分析的食物項目</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 營養分析</h3>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p><strong>分析內容：</strong></p>
+                            <p>系統會計算各項營養成分，並提供個人化的飲食建議。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div><strong>營養成分</strong> - 熱量、碳水化合物、蛋白質、脂肪</div>
+                                <div><strong>份量調整</strong> - 可調整各食物的份數</div>
+                                <div><strong>飲食建議</strong> - 個人化的營養建議</div>
+                                <div><strong>記錄上傳</strong> - 將飲食記錄上傳到日誌</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">💡 使用小貼士</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>文字描述越詳細，辨識準確度越高</li>
+                            <li>拍攝食物照片時請確保光線充足</li>
+                            <li>可同時使用多種輸入方式提高準確性</li>
+                            <li>定期檢查辨識結果並手動調整</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 動態添加圖片到對應區塊中
+        setTimeout(() => {
+            console.log('開始添加AI食物辨識圖片到模態視窗');
+            
+            const allH3s = modal.querySelectorAll('h3');
+            console.log('找到的h3標題數量:', allH3s.length);
+            
+            allH3s.forEach((h3, index) => {
+                console.log(`h3[${index}]:`, h3.textContent);
+                
+                if (h3.textContent.includes('輸入說明')) {
+                    console.log('找到輸入說明標題');
+                    const inputDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (inputDiv) {
+                        const inputContent = inputDiv.querySelector('div[style*="background: #e3f2fd"]');
+                        if (inputContent) {
+                            console.log('找到輸入說明區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">輸入介面範例：</p>
+                                <img src="./webset_6.png" alt="輸入介面範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('輸入介面圖片載入成功:', this.src);" 
+                                     onerror="console.log('輸入介面圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            inputContent.appendChild(imageDiv);
+                            console.log('輸入介面圖片已添加');
+                        }
+                    }
+                } else if (h3.textContent.includes('食物辨識名稱與份量')) {
+                    console.log('找到食物辨識名稱與份量標題');
+                    const recognizeDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (recognizeDiv) {
+                        const recognizeContent = recognizeDiv.querySelector('div[style*="background: #d4edda"]');
+                        if (recognizeContent) {
+                            console.log('找到食物辨識區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">食物辨識結果範例：</p>
+                                <img src="./webset_7.png" alt="食物辨識結果範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('食物辨識圖片載入成功:', this.src);" 
+                                     onerror="console.log('食物辨識圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            recognizeContent.appendChild(imageDiv);
+                            console.log('食物辨識圖片已添加');
+                        }
+                    }
+                } else if (h3.textContent.includes('營養分析')) {
+                    console.log('找到營養分析標題');
+                    const nutritionDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (nutritionDiv) {
+                        const nutritionContent = nutritionDiv.querySelector('div[style*="background: #fff3cd"]');
+                        if (nutritionContent) {
+                            console.log('找到營養分析區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">營養分析結果範例：</p>
+                                <img src="./webset_8.png" alt="營養分析結果範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('營養分析圖片載入成功:', this.src);" 
+                                     onerror="console.log('營養分析圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            nutritionContent.appendChild(imageDiv);
+                            console.log('營養分析圖片已添加');
+                        }
+                    }
+                }
+            });
+        }, 100);
+        
+        console.log('AI食物辨識使用說明模態視窗已創建並顯示');
+    }
+    
+    function closeAiFoodGuide() {
+        const modal = document.getElementById('ai-food-guide-modal');
+        if (modal) {
+            modal.remove();
+            console.log('AI食物辨識使用說明模態視窗已關閉');
+        }
+    }
+
 
     // 為使用說明按鈕添加事件監聽器作為備用方案
     document.addEventListener('DOMContentLoaded', function() {
@@ -5646,6 +5827,19 @@
             });
         } else {
             console.error('找不到CGM分析使用說明按鈕');
+        }
+
+        // 為AI食物辨識使用說明按鈕添加事件監聽器
+        const aiFoodGuideBtn = document.querySelector('button[onclick="openAiFoodGuide()"]');
+        if (aiFoodGuideBtn) {
+            console.log('找到AI食物辨識使用說明按鈕，添加事件監聽器');
+            aiFoodGuideBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('按鈕被點擊，調用openAiFoodGuide');
+                openAiFoodGuide();
+            });
+        } else {
+            console.error('找不到AI食物辨識使用說明按鈕');
         }
     });
 </script>
