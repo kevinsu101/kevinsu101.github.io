@@ -854,8 +854,15 @@
                         </div>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
-                        <strong> 個人CGM資料與分析</strong><br>
-                        <span style="color: #666;">瀏覽療程數據、動態血糖圖與餐後血糖波動分析</span>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                            <div style="flex: 1; min-width: 0;">
+                                <strong> 個人CGM資料與分析</strong><br>
+                                <span style="color: #666;">瀏覽療程數據、動態血糖圖與餐後血糖波動分析</span>
+                            </div>
+                            <button onclick="openCgmAnalysisGuide()" style="background: var(--button-bg); color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;" title="點擊查看使用說明">
+                                使用說明
+                            </button>
+                        </div>
                     </div>
                     <div style="padding: 10px; background-color: white; border-radius: 8px; border-left: 4px solid var(--button-bg);">
                         <strong> AI 食物辨識</strong><br>
@@ -5398,6 +5405,165 @@
         }
     }
 
+    // CGM分析使用說明功能
+    function openCgmAnalysisGuide() {
+        console.log('openCgmAnalysisGuide 函數被調用');
+        
+        // 先隱藏其他可能的模態視窗
+        const otherModals = document.querySelectorAll('.modal');
+        otherModals.forEach(m => {
+            m.style.display = 'none';
+        });
+        
+        // 移除可能存在的舊模態視窗
+        const existingModal = document.getElementById('cgm-analysis-guide-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+        
+        // 創建動態模態視窗
+        const modal = document.createElement('div');
+        modal.id = 'cgm-analysis-guide-modal';
+        modal.style.cssText = `
+            position: fixed;
+            z-index: 10000;
+            left: 0;
+            top: 0;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            box-sizing: border-box;
+        `;
+        
+        modal.innerHTML = `
+            <div style="background: white; padding: 20px; border-radius: 12px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.3);">
+                <button onclick="closeCgmAnalysisGuide()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
+                
+                <div style="margin-bottom: 20px; padding-right: 30px;">
+                    <h2 style="color: var(--title-color); margin: 0;">📊 個人CGM資料與分析使用說明</h2>
+                </div>
+                
+                <div style="line-height: 1.6; color: var(--text-color);">
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📈 療程數據瀏覽</h3>
+                        <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; border-left: 4px solid #2196f3;">
+                            <p><strong>功能說明：</strong></p>
+                            <p>查看您的CGM監測數據，包括血糖趨勢、平均值、變異性等關鍵指標。</p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div>📊 <strong>血糖趨勢</strong> - 24小時血糖變化曲線</div>
+                                <div>📈 <strong>平均值</strong> - 期間內平均血糖值</div>
+                                <div>📉 <strong>變異性</strong> - 血糖波動程度</div>
+                                <div>🎯 <strong>目標範圍</strong> - 血糖控制目標達成率</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 動態血糖圖</h3>
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <p><strong>圖表功能：</strong></p>
+                            <ul style="margin: 0; padding-left: 20px;">
+                                <li><strong>時間軸縮放</strong> - 可放大縮小查看特定時段</li>
+                                <li><strong>數據點懸停</strong> - 查看具體時間點的血糖值</li>
+                                <li><strong>目標線顯示</strong> - 正常血糖範圍標示</li>
+                                <li><strong>趨勢分析</strong> - 上升/下降趨勢標記</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🍽️ 餐後血糖波動分析</h3>
+                        <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
+                            <p><strong>分析內容：</strong></p>
+                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                                <div>🍎 <strong>餐前血糖</strong> - 進食前血糖水平</div>
+                                <div>📈 <strong>餐後峰值</strong> - 進食後最高血糖值</div>
+                                <div>⏰ <strong>峰值時間</strong> - 達到峰值的時間</div>
+                                <div>📉 <strong>恢復時間</strong> - 回到餐前水平的時間</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🎯 使用步驟</h3>
+                        <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <ol style="margin: 0; padding-left: 20px;">
+                                <li>選擇要查看的日期範圍</li>
+                                <li>點擊「載入資料」按鈕</li>
+                                <li>瀏覽療程數據和圖表</li>
+                                <li>分析餐後血糖波動模式</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
+                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">💡 小貼士</h3>
+                        <ul style="margin: 0; padding-left: 20px;">
+                            <li>建議查看<strong>至少7天</strong>的數據進行分析</li>
+                            <li>關注<strong>餐後2小時</strong>的血糖變化</li>
+                            <li>記錄<strong>飲食內容</strong>與血糖波動的關聯</li>
+                            <li>定期與<strong>醫療團隊</strong>討論分析結果</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // 動態添加圖片到療程數據瀏覽區塊中
+        setTimeout(() => {
+            console.log('開始添加CGM分析圖片到模態視窗');
+            
+            const allH3s = modal.querySelectorAll('h3');
+            console.log('找到的h3標題數量:', allH3s.length);
+            
+            allH3s.forEach((h3, index) => {
+                console.log(`h3[${index}]:`, h3.textContent);
+                
+                if (h3.textContent.includes('療程數據瀏覽')) {
+                    console.log('找到療程數據瀏覽標題');
+                    const analysisDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (analysisDiv) {
+                        const analysisContent = analysisDiv.querySelector('div[style*="background: #e3f2fd"]');
+                        if (analysisContent) {
+                            console.log('找到療程數據瀏覽區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">CGM分析介面範例：</p>
+                                <img src="./webset_3.png" alt="CGM分析介面範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('CGM分析圖片載入成功:', this.src);" 
+                                     onerror="console.log('CGM分析圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            analysisContent.appendChild(imageDiv);
+                            console.log('CGM分析圖片已添加');
+                        } else {
+                            console.log('找不到療程數據瀏覽內容區塊');
+                        }
+                    } else {
+                        console.log('找不到療程數據瀏覽區塊');
+                    }
+                }
+            });
+        }, 100);
+        
+        console.log('CGM分析使用說明模態視窗已創建並顯示');
+    }
+    
+    function closeCgmAnalysisGuide() {
+        const modal = document.getElementById('cgm-analysis-guide-modal');
+        if (modal) {
+            modal.remove();
+            console.log('CGM分析使用說明模態視窗已關閉');
+        }
+    }
+
 
     // 為使用說明按鈕添加事件監聽器作為備用方案
     document.addEventListener('DOMContentLoaded', function() {
@@ -5411,6 +5577,19 @@
             });
         } else {
             console.error('找不到使用說明按鈕');
+        }
+
+        // 為CGM分析使用說明按鈕添加事件監聽器
+        const cgmAnalysisGuideBtn = document.querySelector('button[onclick="openCgmAnalysisGuide()"]');
+        if (cgmAnalysisGuideBtn) {
+            console.log('找到CGM分析使用說明按鈕，添加事件監聽器');
+            cgmAnalysisGuideBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                console.log('按鈕被點擊，調用openCgmAnalysisGuide');
+                openCgmAnalysisGuide();
+            });
+        } else {
+            console.error('找不到CGM分析使用說明按鈕');
         }
     });
 </script>
