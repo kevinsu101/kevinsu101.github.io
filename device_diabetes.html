@@ -2971,7 +2971,7 @@
                     let sumInv = sgrs.reduce((acc, v) => acc + 1/v, 0);
                     mealSGR = sumInv > 0 ? (1/sumInv).toFixed(2) : '';
                 }
-                // let sgrHtml = mealSGR ? `<div style='color:#1976d2;font-size:1.05em;font-weight:700;margin:6px 0 2px 0;'>碳水血糖反應（SGR）：${mealSGR}</div>` : '';
+                let sgrHtml = mealSGR ? `<div style='color:#1976d2;font-size:1.05em;font-weight:700;margin:6px 0 2px 0;'>碳水血糖反應（SGR）：${mealSGR}</div>` : '';
                 // 一定顯示營養建議按鈕
                 let adviceBtnHtml = `<button class="show-advice-btn" style="margin-top:8px;padding:8px 18px;background:#ffb74d;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:1em;" onclick="showAdvice(this)" data-advice="${encodeURIComponent(item.advice||'')}">顯示營養建議</button>`;
                 html += `
@@ -2981,7 +2981,7 @@
                     <div style="margin:6px 0 2px 0;">${foodsHtml}</div>
                     ${nutHtml}
                     ${nutritionRatioHtml}
-                    ${sgrHtml}
+                    
                     <div style="color:#666;font-size:0.98em;">碳水份數: <b>${item.total_carb_portions}</b></div>
                     ${adviceBtnHtml}
                     <div style="margin-top:8px;"></div>
