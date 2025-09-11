@@ -5393,24 +5393,25 @@
                 <button onclick="closeUsageGuide()" style="position: absolute; top: 10px; right: 10px; background: #dc3545; color: white; border: none; padding: 8px 12px; border-radius: 50%; cursor: pointer; font-size: 16px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">✕</button>
                 
                 <div style="margin-bottom: 20px; padding-right: 30px;">
-                    <h2 style="color: var(--title-color); margin: 0;">📋 CGM資料上傳使用說明</h2>
+                    <h2 style="color: var(--title-color); margin: 0;">CGM資料上傳使用說明</h2>
                 </div>
                 
                 <div style="line-height: 1.6; color: var(--text-color);">
                     <div style="margin-bottom: 20px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">📊 資料格式要求</h3>
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">首次登入設定個人資料</h3>
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <p><strong>重要：</strong>您的CSV檔案必須包含以下欄位：</p>
+                            <p><strong>重要：</strong>首次登入時，需要設定個人資料，才能使用本平台功能。</p>
                             <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
-                                <div>📅 <strong>date</strong> - 日期 (格式：YYYY-MM-DD)</div>
-                                <div>⏰ <strong>time</strong> - 時間 (格式：HH:MM)</div>
-                                <div>🩸 <strong>glucose</strong> - 血糖值 (mg/dL)</div>
+                                <div><strong>姓名</strong> - 您的姓名</div>
+                                <div><strong>使用者ID</strong> - 登入ID</div>
+                                <div><strong>生日</strong> - 您的生日</div>
+                                <div><strong>性別</strong> - 您的性別</div>
+                                <div><strong>糖尿病情況</strong> - 您的糖尿病情況</div>
                             </div>
-                        </div>
+                        </div>  
                     </div>
-
                     <div style="margin-bottom: 20px;">
-                        <h3 style="color: var(--title-color); margin-bottom: 15px;">🚀 上傳步驟</h3>
+                        <h3 style="color: var(--title-color); margin-bottom: 15px;">上傳步驟</h3>
                         <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
                             <ol style="margin: 0; padding-left: 20px;">
                                 <li>點擊「選擇檔案」按鈕</li>
@@ -5419,16 +5420,6 @@
                                 <li>等待系統處理完成</li>
                             </ol>
                         </div>
-                    </div>
-
-                    <div style="background: #f8d7da; padding: 15px; border-radius: 8px; border-left: 4px solid #dc3545;">
-                        <h3 style="color: #721c24; margin-top: 0; margin-bottom: 10px;">⚠️ 注意事項</h3>
-                        <ul style="margin: 0; padding-left: 20px;">
-                            <li>檔案大小限制：<strong>10MB</strong></li>
-                            <li>支援格式：<strong>CSV、Excel</strong></li>
-                            <li>血糖值單位：<strong>mg/dL</strong></li>
-                            <li>時間格式：<strong>24小時制</strong></li>
-                        </ul>
                     </div>
                 </div>
             </div>
@@ -5439,7 +5430,7 @@
         // 動態添加圖片到資料格式要求區塊中
         setTimeout(() => {
             const formatSection = modal.querySelector('h3');
-            if (formatSection && formatSection.textContent.includes('資料格式要求')) {
+            if (formatSection && formatSection.textContent.includes('上傳步驟')) {
                 const formatDiv = formatSection.closest('div[style*="margin-bottom: 20px"]');
                 if (formatDiv) {
                     const formatContent = formatDiv.querySelector('div[style*="background: #fff3cd"]');
