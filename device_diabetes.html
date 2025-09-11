@@ -5401,7 +5401,7 @@
                         <h3 style="color: var(--title-color); margin-bottom: 15px;">首次登入設定個人資料</h3>
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
                             <p><strong>重要：</strong>首次登入時，需要設定個人資料，才能使用本平台功能。</p>
-                            <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
+                            <div style="background; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
                                 <div><strong>姓名</strong> - 您的姓名</div>
                                 <div><strong>使用者ID</strong> - 登入ID</div>
                                 <div><strong>生日</strong> - 您的生日</div>
@@ -5427,34 +5427,52 @@
         
         document.body.appendChild(modal);
         
-        // 動態添加圖片到資料格式要求區塊中
+        // 動態添加圖片到對應區塊中
         setTimeout(() => {
-            const formatSection = modal.querySelector('h3');
-            if (formatSection && formatSection.textContent.includes('上傳步驟')) {
-                const formatDiv = formatSection.closest('div[style*="margin-bottom: 20px"]');
-                if (formatDiv) {
-                    const formatContent = formatDiv.querySelector('div[style*="background: #fff3cd"]');
-                    if (formatContent) {
-                        console.log('找到格式要求區塊，正在添加圖片');
+            // 添加個人資料設定圖片
+            const personalSection = modal.querySelector('h3');
+            if (personalSection && personalSection.textContent.includes('首次登入設定個人資料')) {
+                const personalDiv = personalSection.closest('div[style*="margin-bottom: 20px"]');
+                if (personalDiv) {
+                    const personalContent = personalDiv.querySelector('div[style*="background: #fff3cd"]');
+                    if (personalContent) {
+                        console.log('找到個人資料設定區塊，正在添加圖片');
                         const imageDiv = document.createElement('div');
                         imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
                         imageDiv.innerHTML = `
-                            <p style="margin-bottom: 10px; color: #666; font-size: 14px;">實際範例：</p>
-                            <img src="./1757524809256.jpg" alt="CGM資料範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
-                                 onload="console.log('圖片載入成功:', this.src);" 
-                                 onerror="console.log('圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <p style="margin-bottom: 10px; color: #666; font-size: 14px;">個人資料設定範例：</p>
+                            <img src="./web_1_set.png" alt="個人資料設定範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                 onload="console.log('個人資料設定圖片載入成功:', this.src);" 
+                                 onerror="console.log('個人資料設定圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
                             <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
                         `;
-                        formatContent.appendChild(imageDiv);
-                        console.log('圖片區塊已添加到格式要求中');
-                    } else {
-                        console.log('找不到格式要求內容區塊');
+                        personalContent.appendChild(imageDiv);
+                        console.log('個人資料設定圖片已添加');
                     }
-                } else {
-                    console.log('找不到格式要求區塊');
                 }
-            } else {
-                console.log('找不到資料格式要求標題');
+            }
+
+            // 添加上傳步驟圖片
+            const uploadSection = modal.querySelector('h3');
+            if (uploadSection && uploadSection.textContent.includes('上傳步驟')) {
+                const uploadDiv = uploadSection.closest('div[style*="margin-bottom: 20px"]');
+                if (uploadDiv) {
+                    const uploadContent = uploadDiv.querySelector('div[style*="background: #d4edda"]');
+                    if (uploadContent) {
+                        console.log('找到上傳步驟區塊，正在添加圖片');
+                        const imageDiv = document.createElement('div');
+                        imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                        imageDiv.innerHTML = `
+                            <p style="margin-bottom: 10px; color: #666; font-size: 14px;">CGM資料範例：</p>
+                            <img src="./1757524809256.jpg" alt="CGM資料範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                 onload="console.log('CGM資料圖片載入成功:', this.src);" 
+                                 onerror="console.log('CGM資料圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                            <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                        `;
+                        uploadContent.appendChild(imageDiv);
+                        console.log('CGM資料圖片已添加');
+                    }
+                }
             }
         }, 100);
         
