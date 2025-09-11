@@ -5317,7 +5317,7 @@
                         <div style="background: #d4edda; padding: 15px; border-radius: 8px; border-left: 4px solid #28a745;">
                             <ol style="margin: 0; padding-left: 20px;">
                                 <li>系統自動填入使用者資料</li>
-                                <li>點擊「選擇檔案」按鈕，選擇您的CGM資料檔案</li>
+                                <li>點擊「選擇檔案」按鈕，選擇您的CGM資料檔案，有關CGM資料檔案問題可以詢問營養師或CGM廠商</li>
                                 <li>點擊「上傳CGM資料」按鈕</li>
                                 <li>等待系統處理完成</li>
                             </ol>
@@ -5483,13 +5483,16 @@
                     <div style="margin-bottom: 20px;">
                         <h3 style="color: var(--title-color); margin-bottom: 15px;">🍽️ 餐後血糖波動分析</h3>
                         <div style="background: #fff3cd; padding: 15px; border-radius: 8px; border-left: 4px solid #ffc107;">
-                            <p><strong>分析內容：</strong></p>
+                            <p><strong>分析說明：</strong></p>
+                            <p>分析不同餐別（早餐、午餐、晚餐、其他）對血糖的影響，包括波動幅度、持續時間和達峰時間。</p>
                             <div style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; font-family: monospace; font-size: 14px;">
-                                <div>🍎 <strong>餐前血糖</strong> - 進食前血糖水平</div>
-                                <div>📈 <strong>餐後峰值</strong> - 進食後最高血糖值</div>
-                                <div>⏰ <strong>峰值時間</strong> - 達到峰值的時間</div>
-                                <div>📉 <strong>恢復時間</strong> - 回到餐前水平的時間</div>
+                                <div><strong>散點圖</strong> - 顯示各餐別的波動幅度與持續時間關係</div>
+                                <div><strong>平均達峰時間</strong> - 餐後血糖達到最高點的平均時間</div>
+                                <div><strong>平均波動升幅</strong> - 餐後血糖上升的平均幅度 (mg/dL)</div>
+                                <div><strong>平均波動持續</strong> - 血糖波動持續的平均時間</div>
+                                <div><strong>TIR</strong> - 餐後血糖在目標範圍內的時間比例</div>
                             </div>
+                            <p style="margin-top: 10px; font-size: 14px; color: #666;"><strong>分析含意：</strong>晚餐通常影響最大，其他餐點相對穩定。TIR越高表示血糖控制越好，波動升幅越小表示血糖反應越平穩。</p>
                         </div>
                     </div>
 
@@ -5577,6 +5580,30 @@
                         }
                     } else {
                         console.log('找不到AGP動態血糖圖區塊');
+                    }
+                } else if (h3.textContent.includes('餐後血糖波動分析')) {
+                    console.log('找到餐後血糖波動分析標題');
+                    const mealDiv = h3.closest('div[style*="margin-bottom: 20px"]');
+                    if (mealDiv) {
+                        const mealContent = mealDiv.querySelector('div[style*="background: #fff3cd"]');
+                        if (mealContent) {
+                            console.log('找到餐後血糖波動分析區塊，正在添加圖片');
+                            const imageDiv = document.createElement('div');
+                            imageDiv.style.cssText = 'margin-top: 15px; text-align: center;';
+                            imageDiv.innerHTML = `
+                                <p style="margin-bottom: 10px; color: #666; font-size: 14px;">餐後血糖波動分析範例：</p>
+                                <img src="./webset_5.png" alt="餐後血糖波動分析範例" style="max-width: 100%; height: auto; border-radius: 6px; box-shadow: 0 2px 6px rgba(0,0,0,0.1);" 
+                                     onload="console.log('餐後血糖波動分析圖片載入成功:', this.src);" 
+                                     onerror="console.log('餐後血糖波動分析圖片載入失敗:', this.src); this.style.display='none'; this.nextElementSibling.style.display='block';">
+                                <p style="display: none; color: #dc3545; font-size: 12px; margin-top: 5px;">圖片載入失敗，請檢查檔案路徑</p>
+                            `;
+                            mealContent.appendChild(imageDiv);
+                            console.log('餐後血糖波動分析圖片已添加');
+                        } else {
+                            console.log('找不到餐後血糖波動分析內容區塊');
+                        }
+                    } else {
+                        console.log('找不到餐後血糖波動分析區塊');
                     }
                 }
             });
